@@ -1,100 +1,166 @@
-# SustainabilityProjectA(partially)
-# Implementation Guide
-## 
+# 🛠️ MetricsForReporting: Guide
 
-### Project Overview
-This guide outlines the implementation tasks for the ESG Knowledge Graph Reasoning framework based on the research paper. You will be building a knowledge graph-based system that enables semantic reasoning for ESG (Environmental, Social, and Governance) reporting.
+## 🎯 Objective
 
-### Completed Tasks(Previous Weeks)
-- Initial analysis of Eurofidai dataset
-- Industry-company matching
-- Metrics sorting and classification
-- Documenting findings for dataset and analysis process
+Build a **simple ESG metric reporting system** powered by a knowledge graph. This system should:
 
-### Knowledge Representation Setup
-1. **Ontology Implementation**
-   - Set up the core ontology with the seven key entities: ReportingFramework, Category, Metric, Model, Implementation, Dataset, and Datasource(Diagram shared previous week)
-   - Implement the relationships between these entities as described in Section 4.1 (Shared at previous week's posts)
-   - Add the semantic constructs: equivalence relationships, property axioms, and class hierarchies
+* Use **graph-based entities** (Metric, Model, DatasetVariable, etc.)
+* Link sample data (e.g. from Eurofidai)
+* Support basic **metric calculation and report generation**
 
-2. **SASB Integration**
-   - Integrate the SASB materiality map for industry-specific ESG categories (Website shared previous week)
-   - Create the necessary entity mappings for your assigned industry(semiconductors etc..)
+---
 
-### Reasoning Mechanisms Implementation
-1. **Ontological Reasoning**
-   - Implement framework harmonization capabilities using equivalence relationships
-   - Set up the class hierarchy reasoning for metrics categorization
-   - Test with framework equivalence examples from Section 5.1(Shared at previosu week posts)
+## 📚 Project Breakdown
 
-2. **Rule-based Reasoning**
-   - Implement industry-specific requirement rules
-   - Create the rule structure for determining required metrics based on industry and framework
-   - Test with examples from Section 5.2(Shared at previosu week post)
+### 1. Understand the Data & Graph
 
-### Advanced Reasoning & Data Integration
-1. **Path-based Reasoning**
-   - Implement data lineage and traceability functions
-   - Create SPARQL queries for tracing relationships across the knowledge graph
-   - Test with examples from Section 5.3(Shared at previosu week posts)
+#### ✅ Tasks:
 
-2. **Constraint-based Reasoning**
-   - Implement data quality validation using SHACL constraints
-   - Create constraints for required inputs and data completeness
-   - Test with examples from Section 5.4(Shared at previosu week posts)
+* Load the **Eurofidai sample data** (CSV) and explore:
 
-3. **Eurofidai Data Transformation**
-   - Finalize the data processing pipeline for Eurofidai data
-   - Implement the RDF transformation logic from Section 6.2(Shared at previosu week posts)
+  * What metrics are reported?
+  * What variables are present?
+* Review the **graph schema** (see provided diagram with 7 core entities).
+* Use sample RDF data to understand how graph entities are structured.
 
-### System Architecture & API Development
-1. **Layered Architecture Implementation**
-   - Develop the four primary components: Data Layer, Knowledge Graph Layer, Reasoning Engine, and Application Interface
-   - Implement the task orchestration logic for coordinating reasoning mechanisms
+#### 💡 Output:
 
-2. **API Development**
-   - Create REST API endpoints for core functionalities
-   - Implement the query service for knowledge retrieval
-   - Document your API for future extension
+* One summary table: metric names, units, variables used
+* One sample RDF graph in Turtle format
 
-### Workflow Implementation & Testing
-1. **Complete Reporting Workflow**
-   - Implement the six-step workflow described in Section 7.2(Shared at previosu week posts):
-     - Framework and Industry Selection
-     - Material Category Identification
-     - Metric Selection
-     - Model and Input Selection
-     - Calculation Execution
-     - Data Lineage Tracing
+---
 
-2. **Testing & Documentation**
-   - Test the complete workflow with sample companies from different industries
-   - Document your implementation decisions, extensions, and limitations
-   - Prepare a demonstration of your working system
+### 2. Build the Knowledge Graph
 
-### Deliverables
-1. Working implementation of the ESG-KGR framework
-2. Documentation of your implementation decisions
-3. Test cases demonstrating the system capabilities
-4. Final presentation showing the complete workflow
+#### ✅ Tasks:
 
-### Extension Points (Optional)
-If you complete the core tasks early, consider implementing one of these extensions:
-1. Additional data source integration beyond Eurofidai
-2. Temporal reasoning for ESG metrics
-3. Enhanced visualization of the knowledge graph
-4. Cross-framework harmonization features
+* Implement a graph with these 7 entities:
 
-### Resources
-- The ESG-KGR research paper (already shared)
-- Eurofidai dataset (already provided)
-- SASB materiality map (link to be provided)
-- Stardog documentation (for knowledge graph implementation)
+  * `Industry`, `ReportingFramework`, `Category`, `Metric`, `Model`, `Implementation`, `DatasetVariable`, `Datasource`
+* For **each entity**, define key **attributes** (not just links).
+  Example for `Metric`:
 
-### Technical Requirements(alternative solution is acceptable)
-- Use of Stardog(or other alternative solutions) for knowledge graph implementation
-- OWL 2 RL for ontological reasoning
-- SWRL for rule-based reasoning
-- SPARQL 1.1 for path-based reasoning
-- SHACL for constraint-based reasoning
-- RESTful API for system interaction
+  ```
+  Label: Carbon Emissions Intensity  
+  Definition: CO2e emissions per unit of revenue  
+  Unit: Ton_CO2e  
+  Frequency: Annual  
+  Mandatory: Yes  
+  Source: IFRS S2  
+  ```
+
+#### 💡 Output:
+
+* One Turtle (`.ttl`) file with at least one for each entity and two complete `Metric` examples(one for direct retrieve value from dataset, and one for calculated using other metrics)
+* One visual diagram showing how entities connect (can reuse schema image)
+
+---
+
+### 3. Connect Graph to Sample Data
+
+#### ✅ Tasks:
+
+* Match **Eurofidai variables** to graph nodes (e.g., match "CO2e\_Total" to DatasetVariable)
+* Link:
+
+  * `Metric → isCalculatedBy → Model`
+  * `Model → requiresInputFrom → DatasetVariable`
+  * `DatasetVariable → from → Datasource`
+
+#### 💡 Output:
+
+* A mapping file (`metric_variable_mapping.csv`)
+* Update RDF file with sample `Model` and `DatasetVariable` nodes
+
+---
+
+### 4. Design the System Architecture
+
+#### ✅ Tasks:
+
+* Create a simple architecture diagram (boxes + arrows):
+
+  ```
+  User → [Metric Selector] → [Graph Query] → [Model Calculator] → [PDF Report Generator]
+  ```
+* Clearly show which part:
+
+  * Queries the graph
+  * Loads sample data
+  * Computes metric value
+  * Generates output
+
+#### 💡 Output:
+
+* One PNG diagram (hand-drawn or digital)
+* Description in `system_design.md`
+
+---
+
+### 5. Implement the Workflow
+
+#### ✅ Tasks:
+
+* Write a script (Python) that:
+
+  1. Accepts a metric name (e.g., "Carbon Emissions Intensity")
+  2. Looks up its model and required variables from the graph
+  3. Loads the sample data
+  4. Computes the metric using the model (e.g., a formula)
+  5. Outputs result to screen or PDF
+
+#### 💡 Output:
+
+* Python script: `run_metric.py`
+* At least one successful metric output (e.g., a JSON or PDF report)
+
+---
+
+### 6. Document Your Work
+
+#### ✅ Tasks:
+
+* Keep notes on:
+
+  * What worked or didn’t
+  * How you linked sample data to graph
+  * Challenges in modeling, matching, or computing
+
+#### 💡 Output:
+
+* Final report (`project_summary.md`) answering:
+
+  * What did your system do?
+  * What graph entities were created?
+  * What was calculated?
+  * What challenges did you solve?
+
+---
+
+## 📦 Project Folder Structure
+
+```
+metrics-project/
+├── data/
+│   └── eurofidai_sample.csv
+├── graph/
+│   └── metric_graph.ttl
+├── code/
+│   └── run_metric.py
+├── design/
+│   └── architecture_diagram.png
+├── docs/
+│   ├── system_design.md
+│   └── project_summary.md
+└── README.md
+```
+
+---
+
+## 🧠 Tips for Success
+
+* Keep it **simple and working**, not big and broken.
+* Focus on **one metric end-to-end**, then generalize.
+* Use standard vocabularies like `rdfs:label`, `skos:definition`, `prov:wasDerivedFrom`.
+
+
