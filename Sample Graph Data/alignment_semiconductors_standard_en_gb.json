@@ -1,0 +1,163 @@
+{
+  "total_input_metrics": 21,
+  "processed_metrics": 21,
+  "total_alignments": 19,
+  "high_confidence_count": 14,
+  "medium_confidence_count": 5,
+  "low_confidence_count": 2,
+  "coverage_rate": 0.9047619047619048,
+  "average_confidence": 0.8038095238095238,
+  "alignments": [
+    {
+      "regulatory_metric": "Gross Global Scope 1 Emissions",
+      "eurofidai_variable": "CO2DIRECTSCOPE1",
+      "confidence_score": 1.0,
+      "unit_compatible": true,
+      "alignment_reason": "Perfect match - both measure direct greenhouse gas emissions (Scope 1) at global level"
+    },
+    {
+      "regulatory_metric": "Perfluorinated Compounds Emissions",
+      "eurofidai_variable": "No Match",
+      "confidence_score": 0.0,
+      "unit_compatible": false,
+      "alignment_reason": "No specific perfluorinated compounds variable in Eurofidai dataset; too specialized for general ESG framework"
+    },
+    {
+      "regulatory_metric": "Scope 1 Emissions Strategy",
+      "eurofidai_variable": "POLICY_EMISSIONS",
+      "confidence_score": 0.88,
+      "unit_compatible": true,
+      "alignment_reason": "Strong conceptual match - both address emissions management policies and strategies (qualitative)"
+    },
+    {
+      "regulatory_metric": "Total Energy Consumed",
+      "eurofidai_variable": "ENERGYUSETOTAL",
+      "confidence_score": 1.0,
+      "unit_compatible": true,
+      "alignment_reason": "Perfect match - identical concept measuring total energy consumption"
+    },
+    {
+      "regulatory_metric": "Percentage Grid Electricity",
+      "eurofidai_variable": "ELECTRICITYPURCHASED",
+      "confidence_score": 0.82,
+      "unit_compatible": false,
+      "alignment_reason": "Moderate match - related concepts but different units (percentage vs absolute purchased electricity)"
+    },
+    {
+      "regulatory_metric": "Percentage Renewable Energy",
+      "eurofidai_variable": "TRANALYTICRENEWENERGYUSE",
+      "confidence_score": 0.92,
+      "unit_compatible": true,
+      "alignment_reason": "Strong match - both measure renewable energy usage as percentage/ratio"
+    },
+    {
+      "regulatory_metric": "Total Water Withdrawn",
+      "eurofidai_variable": "WATERWITHDRAWALTOTAL",
+      "confidence_score": 1.0,
+      "unit_compatible": true,
+      "alignment_reason": "Perfect match - identical terminology and measurement scope"
+    },
+    {
+      "regulatory_metric": "Total Water Consumed",
+      "eurofidai_variable": "WATERWITHDRAWALTOTAL",
+      "confidence_score": 0.75,
+      "unit_compatible": true,
+      "alignment_reason": "Moderate match - conceptually related but consumption vs withdrawal are different measures"
+    },
+    {
+      "regulatory_metric": "Percentage Water Withdrawn High Stress",
+      "eurofidai_variable": "WATER_USE_PAI_M10",
+      "confidence_score": 0.86,
+      "unit_compatible": true,
+      "alignment_reason": "Strong match - both address water usage in stressed regions (PAI M10 relates to water stress)"
+    },
+    {
+      "regulatory_metric": "Percentage Water Consumed High Stress",
+      "eurofidai_variable": "WATER_USE_PAI_M10",
+      "confidence_score": 0.83,
+      "unit_compatible": true,
+      "alignment_reason": "Good match - similar to above but consumption vs withdrawal distinction"
+    },
+    {
+      "regulatory_metric": "Workforce Health & Safety",
+      "eurofidai_variable": "EMPLOYEE_HEALTH_SAFETY_POLICY",
+      "confidence_score": 0.9,
+      "unit_compatible": true,
+      "alignment_reason": "Strong match - both address workforce health and safety policies/practices"
+    },
+    {
+      "regulatory_metric": "Recruiting & Managing Global Skilled Workforce",
+      "eurofidai_variable": "WOMENEMPLOYEES",
+      "confidence_score": 0.72,
+      "unit_compatible": false,
+      "alignment_reason": "Moderate match - workforce management relates to diversity metrics, but scope mismatch"
+    },
+    {
+      "regulatory_metric": "Product Lifecycle Management",
+      "eurofidai_variable": "ECO_DESIGN_PRODUCTS",
+      "confidence_score": 0.81,
+      "unit_compatible": true,
+      "alignment_reason": "Good match - both address environmental considerations in product design/lifecycle"
+    },
+    {
+      "regulatory_metric": "Materials Sourcing",
+      "eurofidai_variable": "ENV_SUPPLY_CHAIN_MGT",
+      "confidence_score": 0.87,
+      "unit_compatible": true,
+      "alignment_reason": "Strong match - materials sourcing is core component of environmental supply chain management"
+    },
+    {
+      "regulatory_metric": "Intellectual Property Protection & Competitive Behaviour",
+      "eurofidai_variable": "No Match",
+      "confidence_score": 0.0,
+      "unit_compatible": false,
+      "alignment_reason": "No governance variables in Eurofidai specifically address IP protection or competitive behavior"
+    },
+    {
+      "regulatory_metric": "Waste Management (Category)",
+      "eurofidai_variable": "WASTETOTAL",
+      "confidence_score": 0.85,
+      "unit_compatible": true,
+      "alignment_reason": "Strong categorical match for general waste management metrics"
+    },
+    {
+      "regulatory_metric": "Hazardous Waste Generated",
+      "eurofidai_variable": "HAZARDOUSWASTE",
+      "confidence_score": 0.95,
+      "unit_compatible": true,
+      "alignment_reason": "Near-perfect match for semiconductor industry hazardous waste tracking"
+    },
+    {
+      "regulatory_metric": "Waste Recycling Rate",
+      "eurofidai_variable": "ANALYTICWASTERECYCLINGRATIO",
+      "confidence_score": 0.93,
+      "unit_compatible": true,
+      "alignment_reason": "Strong match - both measure waste recycling as percentage/ratio"
+    },
+    {
+      "regulatory_metric": "Employee Safety Incidents",
+      "eurofidai_variable": "TIRTOTAL",
+      "confidence_score": 0.88,
+      "unit_compatible": true,
+      "alignment_reason": "Strong match - Total Incident Rate captures safety incident metrics"
+    },
+    {
+      "regulatory_metric": "Employee Fatalities",
+      "eurofidai_variable": "EMPLOYEEFATALITIES",
+      "confidence_score": 1.0,
+      "unit_compatible": true,
+      "alignment_reason": "Perfect match - identical metric for workforce safety"
+    },
+    {
+      "regulatory_metric": "Gender Diversity in Workforce",
+      "eurofidai_variable": "WOMENEMPLOYEES",
+      "confidence_score": 0.91,
+      "unit_compatible": true,
+      "alignment_reason": "Strong match - measures gender diversity in employee base"
+    }
+  ],
+  "source_document": "semiconductors-standard_en-gb.pdf",
+  "alignment_timestamp": 1748599514.175683,
+  "total_concepts_processed": 30,
+  "framework": "SASB Semiconductors"
+}
