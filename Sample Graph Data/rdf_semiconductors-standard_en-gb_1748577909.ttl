@@ -1,0 +1,279 @@
+@prefix esg: <http://esg-kg.org/ontology#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# Industry
+esg:Semiconductors a esg:Industry ;
+    rdfs:label "Semiconductors" ;
+    rdfs:comment "Semiconductor manufacturing industry" .
+
+# Reporting Framework
+esg:SASBSemiconductors a esg:ReportingFramework ;
+    rdfs:label "SASB Semiconductors" ;
+    rdfs:comment "SASB Sustainability Accounting Standards for Semiconductors industry" .
+
+# Categories
+esg:GreenhouseGasEmissions a esg:Category ;
+    rdfs:label "Greenhouse Gas Emissions" ;
+    rdfs:comment "Category covering greenhouse gas emissions management and reporting" .
+
+esg:EnergyManagementInManufacturing a esg:Category ;
+    rdfs:label "Energy Management in Manufacturing" ;
+    rdfs:comment "Category covering energy consumption and management in manufacturing processes" .
+
+esg:WaterManagement a esg:Category ;
+    rdfs:label "Water Management" ;
+    rdfs:comment "Category covering water usage, consumption and management" .
+
+esg:WasteManagement a esg:Category ;
+    rdfs:label "Waste Management" ;
+    rdfs:comment "Category covering waste generation, treatment and disposal" .
+
+esg:WorkforceHealthSafety a esg:Category ;
+    rdfs:label "Workforce Health & Safety" ;
+    rdfs:comment "Category covering employee health and safety management" .
+
+esg:RecruitingManagingGlobalSkilledWorkforce a esg:Category ;
+    rdfs:label "Recruiting & Managing a Global & Skilled Workforce" ;
+    rdfs:comment "Category covering workforce recruitment and management strategies" .
+
+esg:ProductLifecycleManagement a esg:Category ;
+    rdfs:label "Product Lifecycle Management" ;
+    rdfs:comment "Category covering product design, development and lifecycle considerations" .
+
+esg:MaterialsSourcing a esg:Category ;
+    rdfs:label "Materials Sourcing" ;
+    rdfs:comment "Category covering materials procurement and sourcing practices" .
+
+esg:IntellectualPropertyProtectionCompetitiveBehaviour a esg:Category ;
+    rdfs:label "Intellectual Property Protection & Competitive Behaviour" ;
+    rdfs:comment "Category covering intellectual property management and competitive practices" .
+
+# Metrics
+esg:GrossGlobalScope1Emissions a esg:Metric ;
+    rdfs:label "Gross Global Scope 1 Emissions" ;
+    rdfs:comment "Gross global Scope 1 emissions" ;
+    esg:hasCode "TC-SC-110a.1" ;
+    esg:hasUnit "Metric tonnes (t) CO₂-e" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:PerfluorinatedCompoundsEmissions a esg:Metric ;
+    rdfs:label "Perfluorinated Compounds Emissions" ;
+    rdfs:comment "Amount of total emissions from perfluorinated compounds" ;
+    esg:hasCode "TC-SC-110a.1" ;
+    esg:hasUnit "Metric tonnes (t) CO₂-e" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:Scope1EmissionsStrategy a esg:Metric ;
+    rdfs:label "Scope 1 Emissions Strategy" ;
+    rdfs:comment "Discussion of long- and short-term strategy or plan to manage Scope 1 emissions, emissions reduction targets, and an analysis of performance against those targets" ;
+    esg:hasCode "TC-SC-110a.2" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Discussion" .
+
+esg:TotalEnergyConsumed a esg:Metric ;
+    rdfs:label "Total Energy Consumed" ;
+    rdfs:comment "Total energy consumed" ;
+    esg:hasCode "TC-SC-130a.1" ;
+    esg:hasUnit "Gigajoules (GJ)" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:PercentageGridElectricity a esg:Metric ;
+    rdfs:label "Percentage Grid Electricity" ;
+    rdfs:comment "Percentage grid electricity" ;
+    esg:hasCode "TC-SC-130a.1" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:PercentageRenewableEnergy a esg:Metric ;
+    rdfs:label "Percentage Renewable Energy" ;
+    rdfs:comment "Percentage renewable" ;
+    esg:hasCode "TC-SC-130a.1" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:TotalWaterWithdrawn a esg:Metric ;
+    rdfs:label "Total Water Withdrawn" ;
+    rdfs:comment "Total water withdrawn" ;
+    esg:hasCode "TC-SC-140a.1" ;
+    esg:hasUnit "Thousand cubic metres (m³)" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:TotalWaterConsumed a esg:Metric ;
+    rdfs:label "Total Water Consumed" ;
+    rdfs:comment "Total water consumed" ;
+    esg:hasCode "TC-SC-140a.1" ;
+    esg:hasUnit "Thousand cubic metres (m³)" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:PercentageWaterWithdrawnHighStress a esg:Metric ;
+    rdfs:label "Percentage Water Withdrawn High Stress" ;
+    rdfs:comment "Percentage water withdrawn in high stress regions" ;
+    esg:hasCode "TC-SC-140a.1" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:PercentageWaterConsumedHighStress a esg:Metric ;
+    rdfs:label "Percentage Water Consumed High Stress" ;
+    rdfs:comment "Percentage water consumed in high stress regions" ;
+    esg:hasCode "TC-SC-140a.1" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:HazardousWasteAmount a esg:Metric ;
+    rdfs:label "Hazardous Waste Amount" ;
+    rdfs:comment "Amount of hazardous waste from manufacturing" ;
+    esg:hasCode "TC-SC-150a.1" ;
+    esg:hasUnit "Metric tonnes (t)" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:PercentageHazardousWasteRecycled a esg:Metric ;
+    rdfs:label "Percentage Hazardous Waste Recycled" ;
+    rdfs:comment "Percentage recycled" ;
+    esg:hasCode "TC-SC-150a.1" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:WorkforceHealthHazardEfforts a esg:Metric ;
+    rdfs:label "Workforce Health Hazard Efforts" ;
+    rdfs:comment "Description of efforts to assess, monitor, and reduce exposure of workforce to human health hazards" ;
+    esg:hasCode "TC-SC-320a.1" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Discussion" .
+
+esg:HealthSafetyLegalLosses a esg:Metric ;
+    rdfs:label "Health Safety Legal Losses" ;
+    rdfs:comment "Total amount of monetary losses as a result of legal proceedings associated with employee health and safety violations" ;
+    esg:hasCode "TC-SC-320a.2" ;
+    esg:hasUnit "Presentation currency" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:WorkVisaEmployeePercentage a esg:Metric ;
+    rdfs:label "Work Visa Employee Percentage" ;
+    rdfs:comment "Percentage of employees that require a work visa" ;
+    esg:hasCode "TC-SC-330a.1" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:DeclarableSubstancesRevenuePercentage a esg:Metric ;
+    rdfs:label "Declarable Substances Revenue Percentage" ;
+    rdfs:comment "Percentage of products by revenue that contain IEC 62474 declarable substances" ;
+    esg:hasCode "TC-SC-410a.1" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:ServerProcessorEnergyEfficiency a esg:Metric ;
+    rdfs:label "Server Processor Energy Efficiency" ;
+    rdfs:comment "Processor energy efficiency at a system-level for servers" ;
+    esg:hasCode "TC-SC-410a.2" ;
+    esg:hasUnit "Various, by product category" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:DesktopProcessorEnergyEfficiency a esg:Metric ;
+    rdfs:label "Desktop Processor Energy Efficiency" ;
+    rdfs:comment "Processor energy efficiency at a system-level for desktops" ;
+    esg:hasCode "TC-SC-410a.2" ;
+    esg:hasUnit "Various, by product category" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:LaptopProcessorEnergyEfficiency a esg:Metric ;
+    rdfs:label "Laptop Processor Energy Efficiency" ;
+    rdfs:comment "Processor energy efficiency at a system-level for laptops" ;
+    esg:hasCode "TC-SC-410a.2" ;
+    esg:hasUnit "Various, by product category" ;
+    esg:hasMetricType "Quantitative" .
+
+esg:CriticalMaterialsRiskManagement a esg:Metric ;
+    rdfs:label "Critical Materials Risk Management" ;
+    rdfs:comment "Description of the management of risks associated with the use of critical materials" ;
+    esg:hasCode "TC-SC-440a.1" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Discussion" .
+
+esg:AntiCompetitiveLegalLosses a esg:Metric ;
+    rdfs:label "Anti-Competitive Legal Losses" ;
+    rdfs:comment "Total amount of monetary losses as a result of legal proceedings associated with anti-competitive behaviour regulations" ;
+    esg:hasCode "TC-SC-520a.1" ;
+    esg:hasUnit "Presentation currency" ;
+    esg:hasMetricType "Quantitative" .
+
+# Models
+esg:GridElectricityRateModel a esg:Model ;
+    rdfs:label "Grid Electricity Rate Model" ;
+    rdfs:comment "Percentage of energy consumed that was supplied from grid electricity calculated as purchased grid electricity consumption divided by total energy consumption" .
+
+esg:RenewableEnergyRateModel a esg:Model ;
+    rdfs:label "Renewable Energy Rate Model" ;
+    rdfs:comment "Percentage of energy consumed that was renewable energy calculated as renewable energy consumption divided by total energy consumption" .
+
+esg:HighStressWaterWithdrawalRateModel a esg:Model ;
+    rdfs:label "High Stress Water Withdrawal Rate Model" ;
+    rdfs:comment "Water withdrawn in locations with High or Extremely High Baseline Water Stress as a percentage of the total water withdrawn" .
+
+esg:HighStressWaterConsumptionRateModel a esg:Model ;
+    rdfs:label "High Stress Water Consumption Rate Model" ;
+    rdfs:comment "Water consumed in locations with High or Extremely High Baseline Water Stress as a percentage of the total water consumed" .
+
+esg:HazardousWasteRecyclingRateModel a esg:Model ;
+    rdfs:label "Hazardous Waste Recycling Rate Model" ;
+    rdfs:comment "Percentage of hazardous waste recycled calculated as the weight of hazardous waste generated from manufacturing operations that was recycled, divided by the total weight of all hazardous waste generated" .
+
+esg:WorkVisaRateModel a esg:Model ;
+    rdfs:label "Work Visa Rate Model" ;
+    rdfs:comment "Number of employees requiring a work visa divided by the total number of the entity's employees at the close of the reporting period" .
+
+esg:DeclarableSubstancesRevenueRateModel a esg:Model ;
+    rdfs:label "Declarable Substances Revenue Rate Model" ;
+    rdfs:comment "Revenue from electrical, electronic and related technology products sold that contain a declarable substance(s) divided by total revenue from electrical, electronic and related technology products sold" .
+
+# Framework-Category Relationships
+esg:SASBSemiconductors esg:include esg:GreenhouseGasEmissions .
+esg:SASBSemiconductors esg:include esg:EnergyManagementInManufacturing .
+esg:SASBSemiconductors esg:include esg:WaterManagement .
+esg:SASBSemiconductors esg:include esg:WasteManagement .
+esg:SASBSemiconductors esg:include esg:WorkforceHealthSafety .
+esg:SASBSemiconductors esg:include esg:RecruitingManagingGlobalSkilledWorkforce .
+esg:SASBSemiconductors esg:include esg:ProductLifecycleManagement .
+esg:SASBSemiconductors esg:include esg:MaterialsSourcing .
+esg:SASBSemiconductors esg:include esg:IntellectualPropertyProtectionCompetitiveBehaviour .
+
+# Category-Metric Relationships
+esg:GreenhouseGasEmissions esg:consistOf esg:GrossGlobalScope1Emissions .
+esg:GreenhouseGasEmissions esg:consistOf esg:PerfluorinatedCompoundsEmissions .
+esg:GreenhouseGasEmissions esg:consistOf esg:Scope1EmissionsStrategy .
+
+esg:EnergyManagementInManufacturing esg:consistOf esg:TotalEnergyConsumed .
+esg:EnergyManagementInManufacturing esg:consistOf esg:PercentageGridElectricity .
+esg:EnergyManagementInManufacturing esg:consistOf esg:PercentageRenewableEnergy .
+
+esg:WaterManagement esg:consistOf esg:TotalWaterWithdrawn .
+esg:WaterManagement esg:consistOf esg:TotalWaterConsumed .
+esg:WaterManagement esg:consistOf esg:PercentageWaterWithdrawnHighStress .
+esg:WaterManagement esg:consistOf esg:PercentageWaterConsumedHighStress .
+
+esg:WasteManagement esg:consistOf esg:HazardousWasteAmount .
+esg:WasteManagement esg:consistOf esg:PercentageHazardousWasteRecycled .
+
+esg:WorkforceHealthSafety esg:consistOf esg:WorkforceHealthHazardEfforts .
+esg:WorkforceHealthSafety esg:consistOf esg:HealthSafetyLegalLosses .
+
+esg:RecruitingManagingGlobalSkilledWorkforce esg:consistOf esg:WorkVisaEmployeePercentage .
+
+esg:ProductLifecycleManagement esg:consistOf esg:DeclarableSubstancesRevenuePercentage .
+esg:ProductLifecycleManagement esg:consistOf esg:ServerProcessorEnergyEfficiency .
+esg:ProductLifecycleManagement esg:consistOf esg:DesktopProcessorEnergyEfficiency .
+esg:ProductLifecycleManagement esg:consistOf esg:LaptopProcessorEnergyEfficiency .
+
+esg:MaterialsSourcing esg:consistOf esg:CriticalMaterialsRiskManagement .
+
+esg:IntellectualPropertyProtectionCompetitiveBehaviour esg:consistOf esg:AntiCompetitiveLegalLosses .
+
+# Metric-Model Relationships
+esg:PercentageGridElectricity esg:isCalculatedBy esg:GridElectricityRateModel .
+esg:PercentageRenewableEnergy esg:isCalculatedBy esg:RenewableEnergyRateModel .
+esg:PercentageWaterWithdrawnHighStress esg:isCalculatedBy esg:HighStressWaterWithdrawalRateModel .
+esg:PercentageWaterConsumedHighStress esg:isCalculatedBy esg:HighStressWaterConsumptionRateModel .
+esg:PercentageHazardousWasteRecycled esg:isCalculatedBy esg:HazardousWasteRecyclingRateModel .
+esg:WorkVisaEmployeePercentage esg:isCalculatedBy esg:WorkVisaRateModel .
+esg:DeclarableSubstancesRevenuePercentage esg:isCalculatedBy esg:DeclarableSubstancesRevenueRateModel .
