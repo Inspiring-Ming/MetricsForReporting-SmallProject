@@ -1,0 +1,445 @@
+@prefix esg: <http://esg-kg.org/ontology#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix gri: <http://gri-kg.org/ontology#> .
+@prefix ungc: <http://ungc-kg.org/ontology#> .
+@prefix iso: <http://iso26000-kg.org/ontology#> .
+
+# Core Entities (with metadata corrections)
+esg:Semiconductors a esg:Industry ;
+    rdfs:label "Semiconductors" ;
+    rdfs:comment "Industry covered by SASB Semiconductors standards" .
+
+esg:SASBSemiconductors a esg:ReportingFramework ;
+    rdfs:label "SASB Semiconductors" ;
+    rdfs:comment "Reporting framework with concept alignments to external ontologies" .
+
+# Aligned Concepts (Eurofidai Mappings)
+esg:GrossGlobalScope1Emissions a esg:Metric ;
+    rdfs:label "Gross Global Scope 1 Emissions" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:CO2DIRECTSCOPE1 ;
+    esg:alignmentConfidence 1.0 ;
+    esg:unitCompatible true .
+
+esg:CO2DIRECTSCOPE1 a esg:EurofidaiVariable ;
+    rdfs:label "CO2DIRECTSCOPE1" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:Scope1EmissionsStrategy a esg:Metric ;
+    rdfs:label "Scope 1 Emissions Strategy" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:POLICY_EMISSIONS ;
+    esg:alignmentConfidence 0.88 ;
+    esg:unitCompatible true .
+
+esg:POLICY_EMISSIONS a esg:EurofidaiVariable ;
+    rdfs:label "POLICY_EMISSIONS" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:TotalEnergyConsumed a esg:Metric ;
+    rdfs:label "Total Energy Consumed" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:ENERGYUSETOTAL ;
+    esg:alignmentConfidence 1.0 ;
+    esg:unitCompatible true .
+
+esg:ENERGYUSETOTAL a esg:EurofidaiVariable ;
+    rdfs:label "ENERGYUSETOTAL" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:PercentageGridElectricity a esg:Metric ;
+    rdfs:label "Percentage Grid Electricity" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:ELECTRICITYPURCHASED ;
+    esg:alignmentConfidence 0.82 ;
+    esg:unitCompatible false .
+
+esg:ELECTRICITYPURCHASED a esg:EurofidaiVariable ;
+    rdfs:label "ELECTRICITYPURCHASED" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:PercentageRenewableEnergy a esg:Metric ;
+    rdfs:label "Percentage Renewable Energy" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:TRANALYTICRENEWENERGYUSE ;
+    esg:alignmentConfidence 0.92 ;
+    esg:unitCompatible true .
+
+esg:TRANALYTICRENEWENERGYUSE a esg:EurofidaiVariable ;
+    rdfs:label "TRANALYTICRENEWENERGYUSE" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:TotalWaterWithdrawn a esg:Metric ;
+    rdfs:label "Total Water Withdrawn" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:WATERWITHDRAWALTOTAL ;
+    esg:alignmentConfidence 1.0 ;
+    esg:unitCompatible true .
+
+esg:WATERWITHDRAWALTOTAL a esg:EurofidaiVariable ;
+    rdfs:label "WATERWITHDRAWALTOTAL" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:TotalWaterConsumed a esg:Metric ;
+    rdfs:label "Total Water Consumed" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:WATERWITHDRAWALTOTAL ;
+    esg:alignmentConfidence 0.75 ;
+    esg:unitCompatible true .
+
+esg:WATERWITHDRAWALTOTAL a esg:EurofidaiVariable ;
+    rdfs:label "WATERWITHDRAWALTOTAL" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:PercentageWaterWithdrawnHighStress a esg:Metric ;
+    rdfs:label "Percentage Water Withdrawn High Stress" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:WATER_USE_PAI_M10 ;
+    esg:alignmentConfidence 0.86 ;
+    esg:unitCompatible true .
+
+esg:WATER_USE_PAI_M10 a esg:EurofidaiVariable ;
+    rdfs:label "WATER_USE_PAI_M10" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:PercentageWaterConsumedHighStress a esg:Metric ;
+    rdfs:label "Percentage Water Consumed High Stress" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:WATER_USE_PAI_M10 ;
+    esg:alignmentConfidence 0.83 ;
+    esg:unitCompatible true .
+
+esg:WATER_USE_PAI_M10 a esg:EurofidaiVariable ;
+    rdfs:label "WATER_USE_PAI_M10" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:WorkforceHealthAndSafety a esg:Metric ;
+    rdfs:label "Workforce Health & Safety" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:EMPLOYEE_HEALTH_SAFETY_POLICY ;
+    esg:alignmentConfidence 0.9 ;
+    esg:unitCompatible true .
+
+esg:EMPLOYEE_HEALTH_SAFETY_POLICY a esg:EurofidaiVariable ;
+    rdfs:label "EMPLOYEE_HEALTH_SAFETY_POLICY" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:RecruitingAndManagingGlobalSkilledWorkforce a esg:Metric ;
+    rdfs:label "Recruiting & Managing Global Skilled Workforce" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:WOMENEMPLOYEES ;
+    esg:alignmentConfidence 0.72 ;
+    esg:unitCompatible false .
+
+esg:WOMENEMPLOYEES a esg:EurofidaiVariable ;
+    rdfs:label "WOMENEMPLOYEES" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:ProductLifecycleManagement a esg:Metric ;
+    rdfs:label "Product Lifecycle Management" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:ECO_DESIGN_PRODUCTS ;
+    esg:alignmentConfidence 0.81 ;
+    esg:unitCompatible true .
+
+esg:ECO_DESIGN_PRODUCTS a esg:EurofidaiVariable ;
+    rdfs:label "ECO_DESIGN_PRODUCTS" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:MaterialsSourcing a esg:Metric ;
+    rdfs:label "Materials Sourcing" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:ENV_SUPPLY_CHAIN_MGT ;
+    esg:alignmentConfidence 0.87 ;
+    esg:unitCompatible true .
+
+esg:ENV_SUPPLY_CHAIN_MGT a esg:EurofidaiVariable ;
+    rdfs:label "ENV_SUPPLY_CHAIN_MGT" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:WasteManagementCategory a esg:Metric ;
+    rdfs:label "Waste Management (Category)" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:WASTETOTAL ;
+    esg:alignmentConfidence 0.85 ;
+    esg:unitCompatible true .
+
+esg:WASTETOTAL a esg:EurofidaiVariable ;
+    rdfs:label "WASTETOTAL" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:HazardousWasteGenerated a esg:Metric ;
+    rdfs:label "Hazardous Waste Generated" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:HAZARDOUSWASTE ;
+    esg:alignmentConfidence 0.95 ;
+    esg:unitCompatible true .
+
+esg:HAZARDOUSWASTE a esg:EurofidaiVariable ;
+    rdfs:label "HAZARDOUSWASTE" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:WasteRecyclingRate a esg:Metric ;
+    rdfs:label "Waste Recycling Rate" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:ANALYTICWASTERECYCLINGRATIO ;
+    esg:alignmentConfidence 0.93 ;
+    esg:unitCompatible true .
+
+esg:ANALYTICWASTERECYCLINGRATIO a esg:EurofidaiVariable ;
+    rdfs:label "ANALYTICWASTERECYCLINGRATIO" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:EmployeeSafetyIncidents a esg:Metric ;
+    rdfs:label "Employee Safety Incidents" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:TIRTOTAL ;
+    esg:alignmentConfidence 0.88 ;
+    esg:unitCompatible true .
+
+esg:TIRTOTAL a esg:EurofidaiVariable ;
+    rdfs:label "TIRTOTAL" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:EmployeeFatalities a esg:Metric ;
+    rdfs:label "Employee Fatalities" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:EMPLOYEEFATALITIES ;
+    esg:alignmentConfidence 1.0 ;
+    esg:unitCompatible true .
+
+esg:EMPLOYEEFATALITIES a esg:EurofidaiVariable ;
+    rdfs:label "EMPLOYEEFATALITIES" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:GenderDiversityinWorkforce a esg:Metric ;
+    rdfs:label "Gender Diversity in Workforce" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:WOMENEMPLOYEES ;
+    esg:alignmentConfidence 0.91 ;
+    esg:unitCompatible true .
+
+esg:WOMENEMPLOYEES a esg:EurofidaiVariable ;
+    rdfs:label "WOMENEMPLOYEES" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+# Metrics with Eurofidai Alignments
+esg:GrossGlobalScope1Emissions a esg:Metric ;
+    rdfs:label "Gross Global Scope 1 Emissions" ;
+    rdfs:comment "Gross global Scope 1 emissions" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" ;
+    esg:alignedWithEurofidai esg:CO2DIRECTSCOPE1 ;
+    esg:alignmentConfidence 1.0 .
+
+esg:PerfluorinatedCompoundsEmissions a esg:Metric ;
+    rdfs:label "Perfluorinated Compounds Emissions" ;
+    rdfs:comment "Amount of total emissions from perfluorinated compounds" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" .
+
+esg:Scope1EmissionsStrategy a esg:Metric ;
+    rdfs:label "Scope 1 Emissions Strategy" ;
+    rdfs:comment "Discussion of long- and short-term strategy or plan to manage Scope 1 emissions, emissions reduction targets, and an analysis of performance against those targets" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Discussion" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" ;
+    esg:alignedWithEurofidai esg:POLICY_EMISSIONS ;
+    esg:alignmentConfidence 0.88 .
+
+esg:TotalEnergyConsumed a esg:Metric ;
+    rdfs:label "Total Energy Consumed" ;
+    rdfs:comment "Total energy consumed" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" ;
+    esg:alignedWithEurofidai esg:ENERGYUSETOTAL ;
+    esg:alignmentConfidence 1.0 .
+
+esg:PercentageGridElectricity a esg:Metric ;
+    rdfs:label "Percentage Grid Electricity" ;
+    rdfs:comment "Percentage grid electricity" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" ;
+    esg:alignedWithEurofidai esg:ELECTRICITYPURCHASED ;
+    esg:alignmentConfidence 0.82 .
+
+esg:PercentageRenewableEnergy a esg:Metric ;
+    rdfs:label "Percentage Renewable Energy" ;
+    rdfs:comment "Percentage renewable" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" ;
+    esg:alignedWithEurofidai esg:TRANALYTICRENEWENERGYUSE ;
+    esg:alignmentConfidence 0.92 .
+
+esg:TotalWaterWithdrawn a esg:Metric ;
+    rdfs:label "Total Water Withdrawn" ;
+    rdfs:comment "Total water withdrawn" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" ;
+    esg:alignedWithEurofidai esg:WATERWITHDRAWALTOTAL ;
+    esg:alignmentConfidence 1.0 .
+
+esg:TotalWaterConsumed a esg:Metric ;
+    rdfs:label "Total Water Consumed" ;
+    rdfs:comment "Total water consumed" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" ;
+    esg:alignedWithEurofidai esg:WATERWITHDRAWALTOTAL ;
+    esg:alignmentConfidence 0.75 .
+
+esg:PercentageWaterWithdrawnHighStress a esg:Metric ;
+    rdfs:label "Percentage Water Withdrawn High Stress" ;
+    rdfs:comment "Percentage water withdrawn in high stress regions" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" ;
+    esg:alignedWithEurofidai esg:WATER_USE_PAI_M10 ;
+    esg:alignmentConfidence 0.86 .
+
+esg:PercentageWaterConsumedHighStress a esg:Metric ;
+    rdfs:label "Percentage Water Consumed High Stress" ;
+    rdfs:comment "Percentage water consumed in high stress regions" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" ;
+    esg:alignedWithEurofidai esg:WATER_USE_PAI_M10 ;
+    esg:alignmentConfidence 0.83 .
+
+esg:HazardousWasteAmount a esg:Metric ;
+    rdfs:label "Hazardous Waste Amount" ;
+    rdfs:comment "Amount of hazardous waste from manufacturing" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" .
+
+esg:PercentageHazardousWasteRecycled a esg:Metric ;
+    rdfs:label "Percentage Hazardous Waste Recycled" ;
+    rdfs:comment "Percentage recycled" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" .
+
+esg:WorkforceHealthHazardEfforts a esg:Metric ;
+    rdfs:label "Workforce Health Hazard Efforts" ;
+    rdfs:comment "Description of efforts to assess, monitor, and reduce exposure of workforce to human health hazards" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Discussion" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" .
+
+esg:HealthSafetyLegalLosses a esg:Metric ;
+    rdfs:label "Health Safety Legal Losses" ;
+    rdfs:comment "Total amount of monetary losses as a result of legal proceedings associated with employee health and safety violations" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" .
+
+esg:WorkVisaEmployeePercentage a esg:Metric ;
+    rdfs:label "Work Visa Employee Percentage" ;
+    rdfs:comment "Percentage of employees that require a work visa" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" .
+
+esg:DeclarableSubstancesRevenuePercentage a esg:Metric ;
+    rdfs:label "Declarable Substances Revenue Percentage" ;
+    rdfs:comment "Percentage of products by revenue that contain IEC 62474 declarable substances" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" .
+
+esg:ServerProcessorEnergyEfficiency a esg:Metric ;
+    rdfs:label "Server Processor Energy Efficiency" ;
+    rdfs:comment "Processor energy efficiency at a system-level for servers" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" .
+
+esg:DesktopProcessorEnergyEfficiency a esg:Metric ;
+    rdfs:label "Desktop Processor Energy Efficiency" ;
+    rdfs:comment "Processor energy efficiency at a system-level for desktops" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" .
+
+esg:LaptopProcessorEnergyEfficiency a esg:Metric ;
+    rdfs:label "Laptop Processor Energy Efficiency" ;
+    rdfs:comment "Processor energy efficiency at a system-level for laptops" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" .
+
+esg:CriticalMaterialsRiskManagement a esg:Metric ;
+    rdfs:label "Critical Materials Risk Management" ;
+    rdfs:comment "Description of the management of risks associated with the use of critical materials" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Discussion" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" .
+
+esg:AntiCompetitiveLegalLosses a esg:Metric ;
+    rdfs:label "Anti-Competitive Legal Losses" ;
+    rdfs:comment "Total amount of monetary losses as a result of legal proceedings associated with anti-competitive behaviour regulations" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Semiconductors" ;
+    esg:hasReportingFramework "SASB Semiconductors" .
+
+# Alignment Summary
+esg:AlignmentSummary a esg:AlignmentMetadata ;
+    esg:totalConceptsProcessed 30 ;
+    esg:totalConceptsMapped 19 ;
+    esg:alignmentAccuracy 90.5 ;
+    esg:externalOntologiesUsed "Eurofidai Dataset" ;
+    esg:alignmentTimestamp "2025-05-30T10:05:14Z" .
+
