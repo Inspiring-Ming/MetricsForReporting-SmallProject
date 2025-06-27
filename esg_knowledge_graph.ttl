@@ -1,0 +1,582 @@
+@prefix esg: <http://example.org/esg#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+esg:commercialbanks a esg:Industry ;
+    rdfs:label "Commercial Banks" ;
+    esg:reportsUsing esg:SASBCommercialBanks .
+
+esg:semiconductors a esg:Industry ;
+    rdfs:label "Semiconductors" ;
+    esg:reportsUsing esg:SASBSemiconductors .
+
+esg:AccountHoldersAffected a esg:Metric ;
+    rdfs:label "Account Holders Affected" ;
+    esg:hasCode "FN-CB-230a.1" ;
+    esg:hasDescription "Number of account holders affected" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Number" .
+
+esg:AntiCompetitiveLegalLosses a esg:Metric ;
+    rdfs:label "Anti-Competitive Legal Losses" ;
+    esg:hasCode "TC-SC-520a.1" ;
+    esg:hasDescription "Total amount of monetary losses as a result of legal proceedings associated with anti-competitive behaviour regulations" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Presentation currency" .
+
+esg:BusinessEthics a esg:Category ;
+    rdfs:label "Business Ethics" ;
+    esg:consistsOf esg:LegalProceedingsMonetaryLosses,
+        esg:WhistleblowerPoliciesDescription .
+
+esg:CO2DIRECTSCOPE1 a esg:DatasetVariable ;
+    rdfs:label "CO2DIRECTSCOPE1" ;
+    esg:alignmentReason "Perfect match - both measure direct greenhouse gas emissions (Scope 1) at global level" ;
+    esg:hasConfidenceScore 1e+00 ;
+    esg:isUnitCompatible true ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:CriticalMaterialsRiskManagement a esg:Metric ;
+    rdfs:label "Critical Materials Risk Management" ;
+    esg:hasCode "TC-SC-440a.1" ;
+    esg:hasDescription "Description of the management of risks associated with the use of critical materials" ;
+    esg:hasType "Discussion" ;
+    esg:hasUnit "n/a" .
+
+esg:DataSecurity a esg:Category ;
+    rdfs:label "Data Security" ;
+    esg:consistsOf esg:AccountHoldersAffected,
+        esg:DataSecurityRiskApproach,
+        esg:NumberDataBreaches,
+        esg:PercentagePersonalDataBreaches .
+
+esg:DataSecurityRiskApproach a esg:Metric ;
+    rdfs:label "Data Security Risk Approach" ;
+    esg:hasCode "FN-CB-230a.2" ;
+    esg:hasDescription "Description of approach to identifying and addressing data security risks" ;
+    esg:hasType "Discussion" ;
+    esg:hasUnit "n/a" .
+
+esg:DeclarableSubstancesRevenuePercentage a esg:Metric ;
+    rdfs:label "Declarable Substances Revenue Percentage" ;
+    esg:hasCode "TC-SC-410a.1" ;
+    esg:hasDescription "Percentage of products by revenue that contain IEC 62474 declarable substances" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:isCalculatedBy esg:DeclarableSubstancesRevenueRateModel .
+
+esg:DeclarableSubstancesRevenueRateModel a esg:Model ;
+    rdfs:label "Declarable Substances Revenue Rate Model" ;
+    esg:hasCalculationType "revenue_percentage" ;
+    esg:hasDescription "Revenue from electrical, electronic and related technology products sold that contain a declarable substance(s) divided by total revenue from electrical, electronic and related technology products sold" ;
+    esg:hasFormula "(specific_revenue / total_revenue) × 100" ;
+    esg:hasMathematicalExpression "Revenue_Percentage = (Specific_Product_Revenue / Total_Revenue) × 100%" ;
+    esg:requiresInputFrom esg:specificrevenue,
+        esg:totalrevenue .
+
+esg:DesktopProcessorEnergyEfficiency a esg:Metric ;
+    rdfs:label "Desktop Processor Energy Efficiency" ;
+    esg:hasCode "TC-SC-410a.2" ;
+    esg:hasDescription "Processor energy efficiency at a system-level for desktops" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Various, by product category" .
+
+esg:ELECTRICITYPURCHASED a esg:DatasetVariable ;
+    rdfs:label "ELECTRICITYPURCHASED" ;
+    esg:alignmentReason "Moderate match - related concepts but different units (percentage vs absolute purchased electricity)" ;
+    esg:hasConfidenceScore 8.2e-01 ;
+    esg:isUnitCompatible false ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:ENERGYUSETOTAL a esg:DatasetVariable ;
+    rdfs:label "ENERGYUSETOTAL" ;
+    esg:alignmentReason "Perfect match - identical concept measuring total energy consumption" ;
+    esg:hasConfidenceScore 1e+00 ;
+    esg:isUnitCompatible true ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:ESGCreditAnalysisApproach a esg:Metric ;
+    rdfs:label "ESG Credit Analysis Approach" ;
+    esg:hasCode "FN-CB-410a.2" ;
+    esg:hasDescription "Description of approach to incorporation of environmental, social and governance (ESG) factors in credit analysis" ;
+    esg:hasType "Discussion" ;
+    esg:hasUnit "n/a" .
+
+esg:EnergyManagementinManufacturing a esg:Category ;
+    rdfs:label "Energy Management in Manufacturing" ;
+    esg:consistsOf esg:PercentageGridElectricity,
+        esg:PercentageRenewableEnergy,
+        esg:TotalEnergyConsumed .
+
+esg:FinancedEmissions a esg:Category ;
+    rdfs:label "Financed Emissions" ;
+    esg:consistsOf esg:FinancedEmissionsCoveragePercentage,
+        esg:FinancedEmissionsMethodology,
+        esg:GrossExposureByIndustry,
+        esg:Scope1FinancedEmissions,
+        esg:Scope2FinancedEmissions,
+        esg:Scope3FinancedEmissions .
+
+esg:FinancedEmissionsCoveragePercentage a esg:Metric ;
+    rdfs:label "Financed Emissions Coverage Percentage" ;
+    esg:hasCode "FN-CB-410b.3" ;
+    esg:hasDescription "Percentage of gross exposure included in the financed emissions calculation" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:isCalculatedBy esg:FinancedEmissionsCoverageRate .
+
+esg:FinancedEmissionsCoverageRate a esg:Model ;
+    rdfs:label "Financed Emissions Coverage Rate" ;
+    esg:hasDescription "Percentage of total gross exposure included in financed emissions calculation" .
+
+esg:FinancedEmissionsMethodology a esg:Metric ;
+    rdfs:label "Financed Emissions Methodology" ;
+    esg:hasCode "FN-CB-410b.4" ;
+    esg:hasDescription "Description of the methodology used to calculate financed emissions" ;
+    esg:hasType "Discussion" ;
+    esg:hasUnit "n/a" .
+
+esg:FinancialInclusionCapacityBuilding a esg:Category ;
+    rdfs:label "Financial Inclusion & Capacity Building" ;
+    esg:consistsOf esg:FinancialLiteracyParticipants,
+        esg:NoCostCheckingAccounts,
+        esg:PastDueLoanAmount,
+        esg:PastDueLoanCount,
+        esg:SmallBusinessLoanAmount,
+        esg:SmallBusinessLoanCount .
+
+esg:FinancialLiteracyParticipants a esg:Metric ;
+    rdfs:label "Financial Literacy Participants" ;
+    esg:hasCode "FN-CB-240a.4" ;
+    esg:hasDescription "Number of participants in financial literacy initiatives for unbanked, underbanked, or underserved customers" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Number" .
+
+esg:GSIBScoreByCategory a esg:Metric ;
+    rdfs:label "G-SIB Score By Category" ;
+    esg:hasCode "FN-CB-550a.1" ;
+    esg:hasDescription "Global Systemically Important Bank (G-SIB) score, by category" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Basis points (bps)" .
+
+esg:GreenhouseGasEmissions a esg:Category ;
+    rdfs:label "Greenhouse Gas Emissions" ;
+    esg:consistsOf esg:GrossGlobalScope1Emissions,
+        esg:PerfluorinatedCompoundsEmissions,
+        esg:Scope1EmissionsStrategy .
+
+esg:GridElectricityRateModel a esg:Model ;
+    rdfs:label "Grid Electricity Rate Model" ;
+    esg:hasCalculationType "percentage_ratio" ;
+    esg:hasDescription "Percentage of energy consumed that was supplied from grid electricity calculated as purchased grid electricity consumption divided by total energy consumption" ;
+    esg:hasFormula "(grid_electricity / total_energy) × 100" ;
+    esg:hasMathematicalExpression "Percentage = (Grid_Electricity_Consumption / Total_Energy_Consumption) × 100%" ;
+    esg:requiresInputFrom esg:gridelectricity,
+        esg:totalenergy .
+
+esg:GrossExposureByIndustry a esg:Metric ;
+    rdfs:label "Gross Exposure By Industry" ;
+    esg:hasCode "FN-CB-410b.2" ;
+    esg:hasDescription "Gross exposure for each industry by asset class" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Presentation currency" .
+
+esg:GrossGlobalScope1Emissions a esg:Metric ;
+    rdfs:label "Gross Global Scope 1 Emissions" ;
+    esg:hasCode "TC-SC-110a.1" ;
+    esg:hasDescription "Gross global Scope 1 emissions" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Metric tonnes (t) CO₂-e" ;
+    esg:obtainedFrom esg:CO2DIRECTSCOPE1 .
+
+esg:HazardousWasteAmount a esg:Metric ;
+    rdfs:label "Hazardous Waste Amount" ;
+    esg:hasCode "TC-SC-150a.1" ;
+    esg:hasDescription "Amount of hazardous waste from manufacturing" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Metric tonnes (t)" .
+
+esg:HazardousWasteRecyclingRateModel a esg:Model ;
+    rdfs:label "Hazardous Waste Recycling Rate Model" ;
+    esg:hasCalculationType "percentage_ratio" ;
+    esg:hasDescription "Percentage of hazardous waste recycled calculated as the weight of hazardous waste generated from manufacturing operations that was recycled, divided by the total weight of all hazardous waste generated" ;
+    esg:hasFormula "(recycled_hazardous_waste / total_hazardous_waste) × 100" ;
+    esg:hasMathematicalExpression "Percentage = (Recycled_Hazardous_Waste / Total_Hazardous_Waste_Generated) × 100%" ;
+    esg:requiresInputFrom esg:recycledhazardouswaste,
+        esg:totalhazardouswaste .
+
+esg:HealthSafetyLegalLosses a esg:Metric ;
+    rdfs:label "Health Safety Legal Losses" ;
+    esg:hasCode "TC-SC-320a.2" ;
+    esg:hasDescription "Total amount of monetary losses as a result of legal proceedings associated with employee health and safety violations" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Presentation currency" .
+
+esg:HighStressWaterConsumptionRateModel a esg:Model ;
+    rdfs:label "High Stress Water Consumption Rate Model" ;
+    esg:hasDescription "Water consumed in locations with High or Extremely High Baseline Water Stress as a percentage of the total water consumed" .
+
+esg:HighStressWaterWithdrawalRateModel a esg:Model ;
+    rdfs:label "High Stress Water Withdrawal Rate Model" ;
+    esg:hasDescription "Water withdrawn in locations with High or Extremely High Baseline Water Stress as a percentage of the total water withdrawn" .
+
+<http://example.org/esg#IncorporationofEnvironmental,Social,andGovernanceFactorsinCreditAnalysis> a esg:Category ;
+    rdfs:label "Incorporation of Environmental, Social, and Governance Factors in Credit Analysis" ;
+    esg:consistsOf esg:ESGCreditAnalysisApproach .
+
+esg:IntellectualPropertyProtectionCompetitiveBehaviour a esg:Category ;
+    rdfs:label "Intellectual Property Protection & Competitive Behaviour" ;
+    esg:consistsOf esg:AntiCompetitiveLegalLosses .
+
+esg:LaptopProcessorEnergyEfficiency a esg:Metric ;
+    rdfs:label "Laptop Processor Energy Efficiency" ;
+    esg:hasCode "TC-SC-410a.2" ;
+    esg:hasDescription "Processor energy efficiency at a system-level for laptops" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Various, by product category" .
+
+esg:LegalProceedingsMonetaryLosses a esg:Metric ;
+    rdfs:label "Legal Proceedings Monetary Losses" ;
+    esg:hasCode "FN-CB-510a.1" ;
+    esg:hasDescription "Total amount of monetary losses as a result of legal proceedings associated with fraud, insider trading, antitrust, anti-competitive behaviour, market manipulation, malpractice, or other related financial industry laws or regulations" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Presentation currency" .
+
+esg:MaterialsSourcing a esg:Category ;
+    rdfs:label "Materials Sourcing" ;
+    esg:consistsOf esg:CriticalMaterialsRiskManagement .
+
+esg:NoCostCheckingAccounts a esg:Metric ;
+    rdfs:label "No Cost Checking Accounts" ;
+    esg:hasCode "FN-CB-240a.3" ;
+    esg:hasDescription "Number of no-cost retail checking accounts provided to previously unbanked or underbanked customers" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Number" .
+
+esg:NumberDataBreaches a esg:Metric ;
+    rdfs:label "Number Data Breaches" ;
+    esg:hasCode "FN-CB-230a.1" ;
+    esg:hasDescription "Number of data breaches" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Number" .
+
+esg:POLICYEMISSIONS a esg:DatasetVariable ;
+    rdfs:label "POLICY_EMISSIONS" ;
+    esg:alignmentReason "Strong conceptual match - both address emissions management policies and strategies (qualitative)" ;
+    esg:hasConfidenceScore 8.8e-01 ;
+    esg:isUnitCompatible true ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:PastDueLoanAmount a esg:Metric ;
+    rdfs:label "Past Due Loan Amount" ;
+    esg:hasCode "FN-CB-240a.2" ;
+    esg:hasDescription "Amount of past due and nonaccrual loans or loans subject to forbearance that qualify for programmes designed to promote small business and community development" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Presentation currency" .
+
+esg:PastDueLoanCount a esg:Metric ;
+    rdfs:label "Past Due Loan Count" ;
+    esg:hasCode "FN-CB-240a.2" ;
+    esg:hasDescription "Number of past due and nonaccrual loans or loans subject to forbearance that qualify for programmes designed to promote small business and community development" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Number" .
+
+esg:PercentageGridElectricity a esg:Metric ;
+    rdfs:label "Percentage Grid Electricity" ;
+    esg:hasCode "TC-SC-130a.1" ;
+    esg:hasDescription "Percentage grid electricity" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:isCalculatedBy esg:GridElectricityRateModel ;
+    esg:obtainedFrom esg:ELECTRICITYPURCHASED .
+
+esg:PercentageHazardousWasteRecycled a esg:Metric ;
+    rdfs:label "Percentage Hazardous Waste Recycled" ;
+    esg:hasCode "TC-SC-150a.1" ;
+    esg:hasDescription "Percentage recycled" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:isCalculatedBy esg:HazardousWasteRecyclingRateModel .
+
+esg:PercentagePersonalDataBreaches a esg:Metric ;
+    rdfs:label "Percentage Personal Data Breaches" ;
+    esg:hasCode "FN-CB-230a.1" ;
+    esg:hasDescription "Percentage that are personal data breaches" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:isCalculatedBy esg:PersonalDataBreachRate .
+
+esg:PercentageRenewableEnergy a esg:Metric ;
+    rdfs:label "Percentage Renewable Energy" ;
+    esg:hasCode "TC-SC-130a.1" ;
+    esg:hasDescription "Percentage renewable" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:isCalculatedBy esg:RenewableEnergyRateModel ;
+    esg:obtainedFrom esg:TRANALYTICRENEWENERGYUSE .
+
+esg:PercentageWaterConsumedHighStress a esg:Metric ;
+    rdfs:label "Percentage Water Consumed High Stress" ;
+    esg:hasCode "TC-SC-140a.1" ;
+    esg:hasDescription "Percentage water consumed in high stress regions" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:isCalculatedBy esg:HighStressWaterConsumptionRateModel ;
+    esg:obtainedFrom esg:WATERUSEPAIM10 .
+
+esg:PercentageWaterWithdrawnHighStress a esg:Metric ;
+    rdfs:label "Percentage Water Withdrawn High Stress" ;
+    esg:hasCode "TC-SC-140a.1" ;
+    esg:hasDescription "Percentage water withdrawn in high stress regions" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:isCalculatedBy esg:HighStressWaterWithdrawalRateModel ;
+    esg:obtainedFrom esg:WATERUSEPAIM10 .
+
+esg:PerfluorinatedCompoundsEmissions a esg:Metric ;
+    rdfs:label "Perfluorinated Compounds Emissions" ;
+    esg:hasCode "TC-SC-110a.1" ;
+    esg:hasDescription "Amount of total emissions from perfluorinated compounds" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Metric tonnes (t) CO₂-e" .
+
+esg:PersonalDataBreachRate a esg:Model ;
+    rdfs:label "Personal Data Breach Rate" ;
+    esg:hasDescription "Percentage of total data breaches that involve personal data" .
+
+esg:ProductLifecycleManagement a esg:Category ;
+    rdfs:label "Product Lifecycle Management" ;
+    esg:consistsOf esg:DeclarableSubstancesRevenuePercentage,
+        esg:DesktopProcessorEnergyEfficiency,
+        esg:LaptopProcessorEnergyEfficiency,
+        esg:ServerProcessorEnergyEfficiency .
+
+esg:RecruitingManagingaGlobalSkilledWorkforce a esg:Category ;
+    rdfs:label "Recruiting & Managing a Global & Skilled Workforce" ;
+    esg:consistsOf esg:WorkVisaEmployeePercentage .
+
+esg:RenewableEnergyRateModel a esg:Model ;
+    rdfs:label "Renewable Energy Rate Model" ;
+    esg:hasCalculationType "percentage_ratio" ;
+    esg:hasDescription "Percentage of energy consumed that was renewable energy calculated as renewable energy consumption divided by total energy consumption" ;
+    esg:hasFormula "(renewable_energy / total_energy) × 100" ;
+    esg:hasMathematicalExpression "Percentage = (Renewable_Energy_Consumption / Total_Energy_Consumption) × 100%" ;
+    esg:requiresInputFrom esg:renewableenergy,
+        esg:totalenergy .
+
+esg:SASBCommercialBanks a esg:ReportingFramework ;
+    rdfs:label "SASB Commercial Banks" ;
+    esg:includes esg:BusinessEthics,
+        esg:DataSecurity,
+        esg:FinancedEmissions,
+        esg:FinancialInclusionCapacityBuilding,
+        <http://example.org/esg#IncorporationofEnvironmental,Social,andGovernanceFactorsinCreditAnalysis>,
+        esg:SystemicRiskManagement ;
+    esg:sourceDocument "commercial-banks-standard_en-gb.pdf" .
+
+esg:SASBSemiconductors a esg:ReportingFramework ;
+    rdfs:label "SASB Semiconductors" ;
+    esg:includes esg:EnergyManagementinManufacturing,
+        esg:GreenhouseGasEmissions,
+        esg:IntellectualPropertyProtectionCompetitiveBehaviour,
+        esg:MaterialsSourcing,
+        esg:ProductLifecycleManagement,
+        esg:RecruitingManagingaGlobalSkilledWorkforce,
+        esg:WasteManagement,
+        esg:WaterManagement,
+        esg:WorkforceHealthSafety ;
+    esg:sourceDocument "semiconductors-standard_en-gb.pdf" .
+
+esg:Scope1EmissionsStrategy a esg:Metric ;
+    rdfs:label "Scope 1 Emissions Strategy" ;
+    esg:hasCode "TC-SC-110a.2" ;
+    esg:hasDescription "Discussion of long- and short-term strategy or plan to manage Scope 1 emissions, emissions reduction targets, and an analysis of performance against those targets" ;
+    esg:hasType "Discussion" ;
+    esg:hasUnit "n/a" ;
+    esg:obtainedFrom esg:POLICYEMISSIONS .
+
+esg:Scope1FinancedEmissions a esg:Metric ;
+    rdfs:label "Scope 1 Financed Emissions" ;
+    esg:hasCode "FN-CB-410b.1" ;
+    esg:hasDescription "Absolute gross financed emissions, disaggregated by Scope 1" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Metric tons (t) CO₂-e" .
+
+esg:Scope2FinancedEmissions a esg:Metric ;
+    rdfs:label "Scope 2 Financed Emissions" ;
+    esg:hasCode "FN-CB-410b.1" ;
+    esg:hasDescription "Absolute gross financed emissions, disaggregated by Scope 2" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Metric tons (t) CO₂-e" .
+
+esg:Scope3FinancedEmissions a esg:Metric ;
+    rdfs:label "Scope 3 Financed Emissions" ;
+    esg:hasCode "FN-CB-410b.1" ;
+    esg:hasDescription "Absolute gross financed emissions, disaggregated by Scope 3" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Metric tons (t) CO₂-e" .
+
+esg:ServerProcessorEnergyEfficiency a esg:Metric ;
+    rdfs:label "Server Processor Energy Efficiency" ;
+    esg:hasCode "TC-SC-410a.2" ;
+    esg:hasDescription "Processor energy efficiency at a system-level for servers" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Various, by product category" .
+
+esg:SmallBusinessLoanAmount a esg:Metric ;
+    rdfs:label "Small Business Loan Amount" ;
+    esg:hasCode "FN-CB-240a.1" ;
+    esg:hasDescription "Amount of loans outstanding that qualify for programmes designed to promote small business and community development" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Presentation currency" .
+
+esg:SmallBusinessLoanCount a esg:Metric ;
+    rdfs:label "Small Business Loan Count" ;
+    esg:hasCode "FN-CB-240a.1" ;
+    esg:hasDescription "Number of loans outstanding that qualify for programmes designed to promote small business and community development" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Number" .
+
+esg:StressTestIntegrationApproach a esg:Metric ;
+    rdfs:label "Stress Test Integration Approach" ;
+    esg:hasCode "FN-CB-550a.2" ;
+    esg:hasDescription "Description of approach to integrate results of mandatory and voluntary stress tests into capital adequacy planning, long-term corporate strategy, and other business activities" ;
+    esg:hasType "Discussion" ;
+    esg:hasUnit "n/a" .
+
+esg:SystemicRiskManagement a esg:Category ;
+    rdfs:label "Systemic Risk Management" ;
+    esg:consistsOf esg:GSIBScoreByCategory,
+        esg:StressTestIntegrationApproach .
+
+esg:TRANALYTICRENEWENERGYUSE a esg:DatasetVariable ;
+    rdfs:label "TRANALYTICRENEWENERGYUSE" ;
+    esg:alignmentReason "Strong match - both measure renewable energy usage as percentage/ratio" ;
+    esg:hasConfidenceScore 9.2e-01 ;
+    esg:isUnitCompatible true ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:TotalEnergyConsumed a esg:Metric ;
+    rdfs:label "Total Energy Consumed" ;
+    esg:hasCode "TC-SC-130a.1" ;
+    esg:hasDescription "Total energy consumed" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Gigajoules (GJ)" ;
+    esg:obtainedFrom esg:ENERGYUSETOTAL .
+
+esg:TotalWaterConsumed a esg:Metric ;
+    rdfs:label "Total Water Consumed" ;
+    esg:hasCode "TC-SC-140a.1" ;
+    esg:hasDescription "Total water consumed" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Thousand cubic metres (m³)" ;
+    esg:obtainedFrom esg:WATERWITHDRAWALTOTAL .
+
+esg:TotalWaterWithdrawn a esg:Metric ;
+    rdfs:label "Total Water Withdrawn" ;
+    esg:hasCode "TC-SC-140a.1" ;
+    esg:hasDescription "Total water withdrawn" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Thousand cubic metres (m³)" ;
+    esg:obtainedFrom esg:WATERWITHDRAWALTOTAL .
+
+esg:WasteManagement a esg:Category ;
+    rdfs:label "Waste Management" ;
+    esg:consistsOf esg:HazardousWasteAmount,
+        esg:PercentageHazardousWasteRecycled .
+
+esg:WaterManagement a esg:Category ;
+    rdfs:label "Water Management" ;
+    esg:consistsOf esg:PercentageWaterConsumedHighStress,
+        esg:PercentageWaterWithdrawnHighStress,
+        esg:TotalWaterConsumed,
+        esg:TotalWaterWithdrawn .
+
+esg:WhistleblowerPoliciesDescription a esg:Metric ;
+    rdfs:label "Whistleblower Policies Description" ;
+    esg:hasCode "FN-CB-510a.2" ;
+    esg:hasDescription "Description of whistleblower policies and procedures" ;
+    esg:hasType "Discussion" ;
+    esg:hasUnit "n/a" .
+
+esg:WorkVisaEmployeePercentage a esg:Metric ;
+    rdfs:label "Work Visa Employee Percentage" ;
+    esg:hasCode "TC-SC-330a.1" ;
+    esg:hasDescription "Percentage of employees that require a work visa" ;
+    esg:hasType "Quantitative" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:isCalculatedBy esg:WorkVisaRateModel .
+
+esg:WorkVisaRateModel a esg:Model ;
+    rdfs:label "Work Visa Rate Model" ;
+    esg:hasDescription "Number of employees requiring a work visa divided by the total number of the entity's employees at the close of the reporting period" .
+
+esg:WorkforceHealthHazardEfforts a esg:Metric ;
+    rdfs:label "Workforce Health Hazard Efforts" ;
+    esg:hasCode "TC-SC-320a.1" ;
+    esg:hasDescription "Description of efforts to assess, monitor, and reduce exposure of workforce to human health hazards" ;
+    esg:hasType "Discussion" ;
+    esg:hasUnit "n/a" .
+
+esg:WorkforceHealthSafety a esg:Category ;
+    rdfs:label "Workforce Health & Safety" ;
+    esg:consistsOf esg:HealthSafetyLegalLosses,
+        esg:WorkforceHealthHazardEfforts .
+
+esg:gridelectricity a esg:InputMetric ;
+    rdfs:label "Grid Electricity Consumption" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "GJ" .
+
+esg:recycledhazardouswaste a esg:InputMetric ;
+    rdfs:label "Recycled Hazardous Waste" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "tonnes" .
+
+esg:renewableenergy a esg:InputMetric ;
+    rdfs:label "Renewable Energy Consumption" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "GJ" .
+
+esg:specificrevenue a esg:InputMetric ;
+    rdfs:label "Specific Product Revenue" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "currency" .
+
+esg:totalhazardouswaste a esg:InputMetric ;
+    rdfs:label "Total Hazardous Waste Generated" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "tonnes" .
+
+esg:totalrevenue a esg:InputMetric ;
+    rdfs:label "Total Revenue" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "currency" .
+
+esg:WATERUSEPAIM10 a esg:DatasetVariable ;
+    rdfs:label "WATER_USE_PAI_M10" ;
+    esg:alignmentReason "Good match - similar to above but consumption vs withdrawal distinction",
+        "Strong match - both address water usage in stressed regions (PAI M10 relates to water stress)" ;
+    esg:hasConfidenceScore 8.3e-01,
+        8.6e-01 ;
+    esg:isUnitCompatible true ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:WATERWITHDRAWALTOTAL a esg:DatasetVariable ;
+    rdfs:label "WATERWITHDRAWALTOTAL" ;
+    esg:alignmentReason "Moderate match - conceptually related but consumption vs withdrawal are different measures",
+        "Perfect match - identical terminology and measurement scope" ;
+    esg:hasConfidenceScore 7.5e-01,
+        1e+00 ;
+    esg:isUnitCompatible true ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:totalenergy a esg:InputMetric ;
+    rdfs:label "Total Energy Consumption" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "GJ" .
+
+esg:EurofidaiDataset a esg:Datasource ;
+    rdfs:label "Eurofidai External Dataset" ;
+    esg:hasDescription "External ESG dataset containing company-level sustainability metrics" .
+
