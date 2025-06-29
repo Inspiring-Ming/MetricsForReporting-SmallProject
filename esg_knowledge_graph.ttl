@@ -10,6 +10,20 @@ esg:semiconductors a esg:Industry ;
     rdfs:label "Semiconductors" ;
     esg:reportsUsing esg:SASBSemiconductors .
 
+esg:ANALYTICESTIMATEDCO2TOTAL a esg:DatasetVariable ;
+    rdfs:label "ANALYTICESTIMATEDCO2TOTAL" ;
+    esg:alignmentReason "PFC emissions included in total CO2e but not separately tracked" ;
+    esg:hasConfidenceScore 60 ;
+    esg:isUnitCompatible "Yes - both measure CO2e in metric tonnes" ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:ANALYTICTOTALDONATIONS a esg:DatasetVariable ;
+    rdfs:label "ANALYTICTOTALDONATIONS" ;
+    esg:alignmentReason "EUROFIDAI tracks community donations which may include financial literacy programs" ;
+    esg:hasConfidenceScore 30 ;
+    esg:isUnitCompatible "No - count vs monetary percentage" ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
 esg:AccountHoldersAffected a esg:Metric ;
     rdfs:label "Account Holders Affected" ;
     esg:hasCode "FN-CB-230a.1" ;
@@ -24,24 +38,40 @@ esg:AntiCompetitiveLegalLosses a esg:Metric ;
     esg:hasType "Quantitative" ;
     esg:hasUnit "Presentation currency" .
 
+esg:BRIBERYANDCORRUPTIONPAIINSUFFICIENTACTIONS a esg:DatasetVariable ;
+    rdfs:label "BRIBERY_AND_CORRUPTION_PAI_INSUFFICIENT_ACTIONS" ;
+    esg:alignmentReason "EUROFIDAI tracks corruption issues which may lead to legal proceedings" ;
+    esg:hasConfidenceScore 30 ;
+    esg:isUnitCompatible "No - monetary vs Yes/No" ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
 esg:BusinessEthics a esg:Category ;
     rdfs:label "Business Ethics" ;
     esg:consistsOf esg:LegalProceedingsMonetaryLosses,
         esg:WhistleblowerPoliciesDescription .
 
-esg:CO2DIRECTSCOPE1 a esg:DatasetVariable ;
-    rdfs:label "CO2DIRECTSCOPE1" ;
-    esg:alignmentReason "Perfect match - both measure direct greenhouse gas emissions (Scope 1) at global level" ;
-    esg:hasConfidenceScore 1e+00 ;
-    esg:isUnitCompatible true ;
+esg:CO2INDIRECTSCOPE2 a esg:DatasetVariable ;
+    rdfs:label "CO2INDIRECTSCOPE2" ;
+    esg:alignmentReason "EUROFIDAI tracks indirect emissions but not financed emissions specifically" ;
+    esg:hasConfidenceScore 50 ;
+    esg:isUnitCompatible "Yes - both measure CO2e in metric tonnes" ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:CO2INDIRECTSCOPE3 a esg:DatasetVariable ;
+    rdfs:label "CO2INDIRECTSCOPE3" ;
+    esg:alignmentReason "EUROFIDAI tracks indirect emissions but not financed emissions specifically" ;
+    esg:hasConfidenceScore 50 ;
+    esg:isUnitCompatible "Yes - both measure CO2e in metric tonnes" ;
     esg:sourceFrom esg:EurofidaiDataset .
 
 esg:CriticalMaterialsRiskManagement a esg:Metric ;
     rdfs:label "Critical Materials Risk Management" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "TC-SC-440a.1" ;
     esg:hasDescription "Description of the management of risks associated with the use of critical materials" ;
     esg:hasType "Discussion" ;
-    esg:hasUnit "n/a" .
+    esg:hasUnit "n/a" ;
+    esg:obtainedFrom esg:ENVSUPPLYCHAINMGT .
 
 esg:DataSecurity a esg:Category ;
     rdfs:label "Data Security" ;
@@ -52,13 +82,16 @@ esg:DataSecurity a esg:Category ;
 
 esg:DataSecurityRiskApproach a esg:Metric ;
     rdfs:label "Data Security Risk Approach" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "FN-CB-230a.2" ;
     esg:hasDescription "Description of approach to identifying and addressing data security risks" ;
     esg:hasType "Discussion" ;
-    esg:hasUnit "n/a" .
+    esg:hasUnit "n/a" ;
+    esg:obtainedFrom esg:POLICYDATAPRIVACY .
 
 esg:DeclarableSubstancesRevenuePercentage a esg:Metric ;
     rdfs:label "Declarable Substances Revenue Percentage" ;
+    esg:hasCalculationMethod "calculation_model" ;
     esg:hasCode "TC-SC-410a.1" ;
     esg:hasDescription "Percentage of products by revenue that contain IEC 62474 declarable substances" ;
     esg:hasType "Quantitative" ;
@@ -81,26 +114,28 @@ esg:DesktopProcessorEnergyEfficiency a esg:Metric ;
     esg:hasType "Quantitative" ;
     esg:hasUnit "Various, by product category" .
 
-esg:ELECTRICITYPURCHASED a esg:DatasetVariable ;
-    rdfs:label "ELECTRICITYPURCHASED" ;
-    esg:alignmentReason "Moderate match - related concepts but different units (percentage vs absolute purchased electricity)" ;
-    esg:hasConfidenceScore 8.2e-01 ;
-    esg:isUnitCompatible false ;
+esg:EMPLOYEEFATALITIES a esg:DatasetVariable ;
+    rdfs:label "EMPLOYEEFATALITIES" ;
+    esg:alignmentReason "Both relate to safety outcomes but different measurement types" ;
+    esg:hasConfidenceScore 30 ;
+    esg:isUnitCompatible "No - monetary vs count metrics" ;
     esg:sourceFrom esg:EurofidaiDataset .
 
-esg:ENERGYUSETOTAL a esg:DatasetVariable ;
-    rdfs:label "ENERGYUSETOTAL" ;
-    esg:alignmentReason "Perfect match - identical concept measuring total energy consumption" ;
-    esg:hasConfidenceScore 1e+00 ;
-    esg:isUnitCompatible true ;
+esg:EMPLOYEEHEALTHSAFETYPOLICY a esg:DatasetVariable ;
+    rdfs:label "EMPLOYEE_HEALTH_SAFETY_POLICY" ;
+    esg:alignmentReason "EUROFIDAI tracks health safety policies related to hazard management" ;
+    esg:hasConfidenceScore 60 ;
+    esg:isUnitCompatible "Different - SASB discussion vs EUROFIDAI Yes/No" ;
     esg:sourceFrom esg:EurofidaiDataset .
 
 esg:ESGCreditAnalysisApproach a esg:Metric ;
     rdfs:label "ESG Credit Analysis Approach" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "FN-CB-410a.2" ;
     esg:hasDescription "Description of approach to incorporation of environmental, social and governance (ESG) factors in credit analysis" ;
     esg:hasType "Discussion" ;
-    esg:hasUnit "n/a" .
+    esg:hasUnit "n/a" ;
+    esg:obtainedFrom esg:ENVSUPPLYCHAINMGT .
 
 esg:EnergyManagementinManufacturing a esg:Category ;
     rdfs:label "Energy Management in Manufacturing" ;
@@ -119,6 +154,7 @@ esg:FinancedEmissions a esg:Category ;
 
 esg:FinancedEmissionsCoveragePercentage a esg:Metric ;
     rdfs:label "Financed Emissions Coverage Percentage" ;
+    esg:hasCalculationMethod "calculation_model" ;
     esg:hasCode "FN-CB-410b.3" ;
     esg:hasDescription "Percentage of gross exposure included in the financed emissions calculation" ;
     esg:hasType "Quantitative" ;
@@ -131,10 +167,12 @@ esg:FinancedEmissionsCoverageRate a esg:Model ;
 
 esg:FinancedEmissionsMethodology a esg:Metric ;
     rdfs:label "Financed Emissions Methodology" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "FN-CB-410b.4" ;
     esg:hasDescription "Description of the methodology used to calculate financed emissions" ;
     esg:hasType "Discussion" ;
-    esg:hasUnit "n/a" .
+    esg:hasUnit "n/a" ;
+    esg:obtainedFrom esg:TARGETSEMISSIONS .
 
 esg:FinancialInclusionCapacityBuilding a esg:Category ;
     rdfs:label "Financial Inclusion & Capacity Building" ;
@@ -147,10 +185,12 @@ esg:FinancialInclusionCapacityBuilding a esg:Category ;
 
 esg:FinancialLiteracyParticipants a esg:Metric ;
     rdfs:label "Financial Literacy Participants" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "FN-CB-240a.4" ;
     esg:hasDescription "Number of participants in financial literacy initiatives for unbanked, underbanked, or underserved customers" ;
     esg:hasType "Quantitative" ;
-    esg:hasUnit "Number" .
+    esg:hasUnit "Number" ;
+    esg:obtainedFrom esg:ANALYTICTOTALDONATIONS .
 
 esg:GSIBScoreByCategory a esg:Metric ;
     rdfs:label "G-SIB Score By Category" ;
@@ -183,18 +223,28 @@ esg:GrossExposureByIndustry a esg:Metric ;
 
 esg:GrossGlobalScope1Emissions a esg:Metric ;
     rdfs:label "Gross Global Scope 1 Emissions" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "TC-SC-110a.1" ;
     esg:hasDescription "Gross global Scope 1 emissions" ;
     esg:hasType "Quantitative" ;
     esg:hasUnit "Metric tonnes (t) CO₂-e" ;
     esg:obtainedFrom esg:CO2DIRECTSCOPE1 .
 
+esg:HAZARDOUSWASTE a esg:DatasetVariable ;
+    rdfs:label "HAZARDOUSWASTE" ;
+    esg:alignmentReason "Perfect match for hazardous waste quantity measurement" ;
+    esg:hasConfidenceScore 100 ;
+    esg:isUnitCompatible "Yes - both use metric tonnes" ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
 esg:HazardousWasteAmount a esg:Metric ;
     rdfs:label "Hazardous Waste Amount" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "TC-SC-150a.1" ;
     esg:hasDescription "Amount of hazardous waste from manufacturing" ;
     esg:hasType "Quantitative" ;
-    esg:hasUnit "Metric tonnes (t)" .
+    esg:hasUnit "Metric tonnes (t)" ;
+    esg:obtainedFrom esg:HAZARDOUSWASTE .
 
 esg:HazardousWasteRecyclingRateModel a esg:Model ;
     rdfs:label "Hazardous Waste Recycling Rate Model" ;
@@ -207,10 +257,12 @@ esg:HazardousWasteRecyclingRateModel a esg:Model ;
 
 esg:HealthSafetyLegalLosses a esg:Metric ;
     rdfs:label "Health Safety Legal Losses" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "TC-SC-320a.2" ;
     esg:hasDescription "Total amount of monetary losses as a result of legal proceedings associated with employee health and safety violations" ;
     esg:hasType "Quantitative" ;
-    esg:hasUnit "Presentation currency" .
+    esg:hasUnit "Presentation currency" ;
+    esg:obtainedFrom esg:EMPLOYEEFATALITIES .
 
 esg:HighStressWaterConsumptionRateModel a esg:Model ;
     rdfs:label "High Stress Water Consumption Rate Model" ;
@@ -237,10 +289,12 @@ esg:LaptopProcessorEnergyEfficiency a esg:Metric ;
 
 esg:LegalProceedingsMonetaryLosses a esg:Metric ;
     rdfs:label "Legal Proceedings Monetary Losses" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "FN-CB-510a.1" ;
     esg:hasDescription "Total amount of monetary losses as a result of legal proceedings associated with fraud, insider trading, antitrust, anti-competitive behaviour, market manipulation, malpractice, or other related financial industry laws or regulations" ;
     esg:hasType "Quantitative" ;
-    esg:hasUnit "Presentation currency" .
+    esg:hasUnit "Presentation currency" ;
+    esg:obtainedFrom esg:BRIBERYANDCORRUPTIONPAIINSUFFICIENTACTIONS .
 
 esg:MaterialsSourcing a esg:Category ;
     rdfs:label "Materials Sourcing" ;
@@ -260,11 +314,11 @@ esg:NumberDataBreaches a esg:Metric ;
     esg:hasType "Quantitative" ;
     esg:hasUnit "Number" .
 
-esg:POLICYEMISSIONS a esg:DatasetVariable ;
-    rdfs:label "POLICY_EMISSIONS" ;
-    esg:alignmentReason "Strong conceptual match - both address emissions management policies and strategies (qualitative)" ;
-    esg:hasConfidenceScore 8.8e-01 ;
-    esg:isUnitCompatible true ;
+esg:POLICYDATAPRIVACY a esg:DatasetVariable ;
+    rdfs:label "POLICY_DATA_PRIVACY" ;
+    esg:alignmentReason "EUROFIDAI tracks data privacy policies which relates to security approach" ;
+    esg:hasConfidenceScore 60 ;
+    esg:isUnitCompatible "Different - SASB discussion vs EUROFIDAI Yes/No" ;
     esg:sourceFrom esg:EurofidaiDataset .
 
 esg:PastDueLoanAmount a esg:Metric ;
@@ -283,15 +337,16 @@ esg:PastDueLoanCount a esg:Metric ;
 
 esg:PercentageGridElectricity a esg:Metric ;
     rdfs:label "Percentage Grid Electricity" ;
+    esg:hasCalculationMethod "calculation_model" ;
     esg:hasCode "TC-SC-130a.1" ;
     esg:hasDescription "Percentage grid electricity" ;
     esg:hasType "Quantitative" ;
     esg:hasUnit "Percentage (%)" ;
-    esg:isCalculatedBy esg:GridElectricityRateModel ;
-    esg:obtainedFrom esg:ELECTRICITYPURCHASED .
+    esg:isCalculatedBy esg:GridElectricityRateModel .
 
 esg:PercentageHazardousWasteRecycled a esg:Metric ;
     rdfs:label "Percentage Hazardous Waste Recycled" ;
+    esg:hasCalculationMethod "calculation_model" ;
     esg:hasCode "TC-SC-150a.1" ;
     esg:hasDescription "Percentage recycled" ;
     esg:hasType "Quantitative" ;
@@ -300,6 +355,7 @@ esg:PercentageHazardousWasteRecycled a esg:Metric ;
 
 esg:PercentagePersonalDataBreaches a esg:Metric ;
     rdfs:label "Percentage Personal Data Breaches" ;
+    esg:hasCalculationMethod "calculation_model" ;
     esg:hasCode "FN-CB-230a.1" ;
     esg:hasDescription "Percentage that are personal data breaches" ;
     esg:hasType "Quantitative" ;
@@ -308,37 +364,39 @@ esg:PercentagePersonalDataBreaches a esg:Metric ;
 
 esg:PercentageRenewableEnergy a esg:Metric ;
     rdfs:label "Percentage Renewable Energy" ;
+    esg:hasCalculationMethod "calculation_model" ;
     esg:hasCode "TC-SC-130a.1" ;
     esg:hasDescription "Percentage renewable" ;
     esg:hasType "Quantitative" ;
     esg:hasUnit "Percentage (%)" ;
-    esg:isCalculatedBy esg:RenewableEnergyRateModel ;
-    esg:obtainedFrom esg:TRANALYTICRENEWENERGYUSE .
+    esg:isCalculatedBy esg:RenewableEnergyRateModel .
 
 esg:PercentageWaterConsumedHighStress a esg:Metric ;
     rdfs:label "Percentage Water Consumed High Stress" ;
+    esg:hasCalculationMethod "calculation_model" ;
     esg:hasCode "TC-SC-140a.1" ;
     esg:hasDescription "Percentage water consumed in high stress regions" ;
     esg:hasType "Quantitative" ;
     esg:hasUnit "Percentage (%)" ;
-    esg:isCalculatedBy esg:HighStressWaterConsumptionRateModel ;
-    esg:obtainedFrom esg:WATERUSEPAIM10 .
+    esg:isCalculatedBy esg:HighStressWaterConsumptionRateModel .
 
 esg:PercentageWaterWithdrawnHighStress a esg:Metric ;
     rdfs:label "Percentage Water Withdrawn High Stress" ;
+    esg:hasCalculationMethod "calculation_model" ;
     esg:hasCode "TC-SC-140a.1" ;
     esg:hasDescription "Percentage water withdrawn in high stress regions" ;
     esg:hasType "Quantitative" ;
     esg:hasUnit "Percentage (%)" ;
-    esg:isCalculatedBy esg:HighStressWaterWithdrawalRateModel ;
-    esg:obtainedFrom esg:WATERUSEPAIM10 .
+    esg:isCalculatedBy esg:HighStressWaterWithdrawalRateModel .
 
 esg:PerfluorinatedCompoundsEmissions a esg:Metric ;
     rdfs:label "Perfluorinated Compounds Emissions" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "TC-SC-110a.1" ;
     esg:hasDescription "Amount of total emissions from perfluorinated compounds" ;
     esg:hasType "Quantitative" ;
-    esg:hasUnit "Metric tonnes (t) CO₂-e" .
+    esg:hasUnit "Metric tonnes (t) CO₂-e" ;
+    esg:obtainedFrom esg:ANALYTICESTIMATEDCO2TOTAL .
 
 esg:PersonalDataBreachRate a esg:Model ;
     rdfs:label "Personal Data Breach Rate" ;
@@ -389,32 +447,39 @@ esg:SASBSemiconductors a esg:ReportingFramework ;
 
 esg:Scope1EmissionsStrategy a esg:Metric ;
     rdfs:label "Scope 1 Emissions Strategy" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "TC-SC-110a.2" ;
     esg:hasDescription "Discussion of long- and short-term strategy or plan to manage Scope 1 emissions, emissions reduction targets, and an analysis of performance against those targets" ;
     esg:hasType "Discussion" ;
     esg:hasUnit "n/a" ;
-    esg:obtainedFrom esg:POLICYEMISSIONS .
+    esg:obtainedFrom esg:TARGETSEMISSIONS .
 
 esg:Scope1FinancedEmissions a esg:Metric ;
     rdfs:label "Scope 1 Financed Emissions" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "FN-CB-410b.1" ;
     esg:hasDescription "Absolute gross financed emissions, disaggregated by Scope 1" ;
     esg:hasType "Quantitative" ;
-    esg:hasUnit "Metric tons (t) CO₂-e" .
+    esg:hasUnit "Metric tons (t) CO₂-e" ;
+    esg:obtainedFrom esg:CO2DIRECTSCOPE1 .
 
 esg:Scope2FinancedEmissions a esg:Metric ;
     rdfs:label "Scope 2 Financed Emissions" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "FN-CB-410b.1" ;
     esg:hasDescription "Absolute gross financed emissions, disaggregated by Scope 2" ;
     esg:hasType "Quantitative" ;
-    esg:hasUnit "Metric tons (t) CO₂-e" .
+    esg:hasUnit "Metric tons (t) CO₂-e" ;
+    esg:obtainedFrom esg:CO2INDIRECTSCOPE2 .
 
 esg:Scope3FinancedEmissions a esg:Metric ;
     rdfs:label "Scope 3 Financed Emissions" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "FN-CB-410b.1" ;
     esg:hasDescription "Absolute gross financed emissions, disaggregated by Scope 3" ;
     esg:hasType "Quantitative" ;
-    esg:hasUnit "Metric tons (t) CO₂-e" .
+    esg:hasUnit "Metric tons (t) CO₂-e" ;
+    esg:obtainedFrom esg:CO2INDIRECTSCOPE3 .
 
 esg:ServerProcessorEnergyEfficiency a esg:Metric ;
     rdfs:label "Server Processor Energy Efficiency" ;
@@ -449,15 +514,9 @@ esg:SystemicRiskManagement a esg:Category ;
     esg:consistsOf esg:GSIBScoreByCategory,
         esg:StressTestIntegrationApproach .
 
-esg:TRANALYTICRENEWENERGYUSE a esg:DatasetVariable ;
-    rdfs:label "TRANALYTICRENEWENERGYUSE" ;
-    esg:alignmentReason "Strong match - both measure renewable energy usage as percentage/ratio" ;
-    esg:hasConfidenceScore 9.2e-01 ;
-    esg:isUnitCompatible true ;
-    esg:sourceFrom esg:EurofidaiDataset .
-
 esg:TotalEnergyConsumed a esg:Metric ;
     rdfs:label "Total Energy Consumed" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "TC-SC-130a.1" ;
     esg:hasDescription "Total energy consumed" ;
     esg:hasType "Quantitative" ;
@@ -466,19 +525,49 @@ esg:TotalEnergyConsumed a esg:Metric ;
 
 esg:TotalWaterConsumed a esg:Metric ;
     rdfs:label "Total Water Consumed" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "TC-SC-140a.1" ;
     esg:hasDescription "Total water consumed" ;
     esg:hasType "Quantitative" ;
     esg:hasUnit "Thousand cubic metres (m³)" ;
-    esg:obtainedFrom esg:WATERWITHDRAWALTOTAL .
+    esg:obtainedFrom esg:WATERUSEPAIM10 .
 
 esg:TotalWaterWithdrawn a esg:Metric ;
     rdfs:label "Total Water Withdrawn" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "TC-SC-140a.1" ;
     esg:hasDescription "Total water withdrawn" ;
     esg:hasType "Quantitative" ;
     esg:hasUnit "Thousand cubic metres (m³)" ;
     esg:obtainedFrom esg:WATERWITHDRAWALTOTAL .
+
+esg:WASTERECYCLED a esg:DatasetVariable ;
+    rdfs:label "WASTE_RECYCLED" ;
+    esg:alignmentReason "Covers total waste recycling, approximates hazardous waste recycling" ;
+    esg:hasConfidenceScore 70 ;
+    esg:isUnitCompatible "Yes - both measure waste in metric tonnes" ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:WATERUSEPAIM10 a esg:DatasetVariable ;
+    rdfs:label "WATER_USE_PAI_M10" ;
+    esg:alignmentReason "Related to water consumption but different measurement approach" ;
+    esg:hasConfidenceScore 40 ;
+    esg:isUnitCompatible "No - EUROFIDAI is intensity metric, SASB absolute" ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:WATERWITHDRAWALTOTAL a esg:DatasetVariable ;
+    rdfs:label "WATERWITHDRAWALTOTAL" ;
+    esg:alignmentReason "Exact match for total water withdrawal with unit conversion" ;
+    esg:hasConfidenceScore 100 ;
+    esg:isUnitCompatible "Yes - both measure water volume (1000x scaling)" ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:WHISTLEBLOWERPROTECTION a esg:DatasetVariable ;
+    rdfs:label "WHISTLEBLOWER_PROTECTION" ;
+    esg:alignmentReason "EUROFIDAI tracks whistleblower protection policies directly" ;
+    esg:hasConfidenceScore 80 ;
+    esg:isUnitCompatible "Different - SASB discussion vs EUROFIDAI Yes/No" ;
+    esg:sourceFrom esg:EurofidaiDataset .
 
 esg:WasteManagement a esg:Category ;
     rdfs:label "Waste Management" ;
@@ -494,13 +583,16 @@ esg:WaterManagement a esg:Category ;
 
 esg:WhistleblowerPoliciesDescription a esg:Metric ;
     rdfs:label "Whistleblower Policies Description" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "FN-CB-510a.2" ;
     esg:hasDescription "Description of whistleblower policies and procedures" ;
     esg:hasType "Discussion" ;
-    esg:hasUnit "n/a" .
+    esg:hasUnit "n/a" ;
+    esg:obtainedFrom esg:WHISTLEBLOWERPROTECTION .
 
 esg:WorkVisaEmployeePercentage a esg:Metric ;
     rdfs:label "Work Visa Employee Percentage" ;
+    esg:hasCalculationMethod "calculation_model" ;
     esg:hasCode "TC-SC-330a.1" ;
     esg:hasDescription "Percentage of employees that require a work visa" ;
     esg:hasType "Quantitative" ;
@@ -513,10 +605,12 @@ esg:WorkVisaRateModel a esg:Model ;
 
 esg:WorkforceHealthHazardEfforts a esg:Metric ;
     rdfs:label "Workforce Health Hazard Efforts" ;
+    esg:hasCalculationMethod "direct_measurement" ;
     esg:hasCode "TC-SC-320a.1" ;
     esg:hasDescription "Description of efforts to assess, monitor, and reduce exposure of workforce to human health hazards" ;
     esg:hasType "Discussion" ;
-    esg:hasUnit "n/a" .
+    esg:hasUnit "n/a" ;
+    esg:obtainedFrom esg:EMPLOYEEHEALTHSAFETYPOLICY .
 
 esg:WorkforceHealthSafety a esg:Category ;
     rdfs:label "Workforce Health & Safety" ;
@@ -526,17 +620,20 @@ esg:WorkforceHealthSafety a esg:Category ;
 esg:gridelectricity a esg:InputMetric ;
     rdfs:label "Grid Electricity Consumption" ;
     esg:hasDataType "float" ;
-    esg:hasUnit "GJ" .
+    esg:hasUnit "GJ" ;
+    esg:obtainedFrom esg:ELECTRICITYPURCHASED .
 
 esg:recycledhazardouswaste a esg:InputMetric ;
     rdfs:label "Recycled Hazardous Waste" ;
     esg:hasDataType "float" ;
-    esg:hasUnit "tonnes" .
+    esg:hasUnit "tonnes" ;
+    esg:obtainedFrom esg:WASTERECYCLED .
 
 esg:renewableenergy a esg:InputMetric ;
     rdfs:label "Renewable Energy Consumption" ;
     esg:hasDataType "float" ;
-    esg:hasUnit "GJ" .
+    esg:hasUnit "GJ" ;
+    esg:obtainedFrom esg:RENEWENERGYPURCHASED .
 
 esg:specificrevenue a esg:InputMetric ;
     rdfs:label "Specific Product Revenue" ;
@@ -546,35 +643,70 @@ esg:specificrevenue a esg:InputMetric ;
 esg:totalhazardouswaste a esg:InputMetric ;
     rdfs:label "Total Hazardous Waste Generated" ;
     esg:hasDataType "float" ;
-    esg:hasUnit "tonnes" .
+    esg:hasUnit "tonnes" ;
+    esg:obtainedFrom esg:ENERGYUSETOTAL .
 
 esg:totalrevenue a esg:InputMetric ;
     rdfs:label "Total Revenue" ;
     esg:hasDataType "float" ;
-    esg:hasUnit "currency" .
+    esg:hasUnit "currency" ;
+    esg:obtainedFrom esg:ENERGYUSETOTAL .
 
-esg:WATERUSEPAIM10 a esg:DatasetVariable ;
-    rdfs:label "WATER_USE_PAI_M10" ;
-    esg:alignmentReason "Good match - similar to above but consumption vs withdrawal distinction",
-        "Strong match - both address water usage in stressed regions (PAI M10 relates to water stress)" ;
-    esg:hasConfidenceScore 8.3e-01,
-        8.6e-01 ;
-    esg:isUnitCompatible true ;
+esg:CO2DIRECTSCOPE1 a esg:DatasetVariable ;
+    rdfs:label "CO2DIRECTSCOPE1" ;
+    esg:alignmentReason "EUROFIDAI tracks direct emissions but not financed emissions specifically",
+        "Exact match for Scope 1 greenhouse gas emissions measurement" ;
+    esg:hasConfidenceScore 50,
+        100 ;
+    esg:isUnitCompatible "Yes - both measure CO2e in metric tonnes" ;
     esg:sourceFrom esg:EurofidaiDataset .
 
-esg:WATERWITHDRAWALTOTAL a esg:DatasetVariable ;
-    rdfs:label "WATERWITHDRAWALTOTAL" ;
-    esg:alignmentReason "Moderate match - conceptually related but consumption vs withdrawal are different measures",
-        "Perfect match - identical terminology and measurement scope" ;
-    esg:hasConfidenceScore 7.5e-01,
-        1e+00 ;
-    esg:isUnitCompatible true ;
+esg:ENVSUPPLYCHAINMGT a esg:DatasetVariable ;
+    rdfs:label "ENV_SUPPLY_CHAIN_MGT" ;
+    esg:alignmentReason "EUROFIDAI tracks ESG criteria in supplier selection, related to ESG integration",
+        "EUROFIDAI tracks environmental supply chain criteria related to materials" ;
+    esg:hasConfidenceScore 40,
+        50 ;
+    esg:isUnitCompatible "Different - SASB discussion vs EUROFIDAI Yes/No" ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:TARGETSEMISSIONS a esg:DatasetVariable ;
+    rdfs:label "TARGETS_EMISSIONS" ;
+    esg:alignmentReason "EUROFIDAI tracks emission targets which relates to emissions methodology",
+        "EUROFIDAI tracks emission targets which relates to strategy" ;
+    esg:hasConfidenceScore 40,
+        70 ;
+    esg:isUnitCompatible "Different - SASB discussion vs EUROFIDAI Yes/No" ;
     esg:sourceFrom esg:EurofidaiDataset .
 
 esg:totalenergy a esg:InputMetric ;
     rdfs:label "Total Energy Consumption" ;
     esg:hasDataType "float" ;
-    esg:hasUnit "GJ" .
+    esg:hasUnit "GJ" ;
+    esg:obtainedFrom esg:ENERGYUSETOTAL .
+
+esg:ELECTRICITYPURCHASED a esg:DatasetVariable ;
+    rdfs:label "ELECTRICITYPURCHASED" ;
+    esg:alignmentReason "Direct input for Grid Electricity Rate Model calculation" ;
+    esg:hasConfidenceScore 100 ;
+    esg:isUnitCompatible "Yes - both measure energy in gigajoules" ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:RENEWENERGYPURCHASED a esg:DatasetVariable ;
+    rdfs:label "RENEWENERGYPURCHASED" ;
+    esg:alignmentReason "Direct input for Renewable Energy Rate Model calculation" ;
+    esg:hasConfidenceScore 100 ;
+    esg:isUnitCompatible "Yes - both measure energy in gigajoules" ;
+    esg:sourceFrom esg:EurofidaiDataset .
+
+esg:ENERGYUSETOTAL a esg:DatasetVariable ;
+    rdfs:label "ENERGYUSETOTAL" ;
+    esg:alignmentReason "Denominator for Grid Electricity Rate Model calculation",
+        "Perfect match for total energy consumption measurement" ;
+    esg:hasConfidenceScore 100 ;
+    esg:isUnitCompatible "Yes - both measure energy in gigajoules",
+        "Yes - both use gigajoules (GJ)" ;
+    esg:sourceFrom esg:EurofidaiDataset .
 
 esg:EurofidaiDataset a esg:Datasource ;
     rdfs:label "Eurofidai External Dataset" ;
