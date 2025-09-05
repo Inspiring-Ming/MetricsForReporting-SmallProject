@@ -1,2 +1,6 @@
 node_modules/
 package-lock.json
+output/
+backend/code/dynamoDB/uploadCSV.ts
+AWS/
+backup/
