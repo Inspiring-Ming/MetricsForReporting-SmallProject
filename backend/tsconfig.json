@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "downlevelIteration": true, 
+  },
+  "exclude": [
+    "**/**_broken.ts"
+  ]
+}
