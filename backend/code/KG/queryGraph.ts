@@ -334,6 +334,279 @@ async function getBestDataSourceForMetric(metricID: string): Promise<{ dataSourc
     }
 }
 
+/**
+ * CQ6: Which Implementation is used to execute [specific model]?
+ *
+ * @param modelLabel - The label of the model
+ * @returns Promise containing implementation information
+ */
+async function getImplementationByModel(modelLabel: string): Promise<{ 
+  implementationLabel: string; 
+  language: string; 
+  filePath: string; 
+  functionName: string; 
+  description: string; 
+}> {
+  const query = `
+    ${ESG}
+    ${RDFS}
+
+    SELECT ?implementationLabel ?language ?filePath ?functionName ?description WHERE {
+      ?model a esg:Model ;
+             rdfs:label "${modelLabel}" ;
+             esg:executesWith ?implementation .
+      
+      ?implementation a esg:Implementation ;
+                     rdfs:label ?implementationLabel ;
+                     esg:hasLanguage ?language ;
+                     esg:hasFilePath ?filePath ;
+                     esg:hasFunction ?functionName ;
+                     esg:hasDescription ?description .
+    }
+  `;
+
+  try {
+    const result = await executeSparqlQuery(query);
+    
+    if (result.results && result.results.bindings && result.results.bindings.length > 0) {
+      const binding = result.results.bindings[0];
+      return {
+        implementationLabel: binding.implementationLabel?.value || '',
+        language: binding.language?.value || '',
+        filePath: binding.filePath?.value || '',
+        functionName: binding.functionName?.value || '',
+        description: binding.description?.value || ''
+      };
+    }
+    
+    throw HTTPError(404, `No implementation found for model: ${modelLabel}`);
+  } catch (error) {
+    throw HTTPError(500, `Failed to get implementation for model ${modelLabel}: ${error}`);
+  }
+}
+
+/**
+ * Get detailed information about a specific Implementation
+ *
+ * @param implementationLabel - The label of the implementation
+ * @returns Promise containing all implementation details
+ */
+async function getImplementationDetails(implementationLabel: string): Promise<{
+  label: string;
+  language: string;
+  filePath: string;
+  functionName: string;
+  description: string;
+  inputParameters: string;
+  returnType: string;
+  validation: string;
+}> {
+  const query = `
+    ${ESG}
+    ${RDFS}
+
+    SELECT ?label ?language ?filePath ?functionName ?description ?inputParameters ?returnType ?validation WHERE {
+      ?implementation a esg:Implementation ;
+                     rdfs:label "${implementationLabel}" ;
+                     rdfs:label ?label ;
+                     esg:hasLanguage ?language ;
+                     esg:hasFilePath ?filePath ;
+                     esg:hasFunction ?functionName ;
+                     esg:hasDescription ?description ;
+                     esg:hasInputParameters ?inputParameters ;
+                     esg:hasReturnType ?returnType ;
+                     esg:hasValidation ?validation .
+    }
+  `;
+
+  try {
+    const result = await executeSparqlQuery(query);
+    
+    if (result.results && result.results.bindings && result.results.bindings.length > 0) {
+      const binding = result.results.bindings[0];
+      return {
+        label: binding.label?.value || '',
+        language: binding.language?.value || '',
+        filePath: binding.filePath?.value || '',
+        functionName: binding.functionName?.value || '',
+        description: binding.description?.value || '',
+        inputParameters: binding.inputParameters?.value || '',
+        returnType: binding.returnType?.value || '',
+        validation: binding.validation?.value || ''
+      };
+    }
+    
+    throw HTTPError(404, `No implementation found with label: ${implementationLabel}`);
+  } catch (error) {
+    throw HTTPError(500, `Failed to get implementation details for ${implementationLabel}: ${error}`);
+  }
+}
+
+/**
+ * Get all available implementations in the knowledge graph
+ *
+ * @returns Promise containing array of implementation labels and basic info
+ */
+async function getAllImplementations(): Promise<{
+  result: Array<{
+    label: string;
+    language: string;
+    description: string;
+  }>
+}> {
+  const query = `
+    ${ESG}
+    ${RDFS}
+
+    SELECT ?label ?language ?description WHERE {
+      ?implementation a esg:Implementation ;
+                     rdfs:label ?label ;
+                     esg:hasLanguage ?language ;
+                     esg:hasDescription ?description .
+    }
+    ORDER BY ?label
+  `;
+
+  try {
+    const result = await executeSparqlQuery(query);
+    const implementations: Array<{label: string; language: string; description: string}> = [];
+
+    if (result.results && result.results.bindings) {
+      for (const binding of result.results.bindings) {
+        if (binding.label && binding.language && binding.description) {
+          implementations.push({
+            label: binding.label.value,
+            language: binding.language.value,
+            description: binding.description.value
+          });
+        }
+      }
+    }
+
+    return { result: implementations };
+  } catch (error) {
+    throw HTTPError(500, `Failed to get all implementations: ${error}`);
+  }
+}
+
+/**
+ * Get implementations filtered by calculation type
+ *
+ * @param calculationType - The calculation type to filter by (e.g., "percentage_ratio", "intensity_ratio")
+ * @returns Promise containing array of implementations for the specified calculation type
+ */
+async function getImplementationsByCalculationType(calculationType: string): Promise<{
+  result: Array<{
+    implementationLabel: string;
+    modelLabel: string;
+    filePath: string;
+    functionName: string;
+    description: string;
+  }>
+}> {
+  const query = `
+    ${ESG}
+    ${RDFS}
+
+    SELECT ?implementationLabel ?modelLabel ?filePath ?functionName ?description WHERE {
+      ?model a esg:Model ;
+             rdfs:label ?modelLabel ;
+             esg:hasCalculationType "${calculationType}" ;
+             esg:executesWith ?implementation .
+      
+      ?implementation a esg:Implementation ;
+                     rdfs:label ?implementationLabel ;
+                     esg:hasFilePath ?filePath ;
+                     esg:hasFunction ?functionName ;
+                     esg:hasDescription ?description .
+    }
+    ORDER BY ?implementationLabel
+  `;
+
+  try {
+    const result = await executeSparqlQuery(query);
+    const implementations: Array<{
+      implementationLabel: string;
+      modelLabel: string;
+      filePath: string;
+      functionName: string;
+      description: string;
+    }> = [];
+
+    if (result.results && result.results.bindings) {
+      for (const binding of result.results.bindings) {
+        if (binding.implementationLabel && binding.modelLabel && binding.filePath && binding.functionName && binding.description) {
+          implementations.push({
+            implementationLabel: binding.implementationLabel.value,
+            modelLabel: binding.modelLabel.value,
+            filePath: binding.filePath.value,
+            functionName: binding.functionName.value,
+            description: binding.description.value
+          });
+        }
+      }
+    }
+
+    return { result: implementations };
+  } catch (error) {
+    throw HTTPError(500, `Failed to get implementations for calculation type ${calculationType}: ${error}`);
+  }
+}
+
+/**
+ * Get all available calculation types in the knowledge graph
+ *
+ * @returns Promise containing array of unique calculation types
+ */
+async function getAllCalculationTypes(): Promise<{
+  result: Array<{
+    calculationType: string;
+    count: number;
+    modelLabels: string[];
+  }>
+}> {
+  const query = `
+    ${ESG}
+    ${RDFS}
+
+    SELECT ?calculationType ?modelLabel WHERE {
+      ?model a esg:Model ;
+             rdfs:label ?modelLabel ;
+             esg:hasCalculationType ?calculationType .
+    }
+    ORDER BY ?calculationType ?modelLabel
+  `;
+
+  try {
+    const result = await executeSparqlQuery(query);
+    const calculationTypeMap = new Map<string, Set<string>>();
+
+    if (result.results && result.results.bindings) {
+      for (const binding of result.results.bindings) {
+        if (binding.calculationType && binding.modelLabel) {
+          const calcType = binding.calculationType.value;
+          const modelLabel = binding.modelLabel.value;
+          
+          if (!calculationTypeMap.has(calcType)) {
+            calculationTypeMap.set(calcType, new Set());
+          }
+          calculationTypeMap.get(calcType)!.add(modelLabel);
+        }
+      }
+    }
+
+    const calculationTypes = Array.from(calculationTypeMap.entries()).map(([calcType, modelLabels]) => ({
+      calculationType: calcType,
+      count: modelLabels.size,
+      modelLabels: Array.from(modelLabels)
+    }));
+
+    return { result: calculationTypes };
+  } catch (error) {
+    throw HTTPError(500, `Failed to get calculation types: ${error}`);
+  }
+}
+
 export {
   getReportFramework,
   getCategoriesByIndustryAndReportFramework,
@@ -342,4 +615,9 @@ export {
   getDataSourceInfo,
   getBestDataSourceForMetric,
   executeSparqlQuery,
+  getImplementationByModel,
+  getImplementationDetails,
+  getAllImplementations,
+  getImplementationsByCalculationType,
+  getAllCalculationTypes,
 };

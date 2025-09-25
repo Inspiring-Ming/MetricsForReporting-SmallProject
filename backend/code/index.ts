@@ -12,6 +12,11 @@ import {
   getReportFramework,
   getCategoriesByIndustryAndReportFramework,
   getMetricsByIndustryAndCategory,
+  getImplementationByModel,
+  getImplementationDetails,
+  getAllImplementations,
+  getImplementationsByCalculationType,
+  getAllCalculationTypes,
 } from "./KG/queryGraph";
 
 import {
@@ -132,7 +137,6 @@ app.get("/SAGE/KG/retrieve/category/metrics", async (req, res) => {
 
 /**
  * CQ5: How is the value of [specific metric] calculated or directly measured?
- * CQ6: Which Implementation is used to execute [specific model]?
  * CQ7: What Metrics are required as inputs for calculating [specific model]?
  * 🔍 GET: Get metric computation method by metric label
  */
@@ -146,6 +150,77 @@ app.get("/SAGE/KG/metric/computation/method", async (req, res) => {
     handleHttpError(res, error);
   }
 });
+
+/**
+ * CQ6: Which Implementation is used to execute [specific model]?
+ * 🔍 GET: Get implementation details for a specific model
+ */
+app.get("/SAGE/KG/model/implementation", async (req, res) => {
+  const model_label = req.query.model_label as string;
+
+  try {
+    const result = await getImplementationByModel(model_label);
+    res.json(result);
+  } catch (error) {
+    handleHttpError(res, error);
+  }
+});
+
+/**
+ * 🔍 GET: Get detailed information about a specific implementation
+ */
+app.get("/SAGE/KG/implementation/details", async (req, res) => {
+  const implementation_label = req.query.implementation_label as string;
+
+  try {
+    const result = await getImplementationDetails(implementation_label);
+    res.json(result);
+  } catch (error) {
+    handleHttpError(res, error);
+  }
+});
+
+/**
+ * 🔍 GET: Get all available implementations
+ */
+app.get("/SAGE/KG/implementations", async (req, res) => {
+  try {
+    const result = await getAllImplementations();
+    res.json(result);
+  } catch (error) {
+    handleHttpError(res, error);
+  }
+});
+
+/**
+ * 🔍 GET: Get implementations by calculation type
+ * 用于找到所有相同计算模式的实现，比如所有百分比计算或强度比计算
+ */
+app.get("/SAGE/KG/implementations/by-calculation-type", async (req, res) => {
+  const calculation_type = req.query.calculation_type as string;
+
+  try {
+    const result = await getImplementationsByCalculationType(calculation_type);
+    res.json(result);
+  } catch (error) {
+    handleHttpError(res, error);
+  }
+});
+
+/**
+ * 🔍 GET: Get all available calculation types
+ * 前端下拉菜单需要，系统能力发现
+ */
+app.get("/SAGE/KG/calculation-types", async (req, res) => {
+  try {
+    const result = await getAllCalculationTypes();
+    res.json(result);
+  } catch (error) {
+    handleHttpError(res, error);
+  }
+});
+
+
 
 /**
  * CQ8: What are the historical Values of [specific datapoint]?
