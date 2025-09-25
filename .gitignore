@@ -5,3 +5,4 @@ backend/code/dynamoDB/uploadCSV.ts
 AWS/
 backup/
 backend/data/Raw_data_with_industry.csv
+.env

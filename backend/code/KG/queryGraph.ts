@@ -1,26 +1,39 @@
-import fs from "fs";
-import { QueryEngine } from "@comunica/query-sparql-rdfjs";
-import { Bindings } from "@comunica/types";
-import { Parser, Store } from "n3";
 import HTTPError from "http-errors";
 import { wrapError } from "../utils/generalHelper";
+import dotenv from "dotenv";
+dotenv.config();
 
-// Read Graph Data from file
-const ttlData = fs.readFileSync("graph/esg_knowledge_graph_old.ttl", "utf-8");
-
-// Parse them into Turtle
-const parser = new Parser({ format: "text/turtle" });
-const quads = parser.parse(ttlData);
-
-// Load quads into RDFJS-compatible store
-const store = new Store(quads);
-
-// Create Comunica query engine
-const engine = new QueryEngine();
+// GraphDB Configuration
+const GRAPHDB_BASE_URL = process.env.GRAPHDB_URL || "https://abcxyz123456.xyz";
+const REPOSITORY_ID = process.env.GRAPHDB_REPOSITORY || "esg-knowledge-graph";
+const GRAPHDB_ENDPOINT = `${GRAPHDB_BASE_URL}/repositories/${REPOSITORY_ID}`;
 
 // Global KG's Prefix
 const ESG = "PREFIX esg: <http://example.org/esg#>";
 const RDFS = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>";
+
+// GraphDB SPARQL Query Function
+async function executeSparqlQuery(query: string): Promise<any> {
+  try {
+    const response = await fetch(GRAPHDB_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/sparql-query",
+        "Accept": "application/sparql-results+json"
+      },
+      body: query
+    });
+
+    if (!response.ok) {
+      throw new Error(`GraphDB query failed: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    throw HTTPError(500, `GraphDB query failed: ${error}`);
+  }
+}
 
 async function getReportFramework(industry: string) {
   const query = `
@@ -38,18 +51,22 @@ async function getReportFramework(industry: string) {
     ORDER BY ?frameworkLabel
   `;
 
-  const bindingsStream = await engine.queryBindings(query, {
-    sources: [store],
-  });
+  try {
+    const result = await executeSparqlQuery(query);
+    const res: string[] = [];
 
-  const res: string[] = [];
+    if (result.results && result.results.bindings) {
+      for (const binding of result.results.bindings) {
+        if (binding.frameworkLabel && binding.frameworkLabel.value) {
+          res.push(binding.frameworkLabel.value);
+        }
+      }
+    }
 
-  for await (const binding of bindingsStream) {
-    const frameworkLabel = binding.get("frameworkLabel")!.value;
-    res.push(frameworkLabel);
+    return { result: res };
+  } catch (error) {
+    throw HTTPError(500, `Failed to get report framework for industry ${industry}`);
   }
-
-  return { result: res };
 }
 
 /**
@@ -82,18 +99,22 @@ async function getCategoriesByIndustryAndReportFramework(
     ORDER BY ?categoryLabel
   `;
 
-  const bindingsStream = await engine.queryBindings(query, {
-    sources: [store],
-  });
+  try {
+    const result = await executeSparqlQuery(query);
+    const res: string[] = [];
 
-  const res: string[] = [];
+    if (result.results && result.results.bindings) {
+      for (const binding of result.results.bindings) {
+        if (binding.categoryLabel && binding.categoryLabel.value) {
+          res.push(binding.categoryLabel.value);
+        }
+      }
+    }
 
-  for await (const binding of bindingsStream) {
-    const categoryLabel = binding.get("categoryLabel")!.value;
-    res.push( categoryLabel );
+    return { result: res };
+  } catch (error) {
+    throw HTTPError(500, `Failed to get categories for industry ${industry} and framework ${framework}`);
   }
-
-  return { result: res };
 }
 
 /**
@@ -134,18 +155,48 @@ async function getMetricsByIndustryAndCategory(
     ORDER BY ?metricLabel
   `;
 
-  const bindingsStream = await engine.queryBindings(query, {
-    sources: [store],
+  try {
+    const result = await executeSparqlQuery(query);
+    const res: string[] = [];
+
+    if (result.results && result.results.bindings) {
+      for (const binding of result.results.bindings) {
+        if (binding.metricLabel && binding.metricLabel.value) {
+          res.push(binding.metricLabel.value);
+        }
+      }
+    }
+
+    return { result: res };
+  } catch (error) {
+    throw HTTPError(500, `Failed to get metrics for industry ${industry}, category ${categoryLabel}, framework ${framework}`);
+  }
+}
+
+// Helper function to convert GraphDB bindings to Map
+function createDataMapFromGraphDB(bindings: any[]): Map<string, string> {
+  const dataMap = new Map<string, string>();
+
+  bindings.forEach(binding => {
+    const p = binding.p?.value;
+    const o = binding.o?.value;
+
+    if (p && o) {
+      // Get rid of IRIs
+      const predicate = removeIRI(p);
+      const object = removeIRI(o);
+
+      // Add more object if predicate already exist
+      if (dataMap.has(predicate)) {
+        const current = dataMap.get(predicate)!;
+        dataMap.set(predicate, `${current}, ${object}`);
+      } else {
+        dataMap.set(predicate, object);
+      }
+    }
   });
 
-  const res: string[] = [];
-
-  for await (const binding of bindingsStream) {
-    const metricLabel = binding.get("metricLabel")!.value;
-    res.push(metricLabel);
-  }
-
-  return { result: res };
+  return dataMap;
 }
 
 /**
@@ -167,14 +218,17 @@ async function getMetricAtributes(metric_label: string)
     }
   `;
 
-  const bindingsStream = await engine.queryBindings(query, {
-    sources: [store],
-  });
-
-  const res = await bindingsStream.toArray();
-  const resultMap = createDataMap(res);
-
-  return resultMap;
+  try {
+    const result = await executeSparqlQuery(query);
+    
+    if (result.results && result.results.bindings) {
+      return createDataMapFromGraphDB(result.results.bindings);
+    }
+    
+    return new Map<string, string>();
+  } catch (error) {
+    throw HTTPError(500, `Failed to get attributes for metric ${metric_label}`);
+  }
 }
 
 // CQ8: What are the historical Values of [specific datapoint]?
@@ -191,16 +245,15 @@ async function getDataPointAtribute(metric: string)
   `;
 
   try {
-    const bindingsStream = await engine.queryBindings(query, {
-      sources: [store],
-    });
-
-    const res = await bindingsStream.toArray();
-    const resultMap = createDataMap(res);
-
-    return resultMap;
+    const result = await executeSparqlQuery(query);
+    
+    if (result.results && result.results.bindings) {
+      return createDataMapFromGraphDB(result.results.bindings);
+    }
+    
+    return new Map<string, string>();
   } catch (error) {
-    wrapError(error);
+    throw HTTPError(500, `Failed to get data point attributes for ${metric}`);
   }
 }
 
@@ -210,31 +263,6 @@ async function getDataPointAtribute(metric: string)
 
 function removeIRI(line: string): string {
   return line.includes("#") ? line.split("#").slice(1).join("#") : line;
-}
-
-function createDataMap(bindings: Bindings[])
-: Map<string, string>
-{
-  const dataMap = new Map<string, string>;
-
-  bindings.forEach(binding => {
-    const p = binding.get("p")!.value;
-    const o = binding.get("o")!.value;
-
-    // Get rid of IRIs
-    const predicate = removeIRI(p);
-    const object = removeIRI(o);
-
-    // Add more object if predicate already exist
-    if (dataMap.has(predicate)) {
-      const current = dataMap.get(predicate)!;
-      dataMap.set(predicate, `${current}, ${object}`);
-    } else {
-      dataMap.set(predicate, object);
-    }
-  });
-
-  return dataMap;
 }
 
 async function getDataSourceInfo(source: string) {
@@ -248,19 +276,62 @@ async function getDataSourceInfo(source: string) {
   `;
 
   try {
-    const bindingsStream = await engine.queryBindings(query, {
-      sources: [store],
-    });
-
-    const res = await bindingsStream.toArray();
-    const resultMap = createDataMap(res);
-    const dataSource = resultMap.get("label");
-
-    return dataSource;
-  } catch (e) {
-    console.error(`❌ Failed to retreive source of node ${source} with error: \n`, e);
-    throw HTTPError(404, `Failed to retreive source of node ${source}`);
+    const result = await executeSparqlQuery(query);
+    
+    if (result.results && result.results.bindings) {
+      const resultMap = createDataMapFromGraphDB(result.results.bindings);
+      return resultMap.get("label");
+    }
+    
+    return undefined;
+  } catch (error) {
+    throw HTTPError(404, `Failed to retrieve source of node ${source}`);
   }
+}
+
+// auto choose the best data source for a given metric, following IFRS disclosure hierarchy
+async function getBestDataSourceForMetric(metricID: string): Promise<{ dataSourceID: string; disclosureType: string } | null> {
+    const query = `
+        ${ESG}
+        ${RDFS}
+        SELECT ?dataSourceID ?disclosureType WHERE {
+            ?observation a esg:Observation ;
+                        esg:metric ?metric ;
+                        esg:obtainedFrom ?dataSourceID ;
+                        esg:disclosureType ?disclosureType .
+            
+            ?metric rdfs:label "${metricID}" .
+        }
+        ORDER BY 
+            # IFRS: regulatory_filing > company_report > third_party
+            (IF(?disclosureType = esg:regulatory_filing, 1, 
+                IF(?disclosureType = esg:company_report, 2, 
+                    IF(?disclosureType = esg:third_party, 3, 4))))
+    `;
+
+    try {
+        const results = await executeSparqlQuery(query);
+        console.log(`Querying data sources for metric ${metricID}, found ${results.results.bindings.length} results`);
+        
+        if (results.results.bindings.length > 0) {
+            const binding = results.results.bindings[0];
+            const dataSourceID = binding.dataSourceID?.value || '';
+            const disclosureType = binding.disclosureType?.value?.split('#')[1] || 'unknown';
+            
+            console.log(`Selected data source for metric ${metricID}: ${dataSourceID} (disclosure type: ${disclosureType})`);
+            
+            return {
+                dataSourceID,
+                disclosureType
+            };
+        }
+        
+        console.log(`No data source found for metric ${metricID}`);
+        return null;
+    } catch (error) {
+        console.error('Error querying best data source:', error);
+        return null;
+    }
 }
 
 export {
@@ -269,4 +340,6 @@ export {
   getMetricsByIndustryAndCategory,
   getMetricAtributes, getDataPointAtribute,
   getDataSourceInfo,
+  getBestDataSourceForMetric,
+  executeSparqlQuery,
 };
