@@ -194,7 +194,6 @@ app.get("/SAGE/KG/implementations", async (req, res) => {
 
 /**
  * 🔍 GET: Get implementations by calculation type
- * 用于找到所有相同计算模式的实现，比如所有百分比计算或强度比计算
  */
 app.get("/SAGE/KG/implementations/by-calculation-type", async (req, res) => {
   const calculation_type = req.query.calculation_type as string;
@@ -208,8 +207,7 @@ app.get("/SAGE/KG/implementations/by-calculation-type", async (req, res) => {
 });
 
 /**
- * 🔍 GET: Get all available calculation types
- * 前端下拉菜单需要，系统能力发现
+ * 🔍 GET: Get all available calculation type
  */
 app.get("/SAGE/KG/calculation-types", async (req, res) => {
   try {
