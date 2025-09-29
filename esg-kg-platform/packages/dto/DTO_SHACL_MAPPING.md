@@ -4,7 +4,9 @@
 
 ## Overview
 
-This document provides the definitive mapping between JSON Schema properties in `metric.schema.json` and SHACL shape constraints in the rules files. This ensures that validation rules are consistent across frontend form validation, API request validation, and RDF/GraphDB validation layers.
+This document provides the definitive mapping between JSON Schema properties in `metric.schema.json` and SHACL shape constraints in the rules files. Following **Architecture Decision A**, this mapping applies specifically to **direct measurement data only**. Calculated metrics are handled through the separate `/compute` endpoint and ComputationDto interfaces.
+
+**Scope**: Direct measurement metrics ingested via `/ingest/metric` endpoint only.
 
 ## Core Field Mappings
 
@@ -362,3 +364,35 @@ sh:property [
 ```
 
 This mapping ensures that validation is consistent across all layers of the ESG Knowledge Graph Platform, providing reliable data quality and user experience.
+
+---
+
+## Calculated Metrics Handling (Architecture Decision A)
+
+**Important**: This DTO-SHACL mapping applies only to **direct measurement metrics**. Calculated metrics follow a different flow:
+
+### Calculation Flow
+1. **Computation Request** → `/compute` endpoint with `ComputationRequest` DTO
+2. **Model Execution** → Knowledge graph model lookup and calculation  
+3. **Result Generation** → `ComputationResult` with embedded `MetricDto`
+4. **Optional Storage** → Generated `MetricDto` can be ingested via `/ingest`
+
+### Unit Mapping for Calculations
+TTL models use text units (e.g., "Gigajoules (GJ)") which are automatically converted to QUDT IRIs during computation:
+
+```typescript
+// From computation.dto.ts
+export const UNIT_MAPPINGS = {
+  "Gigajoules (GJ)": "http://qudt.org/vocab/unit/GJ",
+  "Metric tonnes (t) CO₂-e": "http://qudt.org/vocab/unit/TNE_CO2e",
+  "Percentage (%)": "http://qudt.org/vocab/unit/PERCENT",
+  // ... additional mappings
+} as const;
+```
+
+### Validation Scope
+- **Direct Measurement**: Full JSON Schema + SHACL validation (this document)
+- **Calculated Results**: Generated `MetricDto` inherits same validation rules
+- **Computation Inputs**: Separate validation via `ComputationRequest` schema
+
+This separation ensures clear architectural boundaries while maintaining consistent data quality across both measurement types.

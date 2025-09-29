@@ -1,0 +1,130 @@
+openapi: 3.1.0
+info:
+	title: ESG Platform Internal API
+	version: 1.0.0
+	description: Read-only API for knowledge graph queries and metadata, including computation method metadata.
+servers:
+	- url: https://internal.api.example.com
+	- url: http://localhost:3002
+paths:
+	/internal/v1/computation-methods:
+		get:
+			summary: List registered computation methods (metadata only)
+			security:
+				- bearerAuth: []
+			parameters:
+				- in: query
+					name: framework
+					schema: { type: string }
+				- in: query
+					name: industry
+					schema: { type: string }
+			responses:
+				'200':
+					description: OK
+					content:
+						application/json:
+							schema:
+								type: object
+								properties:
+									items:
+										type: array
+										items:
+											$ref: '#/components/schemas/ComputationMethod'
+									total:
+										type: integer
+				'500':
+					description: Internal Error
+					content:
+						application/problem+json:
+							schema:
+								$ref: '#/components/schemas/ProblemDetails'
+	/internal/v1/computation-methods/{code}:
+		get:
+			summary: Get computation method metadata by code (no execution)
+				security:
+					- bearerAuth: []
+			parameters:
+				- in: path
+					name: code
+					required: true
+					schema: { type: string }
+			responses:
+				'200':
+					description: OK
+					content:
+						application/json:
+							schema:
+								$ref: '#/components/schemas/ComputationMethod'
+				'404':
+					description: Not Found
+					content:
+						application/problem+json:
+							schema:
+								$ref: '#/components/schemas/ProblemDetails'
+	/internal/v1/health:
+		get:
+			summary: Health check
+				security: []
+			responses:
+				'200':
+					description: OK
+					content:
+						application/json:
+							schema:
+								type: object
+								properties:
+									status: { type: string }
+									timestamp: { type: string, format: date-time }
+components:
+	schemas:
+	securitySchemes:
+		bearerAuth:
+			type: http
+			scheme: bearer
+			bearerFormat: JWT
+		ComputationMethod:
+			type: object
+			properties:
+				code: { type: string }
+				name: { type: string }
+				description: { type: string }
+				framework: { type: string }
+				industry: { type: string }
+				inputMetrics:
+					type: array
+					items:
+						$ref: '#/components/schemas/InputMetricRequirement'
+				outputUnit: { type: string, format: uri }
+				formula: { type: string }
+				modelName: { type: string }
+				implementedBy:
+					type: string
+					enum: [platform, external]
+		InputMetricRequirement:
+			type: object
+			properties:
+				name: { type: string }
+				code: { type: string }
+				dataType:
+					type: string
+					enum: [number, string, boolean, date]
+				required: { type: boolean }
+				unit: { type: string, format: uri }
+				constraints:
+					type: object
+					properties:
+						min: { type: number }
+						max: { type: number }
+						pattern: { type: string }
+						allowedValues:
+							type: array
+							items: { type: string }
+		ProblemDetails:
+			type: object
+			properties:
+				type: { type: string, format: uri }
+				title: { type: string }
+				status: { type: integer }
+				detail: { type: string }
+				instance: { type: string }

@@ -235,29 +235,75 @@ open http://localhost:7200
 - **Write Endpoints** (`/public/v1/ingest/metric`, `/public/v1/ingest/batch`): **Only accept `application/json`**
 - **Validate Endpoint** (`/public/v1/validate`): Supports both `application/json` and `text/turtle`
 
-**❌ Common Mistakes**:
-```javascript
-// ❌ Wrong: Don't POST TTL directly to write endpoints
-fetch('/public/v1/ingest/metric', {
-  method: 'POST',
-  headers: { 'Content-Type': 'text/turtle' },  // 🚫 Write endpoints don't support TTL
-  body: '@prefix esg: <...> .'
-});
+**✅ Enhanced Data Submission Examples**:
 
-// ✅ Correct: Always use JSON format for data submission
+```javascript
+// ✅ Direct Measurement Metric
 fetch('/public/v1/ingest/metric', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
     framework: "SASB",
-    industry: "Commercial Banks",
-    code: "FN-CB-410a.1",  // Computation code: calls registered small business loan balance calculation logic
-    entityId: "bank-001",
-    value: 1250000.00,
-    unitIri: "http://qudt.org/vocab/unit/USD",
+    industry: "Semiconductors",
+    category: "Greenhouse Gas Emissions", 
+    metricName: "Gross Global Scope 1 Emissions",
+    code: "TC-SC-110a.1",
+    entityId: "semiconductor-company-001",
     asOf: "2023-12-31T23:59:59Z",
-    source: "Annual Report 2023"
+    source: "Annual ESG Report 2023",
+    calculationMethod: "direct_measurement",
+    metricType: "Quantitative",
+    metricData: {
+      type: "direct_measurement",
+      value: 12500.0,
+      unit: "Metric tonnes (t) CO₂-e",
+      dataType: "float"
+    }
   })
+});
+
+// ✅ Calculated Metric using Model
+fetch('/public/v1/ingest/metric', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    framework: "SASB",
+    industry: "Semiconductors",
+    category: "Greenhouse Gas Emissions",
+    metricName: "GHG Emission Intensity", 
+    code: "TC-SC-110a.3",
+    entityId: "semiconductor-company-001",
+    asOf: "2023-12-31T23:59:59Z",
+    source: "Calculated from annual data",
+    calculationMethod: "calculation_model",
+    metricType: "Quantitative",
+    metricData: {
+      type: "calculation_model",
+      modelName: "GHGEmissionIntensityModel",
+      inputMetrics: {
+        "Scope1Emission": {
+          value: 12500.0,
+          unit: "tons CO2e"
+        },
+        "Scope2Emission": {
+          value: 8200.0,
+          unit: "tons CO2e" 
+        },
+        "Revenue": {
+          value: 500.0,
+          unit: "million USD"
+        }
+      },
+      expectedUnit: "tons CO2e per million USD"
+    }
+  })
+});
+
+// ❌ Wrong: Don't POST TTL directly to write endpoints
+fetch('/public/v1/ingest/metric', {
+  method: 'POST',
+  headers: { 'Content-Type': 'text/turtle' },  // 🚫 Write endpoints don't support TTL
+  body: '@prefix esg: <...> .'
 });
 ```
 
@@ -277,26 +323,63 @@ fetch('/public/v1/ingest/metric', {
 ### TypeScript Interface Definitions
 
 ```typescript
-// Standard ESG Metric Interface
+// Enhanced ESG Metric Interface - supports knowledge graph structure
 interface ESGMetric {
+  // Basic identification
   framework: "SASB" | "GRI" | "TCFD" | "EU_TAXONOMY" | "CSRD";
   industry: string;
-  code: string;  // Platform registered computation code ID, each code maps to specific metric calculation logic
+  category: string;  // Category within framework (e.g., "Data Security", "Energy Management")
+  metricName: string;  // Human readable metric name
+  code: string;  // Platform computation code ID for calculation logic
+  
+  // Entity and temporal info
   entityId: string;
-  value: number;
-  unitIri: string;
   asOf: string;  // ISO 8601 datetime
   source: string;
+  
+  // Metric type and calculation
+  calculationMethod: "direct_measurement" | "calculation_model";
+  metricType: "Quantitative" | "Discussion";
+  
+  // Value data - varies based on calculation method
+  metricData: DirectMeasurementData | CalculatedMetricData;
+}
+
+// Direct measurement metric data
+interface DirectMeasurementData {
+  type: "direct_measurement";
+  value: number | string;
+  unit: string;
+  dataType?: "float" | "string" | "integer";
+}
+
+// Calculated metric data using models
+interface CalculatedMetricData {
+  type: "calculation_model";
+  modelName: string;  // References model in knowledge graph
+  inputMetrics: {
+    [metricName: string]: {
+      value: number;
+      unit: string;
+    };
+  };
+  expectedUnit: string;
 }
 
 // API Response Type
 interface IngestResponse {
   success: true;
   batchId: string;
-  metricIri: string;
+  metricIri: string;        // Data identifier (also in Location header)
   namedGraph: string;
   triplesCount: number;
   duration: number;
+  location: string;         // IRI of created resource (not API endpoint)
+  calculationResults?: {
+    modelUsed?: string;
+    calculatedValue?: number;
+    inputsUsed?: Record<string, any>;
+  };
 }
 
 // Error Response Type (RFC 7807)
@@ -318,6 +401,7 @@ interface ProblemDetails {
 POST /public/v1/validate             # Data validation (JSON + TTL)
 POST /public/v1/ingest/metric        # Single metric ingestion (JSON format only)
 POST /public/v1/ingest/batch         # Batch metric ingestion (JSON format only)
+POST /public/v1/compute              # Execute computation model (metadata-driven) and return result
 GET  /public/v1/health               # Health check
 ```
 
@@ -326,14 +410,32 @@ GET  /public/v1/health               # Health check
 ### 🔵 Internal API (Read Service) - Port 3002  
 **Focused on high-performance queries and knowledge graph navigation**:
 ```
-GET  /internal/v1/frameworks                 # Get reporting frameworks for specific industry
-GET  /internal/v1/categories                 # Get categories under framework
-GET  /internal/v1/metrics                    # Get metric lists under category
-GET  /internal/v1/metric-codes               # Get computation codes for metrics
-POST /internal/v1/computation-methods        # Get calculation methods for computation codes
-POST /internal/v1/compute                    # Execute computation model
+# Knowledge Graph Structure Queries
+GET  /internal/v1/industries                 # Get available industries
+GET  /internal/v1/frameworks?industry={id}   # Get reporting frameworks for specific industry
+GET  /internal/v1/categories?framework={id}  # Get categories under framework
+GET  /internal/v1/metrics?category={id}      # Get metrics under category
+GET  /internal/v1/models                     # Get available calculation models
+GET  /internal/v1/models/{id}/inputs         # Get required inputs for calculation model
+
+# Metric Data Queries  
+GET  /internal/v1/metrics/data?framework={}&industry={}&category={}  # Query metric data
+GET  /internal/v1/metrics/{metricId}/history # Get historical values for metric
+GET  /internal/v1/entities/{entityId}/metrics # Get all metrics for entity
+
+# Calculation & Computation
+GET  /internal/v1/computation-methods        # List computation methods (metadata only)
+GET  /internal/v1/computation-methods/{code} # Get computation method metadata by code
+POST /internal/v1/models/{id}/calculate      # Execute calculation model with inputs (if enabled)
+POST /internal/v1/metrics/validate-inputs   # Validate metric inputs against knowledge graph
+
+# Advanced Queries
 POST /internal/v1/sparql                     # SPARQL queries (SELECT only)
+GET  /internal/v1/search?q={query}          # Search across metrics, categories, frameworks
+
+# System
 GET  /internal/v1/healthz                    # Health check
+GET  /internal/v1/schema                     # Get knowledge graph schema info
 ```
 
 > 📋 **Separation of Concerns**: Write operations handled by TypeScript service, read operations optimized by Go service, ensuring best performance and security boundaries.

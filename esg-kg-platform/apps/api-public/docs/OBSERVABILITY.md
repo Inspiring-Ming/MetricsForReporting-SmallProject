@@ -1,12 +1,12 @@
-# ESG Platform 可观测性策略
+# ESG Platform Observability Strategy
 
-> 日志记录、健康检查、性能监控和速率策略的全面设计
+> Comprehensive design for logging, health checks, performance monitoring, and rate limiting with knowledge graph integration
 
-## 1. 日志记录策略
+## 1. Logging Strategy
 
-### 1.1 结构化日志标准
+### 1.1 Structured Logging Standards
 
-**日志格式**：JSON结构化日志，便于检索和分析
+**Log Format**: JSON structured logs for easy retrieval and analysis
 ```json
 {
   "timestamp": "2025-09-28T10:30:00.000Z",
@@ -22,37 +22,112 @@
   "metadata": {
     "framework": "SASB",
     "industry": "Commercial Banks", 
+    "category": "Commercial & Investment Banking",
+    "metricName": "Small Business Loan Balance",
     "code": "FN-CB-410a.1",
+    "calculationMethod": "direct_measurement",
     "triplesCount": 15
   },
-  "tags": ["esg", "metric", "validation"]
+  "calculationDetails": {
+    "modelUsed": "GHGEmissionIntensityModel",
+    "executionTime": 45,
+    "inputCount": 3
+  },
+  "tags": ["esg", "metric", "validation", "knowledge-graph"]
 }
 ```
 
-> **📌 关键字段说明**: `code`字段记录平台内部注册的运算代码，用于追踪特定的指标计算逻辑调用。这有助于监控不同计算方法的使用频率、性能表现和错误率。
+**Enhanced Knowledge Graph Logging**:
+```json
+{
+  "timestamp": "2025-09-28T10:30:15.000Z",
+  "level": "INFO", 
+  "service": "api-public",
+  "operation": "calculation.model.execute",
+  "requestId": "req_abc123def456",
+  "status": "success",
+  "metadata": {
+    "modelName": "GHGEmissionIntensityModel",
+    "formula": "(Scope1Emission + Scope2Emission) / Revenue",
+    "inputs": {
+      "Scope1Emission": {"value": 12500.0, "unit": "tons CO2e"},
+      "Scope2Emission": {"value": 8200.0, "unit": "tons CO2e"}, 
+      "Revenue": {"value": 500.0, "unit": "million USD"}
+    },
+    "result": {
+      "value": 41.4,
+      "unit": "tons CO2e per million USD"
+    },
+    "executionTime": 45
+  },
+  "tags": ["calculation", "model", "knowledge-graph"]
+}
+```
 
-### 1.2 日志级别定义
+### 1.2 Log Level Definitions
 
-#### DEBUG - 调试信息
+#### DEBUG - Debug Information
 ```typescript
-// 用于开发和故障排查
+// For development and troubleshooting
+logger.debug('Knowledge graph model validation started', {
+  requestId: context.requestId,
+  modelName: 'GHGEmissionIntensityModel',
+  inputCount: Object.keys(inputs).length,
+  validationRules: validationRulesCount
+});
+
 logger.debug('SHACL validation started', {
   requestId: context.requestId,
   dataSize: data.length,
-  shapesCount: shapesLoaded.count
+  shapesCount: shapesLoaded.count,
+  knowledgeGraphContext: {
+    framework: data.framework,
+    industry: data.industry,
+    category: data.category
+  }
 });
 ```
 
-#### INFO - 业务事件
+#### INFO - Business Events
 ```typescript
-// 重要的业务流程节点
-logger.info('Metric ingestion completed', {
+// Important business process milestones - Direct measurement
+logger.info('Direct metric ingestion completed', {
   requestId: context.requestId,
   batchId: result.batchId,
   metricIri: result.metricIri,
   triplesCount: result.triplesCount,
   duration: performance.now() - startTime,
-  namedGraph: result.namedGraph
+  namedGraph: result.namedGraph,
+  calculationMethod: 'direct_measurement',
+  metricDetails: {
+    framework: metric.framework,
+    industry: metric.industry,
+    category: metric.category,
+    metricName: metric.metricName
+  }
+});
+
+// Important business process milestones - Calculated metric
+logger.info('Calculated metric ingestion completed', {
+  requestId: context.requestId,
+  batchId: result.batchId,
+  metricIri: result.metricIri,
+  triplesCount: result.triplesCount,
+  duration: performance.now() - startTime,
+  namedGraph: result.namedGraph,
+  calculationMethod: 'calculation_model',
+  calculationResults: {
+    modelUsed: result.calculationResults.modelUsed,
+    calculatedValue: result.calculationResults.calculatedValue,
+    executionTime: result.calculationResults.executionTime,
+    inputCount: Object.keys(result.calculationResults.inputsUsed).length
+  },
+  metricDetails: {
+    framework: metric.framework,
+    industry: metric.industry,
+    category: metric.category,
+    metricName: metric.metricName
+  }
 });
 ```
 
@@ -64,6 +139,14 @@ logger.warn('GraphDB connection slow', {
   connectionTime: connectionDuration,
   threshold: CONNECTION_WARN_THRESHOLD,
   endpoint: graphdbConfig.endpoint
+});
+
+logger.warn('Calculation model execution slow', {
+  requestId: context.requestId,
+  modelName: 'GHGEmissionIntensityModel',
+  executionTime: modelExecutionTime,
+  threshold: MODEL_EXECUTION_WARN_THRESHOLD,
+  inputCount: Object.keys(inputs).length
 });
 ```
 
@@ -79,6 +162,16 @@ logger.error('SHACL validation failed', {
     constraint: v.constraint,
     value: v.value
   })),
+  stack: error.stack
+});
+
+logger.error('Calculation model execution failed', {
+  requestId: context.requestId,
+  modelName: failedModel.name,
+  error: error.message,
+  inputs: failedInputs,
+  formula: failedModel.formula,
+  executionTime: performance.now() - modelStartTime,
   stack: error.stack
 });
 ```

@@ -1,8 +1,18 @@
-# ESG Platform 写入流水线 - 分层职责架构
+# ESG Platform Write Pipeline - Layered Architecture
 
-> 六边形架构下的职责分工与边界定义
+> Hexagonal architecture with knowledge graph integration and clear responsibility boundaries
 
-## 架构总览
+## 📋 重要说明：读写分离架构
+
+**当前架构状态**: 本文档描述的是**TypeScript Public API（写服务）**的架构设计。
+
+**职责分工**:
+- **🔴 TypeScript Public API**: 专注写入操作（验证、转换、写入GraphDB）
+- **🔵 Go Internal API**: 专注读取操作（查询、聚合、报表生成）
+
+**文档中的Query Service**: 已迁移到Go Internal API实现，本文档中保留的Query Service定义仅作为**架构参考契约**，实际读取功能请使用 [Go Internal API](../../api-internal/docs/API_CONTRACTS.md)。
+
+## Architecture Overview
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -16,36 +26,46 @@
 ┌─────────────────────────────────────────────────────────┐
 │                  Application Layer                       │
 │  ┌───────────────┐ ┌──────────────┐ ┌──────────────────┐ │
-│  │ Validation    │ │   Ingest     │ │   Provenance     │ │
-│  │   Service     │ │   Service    │ │    Service       │ │
+│  │ Validation    │ │   Ingest     │ │   Computation    │ │
+│  │   Service     │ │   Service    │ │     Service      │ │
 │  └───────────────┘ └──────────────┘ └──────────────────┘ │
-│                            │                             │
+│  ┌───────────────┐ ┌──────────────┐ ┌──────────────────┐ │
+│  │ KnowledgeGraph│ │  Provenance  │ │   Audit Trail    │ │
+│  │    Service    │ │    Service   │ │     Service      │ │
+│  └───────────────┘ └──────────────┘ └──────────────────┘ │
 │  ┌─────────────────────────────────────────────────────┐ │
 │  │               Application Ports                      │ │
-│  │  GraphWriter | ShaclValidator | TimeProvider       │ │
+│  │  GraphWriter | ShaclValidator | ModelExecutor      │ │
+│  │  [QueryService → Migrated to Go Internal API]      │ │
+│  │  TimeProvider | AuditLogger                        │ │
 │  └─────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────┘
                             │
 ┌─────────────────────────────────────────────────────────┐
 │                Infrastructure Layer                      │
 │  ┌──────────────┐ ┌──────────────┐ ┌──────────────────┐ │
-│  │  GraphDB     │ │    SHACL     │ │   IRI/Logging    │ │
-│  │   Client     │ │  Validator   │ │    Adapters      │ │
+│  │  GraphDB     │ │    SHACL     │ │   Model Query    │ │
+│  │   Client     │ │  Validator   │ │     Client       │ │
+│  └──────────────┘ └──────────────┘ └──────────────────┘ │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────────┐ │
+│  │ Internal API │ │  IRI/Logging │ │   Redis Cache    │ │
+│  │   Client     │ │   Adapters   │ │    Client        │ │
 │  └──────────────┘ └──────────────┘ └──────────────────┘ │
 └─────────────────────────────────────────────────────────┘
 ```
 
-## 1. Interfaces Layer (接口层)
+## 1. Interfaces Layer
 
 ### 1.1 HTTP Routes (`interfaces/http/routes/`)
 
-**职责边界**：
-- 仅处理HTTP协议层面的路由和版本管理
-- 路径前缀统一为 `/public/*`，明确区分公开API边界
-- 将HTTP请求转换为应用层的领域对象
-- 将应用层响应转换为标准HTTP响应
+**Responsibility Boundaries**:
+- Handle HTTP protocol-level routing and version management
+- Unified path prefix `/public/*` to clearly define public API boundary
+- Convert HTTP requests to domain objects for application layer
+- Transform application layer responses to standard HTTP responses
+- Clear separation: direct measurement ingestion and computation execution
 
-**具体路由**：
+**Specific Routes**:
 
 #### `POST /public/v1/validate`
 - **职责**：接收ESG指标数据，返回SHACL验证结果
@@ -54,16 +74,25 @@
 - **不负责**：具体的验证逻辑实现
 
 #### `POST /public/v1/ingest/metric`  
-- **职责**：接收验证通过的ESG指标，触发写入流程
-- **输入**：JSON格式ESG指标数据
-- **输出**：写入确认和批次ID
+- **职责**：接收验证通过的ESG直接测量指标，触发写入流程
+- **输入**：JSON格式ESG指标数据（仅直接测量值）
+- **输出**：写入确认、批次ID、存储位置IRI
 - **不负责**：数据转换和存储逻辑
+- **约束**：仅接受预计算的数值，不执行计算模型
 
 #### `POST /public/v1/ingest/batch`
-- **职责**：批量写入多个ESG指标
-- **输入**：ESG指标数组
+- **职责**：批量写入多个ESG直接测量指标
+- **输入**：ESG指标数组（仅直接测量数据）
 - **输出**：批次处理结果摘要
 - **不负责**：事务管理和错误聚合
+- **约束**：所有指标必须是预计算的直接测量值
+
+#### `POST /public/v1/compute`
+- **职责**：执行知识图谱中定义的计算模型
+- **输入**：计算代码、输入参数值、实体信息
+- **输出**：计算结果和生成的MetricDto对象
+- **不负责**：结果的持久化存储
+- **功能**：查询TTL中的模型定义，执行计算逻辑
 
 #### `GET /public/v1/health`
 - **职责**：系统健康状态检查
@@ -74,19 +103,32 @@
 ### 1.2 HTTP Middleware (`interfaces/http/middleware/`)
 
 #### Authentication Middleware (`auth.ts`)
-**职责**：
+
+> 🔧 **开发模式占位符**：当前为本地开发优化，认证功能暂未实现。中间件直接通过所有请求。
+
+**预留功能**（未来实现）：
 - JWT Token解析和验证
-- Scope权限检查（read:metrics, write:metrics, validate:metrics）
+- Scope权限检查（write:metrics, validate:metrics）
 - 将认证信息注入请求上下文
 - **边界**：仅处理HTTP层面的认证，不涉及业务授权逻辑
 
 ```typescript
+// 预留接口定义（当前未使用）
 interface AuthContext {
   sub: string;        // 用户标识符
   scopes: string[];   // 权限范围
   issuer: string;     // Token颁发者
   exp: number;        // Token过期时间
 }
+
+// 当前开发模式实现
+const authMiddleware = () => {
+  return (request, reply, next) => {
+    // 直接通过，无认证检查
+    next();
+  };
+};
+```
 ```
 
 #### Request Logging Middleware (`logging.ts`)
@@ -257,63 +299,76 @@ interface ProvenanceRecord {
 - IRI生成策略（使用基础设施层的IRI服务）
 - PROV-O本体的具体实现细节
 
-### 2.4 Query Service (`application/services/query.ts`)
+### 2.4 Computation Service (`application/services/computation.ts`)
 
 **核心职责**：
-- ESG指标数据的查询和检索
-- 框架和代码的枚举功能
-- SPARQL查询模板管理
-- 查询结果的格式化和分页
+- 执行知识图谱中定义的计算模型
+- 查询TTL中的模型定义和输入要求
+- 验证输入参数的完整性和有效性
+- 生成计算结果并创建对应的MetricDto
 
 **详细职责**：
 
 ```typescript
-interface QueryService {
+interface ComputationService {
   // 公共接口
-  getMetric(iri: string): Promise<ESGMetric | null>;
-  queryMetrics(filter: MetricFilter): Promise<MetricQueryResult>;
-  getFrameworks(): Promise<Framework[]>;
-  getCodes(framework: string, industry?: string): Promise<MetricCode[]>;
+  executeComputation(request: ComputationRequest): Promise<ComputationResult>;
+  getComputationMethod(code: string): Promise<ComputationMethod | null>;
+  validateInputs(code: string, inputs: Record<string, number>): Promise<ValidationResult>;
   
   // 内部职责方法
-  private buildSparqlQuery(filter: MetricFilter): string;
-  private parseMetricFromTriples(triples: RDFTriple[]): ESGMetric;
-  private validateQueryParams(params: QueryParams): void;
+  private queryModelFromKG(code: string): Promise<ModelDefinition>;
+  private executeModel(model: ModelDefinition, inputs: Record<string, number>): Promise<number>;
+  private generateMetricDto(result: ComputationResult): MetricDto;
+  private mapUnitTextToIRI(unitText: string): string;
 }
 
-interface MetricFilter {
-  entityId?: string;
-  framework?: string;
-  industry?: string;
-  code?: string;
-  fromDate?: Date;
-  toDate?: Date;
-  limit?: number;
-  offset?: number;
+interface ComputationRequest {
+  framework: string;
+  industry: string;
+  code: string;
+  entityId: string;
+  inputValues: Record<string, number>;
+  asOf: string;
+  source: string;
 }
 
-interface MetricQueryResult {
-  metrics: ESGMetric[];
-  pagination: {
-    total: number;
-    limit: number;
-    offset: number;
-    hasMore: boolean;
+interface ComputationResult {
+  value: number;
+  unitIri: string;
+  computedAt: string;
+  method: {
+    code: string;
+    modelName: string;
+    formula?: string;
   };
+  inputValues: Record<string, number>;
+  generatedMetric: MetricDto;
+}
+
+interface ModelDefinition {
+  code: string;
+  modelName: string;
+  formula: string;
+  requiredInputs: string[];
+  outputUnit: string;
+  calculationType: string;
 }
 ```
 
-**负责的具体操作**：
-1. **IRI解析**：从路径参数构建完整的Metric IRI
-2. **SPARQL生成**：使用预定义模板构建安全的查询
-3. **结果解析**：将RDF三元组转换为JSON格式
-4. **访问控制**：基于JWT scope限制查询范围
-5. **性能优化**：查询结果缓存和分页处理
+**职责范围**：
+1. **模型查询**：从TTL知识图谱中查询计算模型定义
+2. **输入验证**：确保提供的输入参数满足模型要求
+3. **计算执行**：根据模型公式执行数值计算
+4. **单位映射**：将TTL中的文本单位转换为QUDT IRI
+5. **结果生成**：创建符合MetricDto格式的计算结果
 
-**不负责**：
-- 复杂的分析查询（保持只读语义简单）
-- 数据写入或修改操作
-- 实时聚合计算（使用预计算结果）
+**明确边界**：
+- ✅ 计算模型执行：基于TTL中的模型定义
+- ✅ 结果格式化：生成标准MetricDto对象
+- ❌ 结果持久化：由IngestService负责
+- ❌ 模型定义管理：存储在TTL知识图谱中
+- ❌ 复杂业务逻辑：仅执行数学计算
 
 ### 2.5 Application Ports (`application/ports/`)
 

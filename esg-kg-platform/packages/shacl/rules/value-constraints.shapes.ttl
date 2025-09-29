@@ -1,395 +1,195 @@
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix esg: <https://esg.platform/ontology/> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix qudt: <http://qudt.org/schema/qudt/> .
-@prefix qunit: <http://qudt.org/vocab/unit/> .
+@prefix sh:    <http://www.w3.org/ns/shacl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix esg:   <https://esg.platform/ontology/> .
+@prefix qudt:  <http://qudt.org/schema/qudt/> .
+@prefix unit:  <http://qudt.org/vocab/unit/> .
 @prefix qkind: <http://qudt.org/vocab/quantitykind/> .
-@prefix time: <http://www.w3.org/2006/time#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix time:  <http://www.w3.org/2006/time#> .
+@prefix prov:  <http://www.w3.org/ns/prov#> .
 
-# =============================================================================
-# ESG Value Constraints SHACL Shapes 
-# Unit, Time and Data Type Specific Validation Rules
-# Integrates QUDT (Units) and OWL-Time ontologies
-# =============================================================================
+######################################################################
+# Unit 列表/命名空间约束（在 Core 已做前缀校验，这里可做白名单或提示）
+######################################################################
 
-# Unit IRI Validation - Must reference valid QUDT units
-esg:UnitConstraintShape
-    a sh:NodeShape ;
-    sh:targetClass esg:Metric ;
-    rdfs:label "Unit IRI Constraint Shape" ;
-    rdfs:comment "Validates that unitIri references a valid QUDT unit" ;
-    
-    sh:property [
-        sh:path esg:unitIri ;
-        sh:name "unitIri" ;
-        
-        # Must be a valid QUDT unit IRI
-        sh:sparql [
-            sh:message "Unit IRI must reference a valid QUDT unit from the approved list" ;
-            sh:prefixes [
-                sh:declare [
-                    sh:prefix "qunit" ;
-                    sh:namespace "http://qudt.org/vocab/unit/"^^xsd:anyURI ;
-                ] ;
-                sh:declare [
-                    sh:prefix "qudt" ;
-                    sh:namespace "http://qudt.org/schema/qudt/"^^xsd:anyURI ;
-                ]
-            ] ;
-            sh:select """
-                SELECT $this
-                WHERE {
-                    $this esg:unitIri ?unitIri .
-                    
-                    # Check if unit exists in approved QUDT units
-                    FILTER NOT EXISTS {
-                        VALUES ?unitIri {
-                            # Currency Units
-                            qunit:USD qunit:EUR qunit:GBP qunit:JPY qunit:CNY
-                            
-                            # Percentage and Ratio Units  
-                            qunit:PERCENT qunit:FRACTION
-                            
-                            # Mass Units
-                            qunit:KiloGM qunit:TON qunit:LB qunit:OZ
-                            
-                            # Mass Rate Units (for emissions)
-                            qunit:KiloGM-PER-YR qunit:TON-PER-YR 
-                            qunit:KiloGM-PER-DAY qunit:TON-Metric-PER-YR
-                            
-                            # Energy Units
-                            qunit:J qunit:KiloJ qunit:MegaJ qunit:GigaJ
-                            qunit:W-HR qunit:KiloW-HR qunit:MegaW-HR qunit:GigaW-HR
-                            qunit:BTU qunit:ThermUS
-                            
-                            # Volume Units
-                            qunit:L qunit:MilliL qunit:M3 qunit:GAL_US qunit:GAL_UK
-                            
-                            # Time Units
-                            qunit:YR qunit:MO qunit:WK qunit:DAY qunit:HR qunit:MIN qunit:SEC
-                            
-                            # Area Units
-                            qunit:M2 qunit:KiloM2 qunit:HA qunit:AC
-                            
-                            # Count/Quantity Units
-                            qunit:NUM qunit:UNITLESS
-                            
-                            # Water Usage Units
-                            qunit:M3-PER-YR qunit:L-PER-DAY qunit:GAL_US-PER-DAY
-                            
-                            # Waste Units  
-                            qunit:KiloGM-PER-M3 qunit:TON-PER-M3
-                            
-                            # Financial Intensity Units
-                            qunit:USD-PER-KiloGM qunit:USD-PER-TON qunit:USD-PER-MegaW-HR
-                        }
-                    }
-                }
-            """ ;
-        ] ;
-        
-        # Additional pattern validation for QUDT namespace
-        sh:pattern "^http://qudt\\.org/vocab/unit/[A-Za-z0-9_\\-]+$" ;
-        sh:message "Unit IRI must be from QUDT vocabulary: http://qudt.org/vocab/unit/*" ;
-    ] .
+esg:ApprovedUnitListConstraint
+  a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+  rdfs:label "Approved unit list (optional tightening)" ;
+  rdfs:comment "Optional: restrict to a curated subset of QUDT units. Expand as needed." ;
+  sh:sparql [
+    sh:severity sh:Warning ;
+    sh:message "unitIri is unusual (not in curated list) — verify unit correctness" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this esg:unitIri ?u .
+        FILTER NOT EXISTS {
+          VALUES ?u {
+            # --- Currency ---
+            unit:USD unit:EUR unit:GBP unit:JPY unit:CNY
+            # --- Percentage / Ratio ---
+            unit:PERCENT unit:FRACTION
+            # --- Mass ---
+            unit:GM unit:KiloGM unit:Tonne
+            # --- Mass rate (examples) ---
+            unit:KiloGM-PER-YR unit:Tonne-PER-YR
+            # --- Energy / Electricity ---
+            unit:J unit:KiloJ unit:MegaJ unit:W-HR unit:KiloW-HR unit:MegaW-HR
+            # --- Volume ---
+            unit:L unit:MilliL unit:M3
+            # --- Count / Unitless ---
+            unit:NUM unit:UNITLESS
+            # --- Time ---
+            unit:YR unit:MO unit:WK unit:DAY unit:HR unit:MIN unit:SEC
+          }
+        }
+      }
+    """ ;
+  ] .
 
-# Time/Date Validation using OWL-Time concepts
-esg:TemporalConstraintShape
-    a sh:NodeShape ;
-    sh:targetClass esg:Metric ;
-    rdfs:label "Temporal Constraint Shape" ;
-    rdfs:comment "Validates temporal aspects of metrics using OWL-Time" ;
-    
-    sh:property [
-        sh:path esg:asOf ;
-        sh:name "asOf" ;
-        
-        # Must not be in the future (reasonable business rule)
-        sh:sparql [
-            sh:message "Reporting date cannot be in the future" ;
-            sh:select """
-                SELECT $this
-                WHERE {
-                    $this esg:asOf ?asOf .
-                    BIND (NOW() AS ?now)
-                    FILTER (?asOf > ?now)
-                }
-            """ ;
-        ] ;
-        
-        # Must be within reasonable historical range (e.g., not before 1900)
-        sh:sparql [
-            sh:message "Reporting date must be after 1900-01-01" ;
-            sh:select """
-                SELECT $this
-                WHERE {
-                    $this esg:asOf ?asOf .
-                    FILTER (?asOf < "1900-01-01T00:00:00Z"^^xsd:dateTime)
-                }
-            """ ;
-        ] ;
-    ] .
+######################################################################
+# 时间约束（不得未来，合理历史下限）
+######################################################################
 
-# Framework-specific unit constraints
-esg:SASBUnitConstraints
-    a sh:NodeShape ;
-    sh:targetClass esg:Metric ;
-    sh:condition [
-        sh:property [
-            sh:path esg:framework ;
-            sh:hasValue "SASB" ;
-        ]
-    ] ;
-    rdfs:label "SASB Framework Unit Constraints" ;
-    
-    # Financial metrics should use currency units
-    sh:sparql [
-        sh:message "SASB financial metrics must use currency units (USD, EUR, etc.)" ;
-        sh:prefixes [
-            sh:declare [
-                sh:prefix "qunit" ;
-                sh:namespace "http://qudt.org/vocab/unit/"^^xsd:anyURI ;
-            ]
-        ] ;
-        sh:select """
-            SELECT $this
-            WHERE {
-                $this esg:framework "SASB" ;
-                      esg:code ?code ;
-                      esg:unitIri ?unitIri .
-                      
-                # Identify financial codes (pattern-based heuristic)
-                FILTER (CONTAINS(?code, "410a") || CONTAINS(?code, "420a"))
-                
-                # Check if using non-currency unit
-                FILTER (?unitIri NOT IN (qunit:USD, qunit:EUR, qunit:GBP, qunit:JPY, qunit:CNY))
-            }
-        """ ;
-    ] .
+esg:TemporalConstraint
+  a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+  rdfs:label "Temporal constraints for asOf" ;
 
-# Environmental metrics unit validation
-esg:EnvironmentalUnitConstraints
-    a sh:NodeShape ;
-    sh:targetClass esg:Metric ;
-    rdfs:label "Environmental Metrics Unit Constraints" ;
-    
-    # Emissions metrics should use mass or mass-rate units
-    sh:sparql [
-        sh:message "Emissions metrics should use mass units (kg, tons) or mass-rate units (kg/year)" ;
-        sh:prefixes [
-            sh:declare [
-                sh:prefix "qunit" ;
-                sh:namespace "http://qudt.org/vocab/unit/"^^xsd:anyURI ;
-            ]
-        ] ;
-        sh:select """
-            SELECT $this
-            WHERE {
-                $this esg:code ?code ;
-                      esg:unitIri ?unitIri .
-                      
-                # Identify emissions-related codes (heuristic)
-                FILTER (
-                    CONTAINS(LCASE(?code), "emission") ||
-                    CONTAINS(LCASE(?code), "ghg") ||
-                    CONTAINS(LCASE(?code), "co2") ||
-                    CONTAINS(LCASE(?code), "carbon")
-                )
-                
-                # Check if using inappropriate unit
-                FILTER (?unitIri NOT IN (
-                    qunit:KiloGM, qunit:TON, qunit:LB,
-                    qunit:KiloGM-PER-YR, qunit:TON-PER-YR, qunit:TON-Metric-PER-YR
-                ))
-            }
-        """ ;
-    ] .
+  # 不能晚于当前时间
+  sh:sparql [
+    sh:message "asOf cannot be in the future" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this esg:asOf ?asOf .
+        BIND (NOW() AS ?now)
+        FILTER (?asOf > ?now)
+      }
+    """ ;
+  ] ;
 
-# Percentage/ratio value constraints
-esg:PercentageConstraints
-    a sh:NodeShape ;
-    sh:targetClass esg:Metric ;
-    sh:condition [
-        sh:property [
-            sh:path esg:unitIri ;
-            sh:in ( qunit:PERCENT qunit:FRACTION ) ;
-        ]
-    ] ;
-    rdfs:label "Percentage Value Constraints" ;
-    
-    sh:property [
-        sh:path esg:value ;
-        
-        # For percentage units, value should be 0-100
-        sh:sparql [
-            sh:message "Percentage values must be between 0 and 100" ;
-            sh:prefixes [
-                sh:declare [
-                    sh:prefix "qunit" ;
-                    sh:namespace "http://qudt.org/vocab/unit/"^^xsd:anyURI ;
-                ]
-            ] ;
-            sh:select """
-                SELECT $this
-                WHERE {
-                    $this esg:value ?value ;
-                          esg:unitIri qunit:PERCENT .
-                    FILTER (?value < 0 || ?value > 100)
-                }
-            """ ;
-        ] ;
-        
-        # For fraction units, value should be 0-1  
-        sh:sparql [
-            sh:message "Fraction values must be between 0 and 1" ;
-            sh:prefixes [
-                sh:declare [
-                    sh:prefix "qunit" ;
-                    sh:namespace "http://qudt.org/vocab/unit/"^^xsd:anyURI ;
-                ]
-            ] ;
-            sh:select """
-                SELECT $this
-                WHERE {
-                    $this esg:value ?value ;
-                          esg:unitIri qunit:FRACTION .
-                    FILTER (?value < 0 || ?value > 1)
-                }
-            """ ;
-        ] ;
-    ] .
+  # 历史下限（可按业务调整）
+  sh:sparql [
+    sh:message "asOf must be after 1900-01-01T00:00:00Z" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this esg:asOf ?asOf .
+        FILTER (?asOf < "1900-01-01T00:00:00Z"^^xsd:dateTime)
+      }
+    """ ;
+  ] .
 
-# Data provenance constraints using PROV-O
-esg:ProvenanceConstraints  
-    a sh:NodeShape ;
-    sh:targetClass esg:Metric ;
-    rdfs:label "Data Provenance Constraints" ;
-    rdfs:comment "Validates data source and provenance information" ;
-    
-    sh:property [
-        sh:path esg:source ;
-        
-        # Source should indicate document type/year for traceability
-        sh:pattern ".*(Report|report|Annual|annual|Sustainability|sustainability|Filing|filing|Assessment|assessment).*" ;
-        sh:message "Source should reference a formal document (Report, Annual, Sustainability, Filing, Assessment, etc.)" ;
-        
-        # Should contain year information for temporal tracking
-        sh:pattern ".*20[0-9]{2}.*" ;
-        sh:message "Source should include a year (20XX format) for temporal tracking" ;
-    ] .
+######################################################################
+# 百分比/分数值域
+######################################################################
 
-# Industry-specific validation rules
-esg:BankingMetricsConstraints
-    a sh:NodeShape ;
-    sh:targetClass esg:Metric ;
-    sh:condition [
-        sh:property [
-            sh:path esg:industry ;
-            sh:hasValue "Commercial Banks" ;
-        ]
-    ] ;
-    rdfs:label "Banking Industry Metric Constraints" ;
-    
-    # Banking-specific unit requirements
-    sh:sparql [
-        sh:message "Banking metrics typically use currency, percentage, or count units" ;
-        sh:prefixes [
-            sh:declare [
-                sh:prefix "qunit" ;
-                sh:namespace "http://qudt.org/vocab/unit/"^^xsd:anyURI ;
-            ]
-        ] ;
-        sh:select """
-            SELECT $this
-            WHERE {
-                $this esg:industry "Commercial Banks" ;
-                      esg:unitIri ?unitIri .
-                      
-                # Validate against expected banking units
-                FILTER (?unitIri NOT IN (
-                    # Currency units
-                    qunit:USD, qunit:EUR, qunit:GBP, qunit:JPY, qunit:CNY,
-                    # Percentage/ratios  
-                    qunit:PERCENT, qunit:FRACTION,
-                    # Counts
-                    qunit:NUM, qunit:UNITLESS
-                ))
-                
-                # Allow some environmental units for green banking
-                FILTER (?unitIri NOT IN (
-                    qunit:KiloGM-PER-YR, qunit:TON-PER-YR, qunit:MegaW-HR
-                ))
-            }
-        """ ;
-    ] .
+esg:PercentageAndFractionRanges
+  a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+  rdfs:label "Value ranges for percentage/fraction" ;
 
-# Cross-field validation rules  
-esg:CrossFieldValidation
-    a sh:NodeShape ;
-    sh:targetClass esg:Metric ;
-    rdfs:label "Cross-Field Validation" ;
-    
-    # Ensure framework-code consistency
-    sh:sparql [
-        sh:message "SASB framework requires SASB-format codes" ;
-        sh:select """
-            SELECT $this
-            WHERE {
-                $this esg:framework "SASB" ;
-                      esg:code ?code .
-                FILTER (!REGEX(?code, "^[A-Z]{2,3}-[A-Z]{2,3}-[0-9]{3}[a-z]?\\.[0-9]+$"))
-            }
-        """ ;
-    ] ;
-    
-    sh:sparql [
-        sh:message "GRI framework requires GRI-format codes" ;
-        sh:select """
-            SELECT $this  
-            WHERE {
-                $this esg:framework "GRI" ;
-                      esg:code ?code .
-                FILTER (!REGEX(?code, "^[0-9]{3}-[0-9]+$"))
-            }
-        """ ;
-    ] .
+  # %: 0..100
+  sh:sparql [
+    sh:message "When unit = PERCENT, value must be between 0 and 100" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this esg:unitIri unit:PERCENT ;
+              esg:value ?v .
+        FILTER (?v < 0 || ?v > 100)
+      }
+    """ ;
+  ] ;
 
-# Quantity Kind validation (advanced QUDT integration)
-esg:QuantityKindConstraints
-    a sh:NodeShape ;
-    sh:targetClass esg:Metric ;
-    rdfs:label "Quantity Kind Constraints" ;
-    rdfs:comment "Validates that units match expected quantity kinds for metric types" ;
-    
-    # This would require additional ontology mapping between
-    # metric codes and expected quantity kinds (Mass, Currency, etc.)
-    # Implementation depends on business rules for specific metrics
-    
-    sh:sparql [
-        sh:message "Unit must be compatible with metric's expected quantity kind" ;
-        sh:prefixes [
-            sh:declare [
-                sh:prefix "qudt" ;
-                sh:namespace "http://qudt.org/schema/qudt/"^^xsd:anyURI ;
-            ] ;
-            sh:declare [
-                sh:prefix "qkind" ;
-                sh:namespace "http://qudt.org/vocab/quantitykind/"^^xsd:anyURI ;
-            ]
-        ] ;
-        sh:select """
-            SELECT $this
-            WHERE {
-                $this esg:code ?code ;
-                      esg:unitIri ?unitIri .
-                      
-                # Placeholder for quantity kind validation
-                # Would require mapping codes to expected quantity kinds
-                # For now, this is a framework for future enhancement
-                FILTER (false)  # Disabled until business rules defined
-            }
-        """ ;
-    ] .
+  # fraction: 0..1
+  sh:sparql [
+    sh:message "When unit = FRACTION, value must be between 0 and 1" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this esg:unitIri unit:FRACTION ;
+              esg:value ?v .
+        FILTER (?v < 0 || ?v > 1)
+      }
+    """ ;
+  ] .
+
+######################################################################
+# 环境类指标的单位提示（启发式，设为 Warning）
+######################################################################
+
+esg:EnvironmentalEmissionsUnitHint
+  a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+  rdfs:label "Heuristic hint for emissions-related metrics" ;
+  sh:sparql [
+    sh:severity sh:Warning ;
+    sh:message "Emissions-like metrics typically use mass or mass-rate units" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this esg:code ?code ;
+              esg:unitIri ?u .
+        FILTER (
+          CONTAINS(LCASE(STR(?code)), "emission") ||
+          CONTAINS(LCASE(STR(?code)), "ghg") ||
+          CONTAINS(LCASE(STR(?code)), "co2") ||
+          CONTAINS(LCASE(STR(?code)), "carbon")
+        )
+        FILTER (?u NOT IN (
+          unit:GM, unit:KiloGM, unit:Tonne,
+          unit:KiloGM-PER-YR, unit:Tonne-PER-YR
+        ))
+      }
+    """ ;
+  ] .
+
+######################################################################
+# SASB 财务类单位提示（启发式，设为 Warning）
+######################################################################
+
+esg:SASBFinancialCurrencyUnitHint
+  a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+  rdfs:label "Heuristic hint for SASB financial metrics to use currency units" ;
+  sh:sparql [
+    sh:severity sh:Warning ;
+    sh:message "SASB financial codes often expect currency units (USD/EUR/...)" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this esg:framework "SASB" ;
+              esg:code ?code ;
+              esg:unitIri ?u .
+        # 仅示例性地将 410a / 420a 视为财务相关，按需扩充
+        FILTER ( CONTAINS(?code, "410a") || CONTAINS(?code, "420a") )
+        FILTER (?u NOT IN ( unit:USD, unit:EUR, unit:GBP, unit:JPY, unit:CNY ))
+      }
+    """ ;
+  ] .
+
+######################################################################
+# 溯源（来源）提示（弱约束）
+######################################################################
+
+esg:ProvenanceHints
+  a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+  rdfs:label "Provenance textual hints" ;
+  sh:sparql [
+    sh:severity sh:Info ;
+    sh:message "source should mention a document type (Report/Annual/Sustainability/...)" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this esg:source ?s .
+        FILTER ( !REGEX(?s, "(Report|report|Annual|annual|Sustainability|sustainability|Filing|filing|Assessment|assessment)") )
+      }
+    """ ;
+  ] ;
+  sh:sparql [
+    sh:severity sh:Info ;
+    sh:message "source should include a year like 20XX" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this esg:source ?s .
+        FILTER ( !REGEX(?s, "20[0-9]{2}") )
+      }
+    """ ;
+  ] .

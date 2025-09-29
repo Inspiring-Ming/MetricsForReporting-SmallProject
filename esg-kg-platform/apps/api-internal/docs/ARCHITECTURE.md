@@ -55,8 +55,9 @@ func SetupRouter() *chi.Mux {
         r.Get("/categories", handlers.GetCategories)          // 获取框架下的分类  
         r.Get("/metrics", handlers.GetMetrics)               // 获取分类下的指标
         
-        // 计算相关端点 (元数据查询)
-        r.Post("/computation-methods", handlers.GetComputationMethods) // 获取计算方法元数据
+    // 计算相关端点 (仅元数据查询，非执行)
+    r.Get("/computation-methods", handlers.ListComputationMethods)        // 列出计算方法元数据
+    r.Get("/computation-methods/{code}", handlers.GetComputationMethod)   // 获取单个计算方法元数据
         
         // 高级查询端点  
         r.Post("/sparql", handlers.ExecuteSparql)            // SPARQL直接查询

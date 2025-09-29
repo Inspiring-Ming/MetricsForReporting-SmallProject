@@ -1,230 +1,173 @@
-@prefix sh: <http://www.w3.org/ns/shacl#> .
-@prefix esg: <https://esg.platform/ontology/> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix qudt: <http://qudt.org/vocab/unit/> .
-@prefix time: <http://www.w3.org/2006/time#> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix sh:    <http://www.w3.org/ns/shacl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix esg:   <https://esg.platform/ontology/> .
+@prefix qudt:  <http://qudt.org/schema/qudt/> .
+@prefix unit:  <http://qudt.org/vocab/unit/> .
+@prefix qkind: <http://qudt.org/vocab/quantitykind/> .
+@prefix time:  <http://www.w3.org/2006/time#> .
+@prefix prov:  <http://www.w3.org/ns/prov#> .
 
-# =============================================================================
-# ESG Core SHACL Shapes - Required Fields and Data Types
-# Corresponds to packages/dto/metric.schema.json
-# =============================================================================
+######################################################################
+# ESG Metric - Core Shape
+# - 对应 API/DTO 的必填字段、数据类型与基本格式
+# - 采用 sh:closed，严格白名单属性
+######################################################################
 
-# Main ESG Metric Shape
 esg:MetricShape
-    a sh:NodeShape ;
-    sh:targetClass esg:Metric ;
-    rdfs:label "ESG Metric Shape" ;
-    rdfs:comment "Core validation rules for ESG metrics matching JSON Schema requirements" ;
-    
-    # Framework (required, enumerated values)
-    sh:property [
-        sh:path esg:framework ;
-        sh:name "framework" ;
-        sh:description "ESG reporting framework" ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:datatype xsd:string ;
-        sh:in ( "SASB" "GRI" "TCFD" "EU_TAXONOMY" "CSRD" ) ;
-        sh:message "Framework is required and must be one of: SASB, GRI, TCFD, EU_TAXONOMY, CSRD" ;
-    ] ;
-    
-    # Industry (required, string with constraints)
-    sh:property [
-        sh:path esg:industry ;
-        sh:name "industry" ;
-        sh:description "Industry sector classification" ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:datatype xsd:string ;
-        sh:minLength 1 ;
-        sh:maxLength 100 ;
-        sh:pattern "^[A-Za-z0-9\\s\\-_]+$" ;
-        sh:message "Industry is required, must be 1-100 characters, alphanumeric with spaces, hyphens, underscores only" ;
-    ] ;
-    
-    # Code (required, string with pattern)
-    sh:property [
-        sh:path esg:code ;
-        sh:name "code" ;
-        sh:description "Unique metric identifier within framework" ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:datatype xsd:string ;
-        sh:minLength 1 ;
-        sh:maxLength 50 ;
-        sh:pattern "^[A-Za-z0-9\\-._]+$" ;
-        sh:message "Code is required, must be 1-50 characters, alphanumeric with hyphens, dots, underscores only" ;
-    ] ;
-    
-    # Entity ID (required, string identifier)
-    sh:property [
-        sh:path esg:entityId ;
-        sh:name "entityId" ;
-        sh:description "Unique identifier for reporting entity" ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:datatype xsd:string ;
-        sh:minLength 1 ;
-        sh:maxLength 100 ;
-        sh:pattern "^[A-Za-z0-9\\-._]+$" ;
-        sh:message "EntityId is required, must be 1-100 characters, alphanumeric with hyphens, dots, underscores only" ;
-    ] ;
-    
-    # Value (required, non-negative number)
-    sh:property [
-        sh:path esg:value ;
-        sh:name "value" ;
-        sh:description "Numerical metric value" ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:datatype xsd:decimal ;
-        sh:minInclusive 0 ;
-        sh:message "Value is required and must be a non-negative number" ;
-    ] ;
-    
-    # Unit IRI (required, valid IRI format)
-    sh:property [
-        sh:path esg:unitIri ;
-        sh:name "unitIri" ;
-        sh:description "QUDT unit IRI reference" ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:nodeKind sh:IRI ;
-        sh:pattern "^https?://" ;
-        sh:message "UnitIri is required and must be a valid HTTP(S) IRI" ;
-    ] ;
-    
-    # AsOf (required, valid datetime)
-    sh:property [
-        sh:path esg:asOf ;
-        sh:name "asOf" ;
-        sh:description "Reporting date and time" ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:datatype xsd:dateTime ;
-        sh:message "AsOf is required and must be a valid ISO 8601 datetime" ;
-    ] ;
-    
-    # Source (required, provenance string)
-    sh:property [
-        sh:path esg:source ;
-        sh:name "source" ;
-        sh:description "Data source for provenance tracking" ;
-        sh:minCount 1 ;
-        sh:maxCount 1 ;
-        sh:datatype xsd:string ;
-        sh:minLength 1 ;
-        sh:maxLength 500 ;
-        sh:message "Source is required and must be 1-500 characters" ;
-    ] .
+  a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+  sh:closed true ;
+  sh:ignoredProperties ( rdf:type ) ;
+  rdfs:label "ESG Metric Shape (Core)" ;
+  rdfs:comment "Core validation rules aligned with JSON Schema / DTO" ;
 
-# Framework-specific validation shapes
-esg:SASBFrameworkShape
-    a sh:NodeShape ;
-    sh:targetNode esg:SASB ;
-    rdfs:label "SASB Framework Constraints" ;
-    sh:property [
-        sh:path esg:code ;
-        sh:pattern "^[A-Z]{2,3}-[A-Z]{2,3}-[0-9]{3}[a-z]?\\.[0-9]+$" ;
-        sh:message "SASB codes must follow pattern like 'FN-CB-410a.1'" ;
-    ] .
+  # === 白名单：允许出现的属性（并在下方逐一施加约束） ===
+  sh:property [ sh:path esg:framework ] ,
+              [ sh:path esg:industry ] ,
+              [ sh:path esg:code ] ,
+              [ sh:path esg:entityId ] ,
+              [ sh:path esg:value ] ,
+              [ sh:path esg:unitIri ] ,
+              [ sh:path esg:asOf ] ,
+              [ sh:path esg:source ] ;
 
-esg:GRIFrameworkShape  
-    a sh:NodeShape ;
-    sh:targetNode esg:GRI ;
-    rdfs:label "GRI Framework Constraints" ;
-    sh:property [
-        sh:path esg:code ;
-        sh:pattern "^[0-9]{3}-[0-9]+$" ;
-        sh:message "GRI codes must follow pattern like '201-1'" ;
-    ] .
+  # framework
+  sh:property [
+    sh:path esg:framework ; sh:name "framework" ;
+    sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ;
+    sh:in ( "SASB" "GRI" "TCFD" "EU_TAXONOMY" "CSRD" ) ;
+    sh:message "framework must be one of: SASB | GRI | TCFD | EU_TAXONOMY | CSRD" ;
+  ] ;
 
-# Industry-specific validation
-esg:CommercialBanksShape
-    a sh:NodeShape ;
-    sh:targetClass esg:Metric ;
-    sh:condition [
-        sh:property [
-            sh:path esg:industry ;
-            sh:hasValue "Commercial Banks" ;
-        ]
-    ] ;
-    rdfs:label "Commercial Banks Industry Constraints" ;
-    rdfs:comment "Additional validation rules specific to commercial banking metrics" .
+  # industry
+  sh:property [
+    sh:path esg:industry ; sh:name "industry" ;
+    sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ;
+    sh:minLength 1 ; sh:maxLength 100 ;
+    sh:pattern "^[A-Za-z0-9\\s\\-_]+$" ;
+    sh:message "industry must be 1-100 chars (alnum+space+hyphen+underscore)" ;
+  ] ;
 
-# Data quality constraints
-esg:DataQualityShape
-    a sh:NodeShape ;
-    sh:targetClass esg:Metric ;
-    rdfs:label "Data Quality Constraints" ;
-    
-    # Ensure framework and industry combination is valid
+  # code
+  sh:property [
+    sh:path esg:code ; sh:name "code" ;
+    sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ;
+    sh:minLength 1 ; sh:maxLength 50 ;
+    sh:pattern "^[A-Za-z0-9\\-._]+$" ;
+    sh:message "code must be 1-50 chars (alnum + - . _ )" ;
+  ] ;
+
+  # entityId
+  sh:property [
+    sh:path esg:entityId ; sh:name "entityId" ;
+    sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ;
+    sh:minLength 1 ; sh:maxLength 100 ;
+    sh:pattern "^[A-Za-z0-9\\-._]+$" ;
+    sh:message "entityId must be 1-100 chars (alnum + - . _ )" ;
+  ] ;
+
+  # value
+  sh:property [
+    sh:path esg:value ; sh:name "value" ;
+    sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:decimal ;
+    sh:minInclusive "0"^^xsd:decimal ;
+    sh:message "value must be a non-negative decimal" ;
+  ] ;
+
+  # unitIri 需为 IRI，且来自 QUDT units 词表命名空间
+  sh:property [
+    sh:path esg:unitIri ; sh:name "unitIri" ;
+    sh:minCount 1 ; sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
     sh:sparql [
-        sh:message "Invalid framework-industry combination" ;
-        sh:prefixes [
-            sh:declare [
-                sh:prefix "esg" ;
-                sh:namespace "https://esg.platform/ontology/"^^xsd:anyURI ;
-            ]
-        ] ;
-        sh:select """
-            SELECT $this
-            WHERE {
-                $this esg:framework ?framework ;
-                      esg:industry ?industry .
-                # Add framework-industry validation logic here
-                FILTER NOT EXISTS {
-                    # Valid combinations would be defined here
-                    # For now, all combinations are allowed
-                    VALUES (?framework ?industry) { }
-                }
-            }
-        """ ;
+      sh:message "unitIri must start with http://qudt.org/vocab/unit/" ;
+      sh:select """
+        SELECT $this WHERE {
+          $this esg:unitIri ?u .
+          FILTER ( !STRSTARTS(STR(?u), "http://qudt.org/vocab/unit/") )
+        }
+      """ ;
     ] ;
-    
-    # Ensure no duplicate metrics for same entity/framework/code/asOf
-    sh:sparql [
-        sh:message "Duplicate metric detected for same entity, framework, code and reporting date" ;
-        sh:prefixes [
-            sh:declare [
-                sh:prefix "esg" ;
-                sh:namespace "https://esg.platform/ontology/"^^xsd:anyURI ;
-            ]
-        ] ;
-        sh:select """
-            SELECT $this
-            WHERE {
-                $this esg:entityId ?entityId ;
-                      esg:framework ?framework ;
-                      esg:code ?code ;
-                      esg:asOf ?asOf .
-                      
-                ?other esg:entityId ?entityId ;
-                       esg:framework ?framework ;
-                       esg:code ?code ;
-                       esg:asOf ?asOf .
-                       
-                FILTER ($this != ?other)
-            }
-        """ ;
-    ] .
+  ] ;
 
-# Closed shape - no additional properties allowed
-esg:ClosedMetricShape
-    a sh:NodeShape ;
-    sh:targetClass esg:Metric ;
-    sh:closed true ;
-    sh:ignoredProperties ( rdf:type ) ;
-    sh:property 
-        [ sh:path esg:framework ] ,
-        [ sh:path esg:industry ] ,
-        [ sh:path esg:code ] ,
-        [ sh:path esg:entityId ] ,
-        [ sh:path esg:value ] ,
-        [ sh:path esg:unitIri ] ,
-        [ sh:path esg:asOf ] ,
-        [ sh:path esg:source ] ;
-    sh:message "Additional properties not allowed beyond the defined schema" .
+  # asOf
+  sh:property [
+    sh:path esg:asOf ; sh:name "asOf" ;
+    sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:dateTime ;
+    sh:message "asOf must be a valid xsd:dateTime" ;
+  ] ;
+
+  # source
+  sh:property [
+    sh:path esg:source ; sh:name "source" ;
+    sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:string ;
+    sh:minLength 1 ; sh:maxLength 500 ;
+    sh:message "source must be 1-500 char string" ;
+  ] .
+
+######################################################################
+# 框架与代码格式的一致性（SASB / GRI）
+######################################################################
+
+esg:SASBCodePattern
+  a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+  rdfs:label "SASB code pattern when framework=SASB" ;
+  sh:sparql [
+    sh:message "SASB framework requires code like 'FN-CB-410a.1'" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this esg:framework "SASB" ;
+              esg:code ?code .
+        FILTER ( !REGEX(?code, "^[A-Z]{2,3}-[A-Z]{2,3}-[0-9]{3}[a-z]?\\.[0-9]+$") )
+      }
+    """ ;
+  ] .
+
+esg:GRICodePattern
+  a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+  rdfs:label "GRI code pattern when framework=GRI" ;
+  sh:sparql [
+    sh:message "GRI framework requires code like '201-1'" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this esg:framework "GRI" ;
+              esg:code ?code .
+        FILTER ( !REGEX(?code, "^[0-9]{3}-[0-9]+$") )
+      }
+    """ ;
+  ] .
+
+######################################################################
+# 业务主键唯一性（去重）：entityId+framework+industry+code+asOf
+######################################################################
+
+esg:DuplicateMetricKey
+  a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+  rdfs:label "Duplicate key check" ;
+  sh:sparql [
+    sh:message "Duplicate metric for same (entityId, framework, industry, code, asOf)" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this a esg:Metric ;
+              esg:entityId ?entityId ;
+              esg:framework ?framework ;
+              esg:industry ?industry ;
+              esg:code ?code ;
+              esg:asOf ?asOf .
+
+        ?other a esg:Metric ;
+               esg:entityId ?entityId ;
+               esg:framework ?framework ;
+               esg:industry ?industry ;
+               esg:code ?code ;
+               esg:asOf ?asOf .
+
+        FILTER ($this != ?other)
+      }
+    """ ;
+  ] .

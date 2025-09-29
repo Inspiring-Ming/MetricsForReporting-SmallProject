@@ -1,39 +1,27 @@
-# ESG Platform Public API 输入输出清单
+# ESG Platform Public API Contracts
 
-> TypeScript写入服务：数据验证、写入、转换的完整契约定义
+> TypeScript Write Service: Complete contract definitions for data validation, ingestion, and transformation with knowledge graph integration
 
 ## 🏗️ 双API架构分工
 
-### 🔴 Public API (TypeScript) - **写入专用**
-本服务专注于ESG数据的**写入流水线**：
-- ✅ **数据验证**: JSON Schema + SHACL验证
-- ✅ **数据写入**: 单条和批量指标写入
-- ✅ **格式转换**: JSON → RDF/TTL转换
-- ✅ **事务处理**: 原子性写入和回滚
-- ✅ **溯源记录**: 完整的数据来源追踪
-
-### 🔵 Internal API (Go) - **读取专用**  
-所有**查询、聚合、只读**操作由高性能Go服务处理：
-- � **框架查询**: /internal/v1/frameworks - 获取行业报告框架
-- 🏷️ **分类查询**: /internal/v1/categories - 获取框架下的分类
-- 📊 **指标查询**: /internal/v1/metrics - 获取分类下的指标
-- � **代码查询**: /internal/v1/metric-codes - 获取指标的运算代码
-- ⚙️ **计算方法**: /internal/v1/computation-methods - 获取计算方法
-- 🧮 **模型执行**: /internal/v1/compute - 执行计算模型
-- 🔍 **SPARQL查询**: /internal/v1/sparql - 直接图查询
-- 💾 **缓存优化**: Redis分层缓存策略
-- 🔒 **只读安全**: 严格的SELECT-only约束
-
-> 📖 **完整读取API文档**: [Internal API Contracts](../../../api-internal/docs/API_CONTRACTS.md)
+### 🔴 Public API (TypeScript) - **Write Pipeline**
+This service focuses on ESG data **write operations**:
+- ✅ **Data Validation**: JSON Schema + SHACL validation for direct measurements
+- ✅ **Data Ingestion**: Single and batch metric ingestion (direct measurements only)
+- ✅ **Format Conversion**: JSON → RDF/TTL transformation
+- ✅ **Transaction Processing**: Atomic writes and rollbacks
+- ✅ **Computation Execution**: Metric calculations via separate /compute endpoint
+- ✅ **Audit Trail**: Complete data provenance tracking
 
 ## 通用请求头说明
 
 所有API端点支持以下标准请求头：
 
-- **Authorization**: `Bearer <JWT_TOKEN>` - JWT认证令牌（必需）
 - **Content-Type**: `application/json` - 请求体格式（写入端点必需）
 - **X-Request-ID**: 可选的请求追踪ID，用于日志关联
 - **Idempotency-Key**: 可选的幂等性密钥，确保相同请求的幂等性处理
+
+> 🔧 **本地开发说明**: 当前版本为本地开发优化，**暂未启用认证**。所有API端点可直接访问，无需认证令牌。
 
 ### Idempotency-Key 行为规范
 
@@ -52,13 +40,13 @@
 curl -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
      -H "Content-Type: application/json" \
      -d '{"entityId": "COMP123", ...}' \
-     POST /public/v1/metrics
+     POST /public/v1/ingest/metric
 
 # 重复请求 - 返回原始 201 结果
 curl -H "Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000" \
      -H "Content-Type: application/json" \
      -d '{"entityId": "COMP123", ...}' \
-     POST /public/v1/metrics
+     POST /public/v1/ingest/metric
 ```
 
 > ⚠️ **重要**：`batchId` 和 `namedGraph` 始终由服务端生成，不接受外部传入。如需幂等性保证，请使用 `Idempotency-Key` 请求头。
@@ -111,7 +99,9 @@ https://esg.platform/data/metric/{entityId}/{framework}/{industry}/{code}/{asOf}
 - 📅 **输入**: 客户端可提交完整ISO时间戳 `2023-12-31T23:59:59Z`
 - 🔄 **规范化**: 服务端自动提取UTC日期部分转为 `2023-12-31` 
 - 🔗 **IRI中使用**: 仅使用日期部分，确保同一天的所有时间戳映射到相同IRI
-- ⚠️ **冲突检测**: 同一实体+框架+代码+日期视为重复，不论具体时间
+- ⚠️ **冲突检测**: 同一实体+框架+行业+代码+日期视为重复，不论具体时间
+  - 冲突键：`entityId + framework + industry + code + date`
+  - 对应完整的Metric IRI路径，确保唯一性约束
 
 **编码规范**：
 - 空格和特殊字符使用URL编码 (例: `Commercial Banks` → `Commercial%20Banks`)
@@ -128,11 +118,13 @@ https://esg.platform/data/metric/{entityId}/{framework}/{industry}/{code}/{asOf}
 #### 输入 (Input)
 **Content-Type**: `application/json` 或 `text/turtle`
 
-**JSON格式输入**:
+**Enhanced JSON Input Format**:
+
+**Direct Measurement Example (Validation Only)**:
 ```json
 {
   "framework": "SASB",
-  "industry": "Commercial Banks", 
+  "industry": "Commercial Banks",
   "code": "FN-CB-410a.1",
   "entityId": "bank-001",
   "value": 1250000.00,
@@ -142,7 +134,7 @@ https://esg.platform/data/metric/{entityId}/{framework}/{industry}/{code}/{asOf}
 }
 ```
 
-> 📌 **Code字段说明**: `code`字段不是简单的标识符，而是平台内部注册的**运算代码**。每个code对应一个特定的指标计算方法和逻辑。当客户端使用某个code时，实际上是在调用平台提供的"用内部已注册的code版本来算指标"的服务接口。平台会根据code执行相应的计算逻辑来生成或验证指标值。
+> 📌 **Validation Focus**: The /validate endpoint only processes direct measurement data against SHACL constraints. For calculated metrics, use the /compute endpoint first to generate the metric values.
 
 **TTL格式输入**:
 ```turtle
@@ -163,7 +155,6 @@ esg:metric_001 a esg:Metric ;
 
 **Headers**:
 ```http
-Authorization: Bearer <JWT_TOKEN>
 Content-Type: application/json | text/turtle
 X-Request-ID: optional-request-id
 Idempotency-Key: optional-idempotency-key
@@ -221,8 +212,6 @@ X-Request-ID: req_abc123def456
 | 400 | `INVALID_CONTENT_TYPE` | 不支持的Content-Type | ❌ |
 | 400 | `INVALID_JSON` | JSON格式错误 | ❌ |  
 | 400 | `MALFORMED_TTL` | TTL格式错误 | ❌ |
-| 401 | `UNAUTHORIZED` | JWT Token无效 | ❌ |
-| 403 | `FORBIDDEN` | 缺少validate:metrics权限 | ❌ |
 | 422 | `VALIDATION_FAILED` | SHACL验证失败 | ❌ |
 | 429 | `RATE_LIMIT_EXCEEDED` | 速率限制 | ✅ |
 | 503 | `SERVICE_UNAVAILABLE` | SHACL服务不可用 | ✅ |
@@ -232,11 +221,12 @@ X-Request-ID: req_abc123def456
 #### 输入 (Input)
 **Content-Type**: `application/json`
 
+**Direct Measurement Example (Only Supported Format)**:
 ```json
 {
   "framework": "SASB",
   "industry": "Commercial Banks",
-  "code": "FN-CB-410a.1", 
+  "code": "FN-CB-410a.1",
   "entityId": "bank-001",
   "value": 1250000.00,
   "unitIri": "http://qudt.org/vocab/unit/USD",
@@ -245,9 +235,10 @@ X-Request-ID: req_abc123def456
 }
 ```
 
+> 📌 **Architecture Decision A**: `/ingest/metric` only accepts direct measurement data (pre-calculated values). For calculated metrics, use the `/compute` endpoint first to generate values, then optionally use `/ingest` to store the results.
+
 **Headers**:
 ```http
-Authorization: Bearer <JWT_TOKEN>
 Content-Type: application/json
 X-Request-ID: optional-request-id
 Idempotency-Key: optional-idempotency-key
@@ -259,12 +250,12 @@ Idempotency-Key: optional-idempotency-key
 
 **响应头**:
 ```http
-Location: /public/v1/metrics/bank-001/SASB/Commercial%20Banks/FN-CB-410a.1/2023-12-31
+Location: https://esg.platform/data/metric/bank-001/SASB/Commercial%20Banks/FN-CB-410a.1/2023-12-31
 Content-Type: application/json
 X-Request-ID: req_abc123def456
 ```
 
-**响应体**:
+**Direct Measurement Response**:
 ```json
 {
   "success": true,
@@ -273,9 +264,15 @@ X-Request-ID: req_abc123def456
   "namedGraph": "https://esg.platform/graphs/batch_abc123def456",
   "triplesCount": 15,
   "duration": 1250,
-  "location": "/public/v1/metrics/bank-001/SASB/Commercial%20Banks/FN-CB-410a.1/2023-12-31"
+  "location": "https://esg.platform/data/metric/bank-001/SASB/Commercial%20Banks/FN-CB-410a.1/2023-12-31"
 }
 ```
+
+> 📌 **Architectural Clarification**: 
+> - `/ingest/metric` only accepts direct measurement data with pre-calculated values
+> - For computed metrics, use the `/compute` endpoint first to calculate values, then use `/ingest` to store results
+> - **Location header follows read-write separation**: Returns data IRI for reference, not API paths for queries
+> - **Query stored data**: Use [Go Internal API](../../api-internal/docs/API_CONTRACTS.md) for all read operations
 
 **冲突错误响应 (409 Conflict)**:
 ```http
@@ -286,10 +283,10 @@ X-Request-ID: req_abc123def456
 ```json
 {
   "type": "https://esg.platform/problems/conflict",
-  "title": "Resource Conflict",
+  "title": "Resource Conflict", 
   "status": 409,
-  "detail": "Metric already exists for this entity, framework, calculation code and date",
-  "instance": "/public/v1/ingest",
+  "detail": "Metric already exists for this entity, framework, industry, calculation code and date",
+  "instance": "/public/v1/ingest/metric",
   "existing": {
     "iri": "https://esg.platform/data/metric/bank-001/SASB/Commercial%20Banks/FN-CB-410a.1/2023-12-31"
   }
@@ -308,7 +305,7 @@ X-Request-ID: req_abc123def456
   "title": "Invalid JSON",
   "status": 400,
   "detail": "Request body contains malformed JSON",
-  "instance": "/public/v1/ingest"
+  "instance": "/public/v1/ingest/metric"
 }
 ```
 
@@ -324,7 +321,7 @@ X-Request-ID: req_abc123def456
   "title": "Validation Failed",
   "status": 422,
   "detail": "Metric data failed validation constraints",
-  "instance": "/public/v1/ingest",
+  "instance": "/public/v1/ingest/metric",
   "errors": [
     {
       "field": "value",
@@ -343,7 +340,7 @@ X-Request-ID: req_abc123def456
   "title": "Service Unavailable",
   "status": 503,
   "detail": "GraphDB service is currently unavailable",
-  "instance": "/public/v1/ingest",
+  "instance": "/public/v1/ingest/metric",
   "retryAfter": "30s"
 }
 ```
@@ -353,8 +350,6 @@ X-Request-ID: req_abc123def456
 |--------|--------|------|------|
 | 400 | `INVALID_CONTENT_TYPE` | 不支持的Content-Type | ❌ |
 | 400 | `INVALID_JSON` | JSON格式错误 | ❌ |
-| 401 | `UNAUTHORIZED` | JWT Token无效 | ❌ |
-| 403 | `FORBIDDEN` | 缺少write:metrics权限 | ❌ |
 | 409 | `CONFLICT` | 指标已存在 | ❌ |
 | 422 | `VALIDATION_FAILED` | 预写入验证失败 | ❌ |
 | 429 | `RATE_LIMIT_EXCEEDED` | 写入速率限制 | ✅ |
@@ -370,7 +365,7 @@ X-Request-ID: req_abc123def456
   "metrics": [
     {
       "framework": "SASB",
-      "industry": "Commercial Banks", 
+      "industry": "Commercial Banks",
       "code": "FN-CB-410a.1",
       "entityId": "bank-001",
       "value": 1250000.00,
@@ -379,11 +374,11 @@ X-Request-ID: req_abc123def456
       "source": "Annual Report 2023"
     },
     {
-      "framework": "GRI",
+      "framework": "SASB",
       "industry": "Commercial Banks",
-      "code": "201-1", 
+      "code": "FN-CB-270a.2", 
       "entityId": "bank-001",
-      "value": 2500000.00,
+      "value": 850000.00,
       "unitIri": "http://qudt.org/vocab/unit/USD",
       "asOf": "2023-12-31T23:59:59Z",
       "source": "Annual Report 2023"
@@ -391,15 +386,13 @@ X-Request-ID: req_abc123def456
   ],
   "options": {
     "validateFirst": true,
-    "stopOnError": false,
-    "transactional": true
+    "continueOnError": false
   }
 }
 ```
 
 **Headers**:
 ```http
-Authorization: Bearer <JWT_TOKEN>
 Content-Type: application/json
 X-Request-ID: optional-request-id
 Idempotency-Key: optional-idempotency-key
@@ -407,7 +400,7 @@ Idempotency-Key: optional-idempotency-key
 
 #### 输出 (Output)
 
-**成功响应 (201 Created)**:
+**Batch Success Response (201 Created)**:
 ```json
 {
   "batchId": "batch_abc123def456",
@@ -416,7 +409,7 @@ Idempotency-Key: optional-idempotency-key
     "total": 2,
     "successful": 2,
     "failed": 0,
-    "duration": 3450
+    "duration": 2450
   },
   "results": [
     {
@@ -426,10 +419,16 @@ Idempotency-Key: optional-idempotency-key
       "triplesCount": 15
     },
     {
-      "index": 1,
+      "index": 1, 
       "success": true,
-      "metricIri": "https://esg.platform/data/metric/bank-001/GRI/Commercial%20Banks/201-1/2023-12-31", 
-      "triplesCount": 12
+      "metricIri": "https://esg.platform/data/metric/bank-001/SASB/Commercial%20Banks/FN-CB-270a.2/2023-12-31",
+      "triplesCount": 15
+          "Scope2Emission": { "value": 8200.0, "unit": "tons CO2e" },
+          "Revenue": { "value": 500.0, "unit": "million USD" }
+        },
+        "formula": "(Scope1Emission + Scope2Emission) / Revenue",
+        "executionTime": 45
+      }
     }
   ],
   "namedGraph": "https://esg.platform/graphs/batch_abc123def456"
@@ -475,14 +474,108 @@ Idempotency-Key: optional-idempotency-key
 | 400 | `INVALID_CONTENT_TYPE` | 不支持的Content-Type | ❌ |
 | 400 | `INVALID_JSON` | JSON格式错误 | ❌ |
 | 400 | `INVALID_BATCH_SIZE` | 批量大小超出限制 | ❌ |
-| 401 | `UNAUTHORIZED` | JWT Token无效 | ❌ |
-| 403 | `FORBIDDEN` | 缺少write:metrics权限 | ❌ |
 | 409 | `CONFLICT` | 批量中存在冲突指标 | ❌ |
 | 422 | `VALIDATION_FAILED` | 批量验证失败 | ❌ |
 | 429 | `RATE_LIMIT_EXCEEDED` | 批量写入速率限制 | ✅ |
 | 503 | `SERVICE_UNAVAILABLE` | GraphDB不可用 | ✅ |
 
-### 1.4 GET /public/v1/health
+### 1.4 POST /public/v1/compute
+
+Execute metric calculations using knowledge graph computation models.
+
+#### 输入 (Input)
+**Content-Type**: `application/json`
+
+```json
+{
+  "framework": "SASB",
+  "industry": "Semiconductors",
+  "code": "TC-SC-110a.3",
+  "entityId": "semiconductor-company-001",
+  "inputValues": {
+    "Scope1Emission": 12500.0,
+    "Scope2Emission": 8200.0,
+    "Revenue": 500.0
+  },
+  "asOf": "2023-12-31T23:59:59Z",
+  "source": "Calculated from annual data"
+}
+```
+
+**Headers**:
+```http
+Content-Type: application/json
+X-Request-ID: optional-request-id
+Idempotency-Key: optional-idempotency-key
+```
+
+#### 输出 (Output)
+
+**Computation Success Response (200 OK)**:
+```json
+{
+  "success": true,
+  "result": {
+    "computationId": "comp_xyz789abc456",
+    "value": 41.4,
+    "unitIri": "http://qudt.org/vocab/unit/TNE_CO2e-PER-1E6_USD",
+    "computedAt": "2023-12-31T15:30:45Z",
+    "method": {
+      "code": "TC-SC-110a.3",
+      "modelName": "GHGEmissionIntensityModel",
+      "formula": "(Scope1Emission + Scope2Emission) / Revenue"
+    },
+    "inputValues": {
+      "Scope1Emission": 12500.0,
+      "Scope2Emission": 8200.0,
+      "Revenue": 500.0
+    },
+    "generatedMetric": {
+      "framework": "SASB",
+      "industry": "Semiconductors",
+      "code": "TC-SC-110a.3",
+      "entityId": "semiconductor-company-001",
+      "value": 41.4,
+      "unitIri": "http://qudt.org/vocab/unit/TNE_CO2e-PER-1E6_USD",
+      "asOf": "2023-12-31T23:59:59Z",
+      "source": "Calculated from annual data"
+    },
+    "duration": 245
+  }
+}
+```
+
+**Computation Error Response (400 Bad Request)**:
+```json
+{
+  "type": "https://esg.platform/problems/computation-failed",
+  "title": "Computation Failed",
+  "status": 400,
+  "detail": "Required input metric 'Revenue' is missing or invalid",
+  "instance": "/public/v1/compute",
+  "computationDetails": {
+    "code": "TC-SC-110a.3",
+    "modelName": "GHGEmissionIntensityModel",
+    "requiredInputs": ["Scope1Emission", "Scope2Emission", "Revenue"],
+    "providedInputs": ["Scope1Emission", "Scope2Emission"],
+    "missingInputs": ["Revenue"]
+  }
+}
+```
+
+#### 错误码清单
+| 状态码 | 错误码 | 描述 | 重试 |
+|--------|--------|------|------|
+| 400 | `INVALID_CONTENT_TYPE` | 不支持的Content-Type | ❌ |
+| 400 | `INVALID_JSON` | JSON格式错误 | ❌ |
+| 400 | `COMPUTATION_FAILED` | 计算模型执行失败 | ❌ |
+| 400 | `MISSING_INPUT_VALUES` | 缺少必需的输入值 | ❌ |
+| 404 | `MODEL_NOT_FOUND` | 指定的计算模型不存在 | ❌ |
+| 422 | `VALIDATION_FAILED` | 输入数据验证失败 | ❌ |
+| 429 | `RATE_LIMIT_EXCEEDED` | 计算请求速率限制 | ✅ |
+| 503 | `SERVICE_UNAVAILABLE` | 计算服务不可用 | ✅ |
+
+### 1.5 GET /public/v1/health
 
 #### 输入 (Input)
 **无请求体**
@@ -498,11 +591,68 @@ Accept: application/json
 ```json
 {
   "status": "healthy",
-  "timestamp": "2025-09-28T10:30:00Z",
   "version": "1.0.0",
-  "services": {
-    "graphdb": "healthy",
-    "shacl_validator": "healthy"
+  "timestamp": "2025-09-28T10:30:00Z",
+  "dependencies": [
+    {
+      "name": "GraphDB",
+      "status": "up",
+      "responseTime": 245,
+      "lastCheck": "2025-09-28T10:30:00Z"
+    },
+    {
+      "name": "SHACL Validator",
+      "status": "up", 
+      "responseTime": 120,
+      "lastCheck": "2025-09-28T10:30:00Z"
+    },
+    {
+      "name": "Auth Service",
+      "status": "up",
+      "responseTime": 89,
+      "lastCheck": "2025-09-28T10:30:00Z"
+    }
+  ],
+  "metrics": {
+    "uptime": 3600,
+    "memoryUsage": "125MB",
+    "requestCount": 1234,
+    "averageResponseTime": 150
+  }
+}
+```
+
+**部分降级响应 (200 OK)**:
+```json
+{
+  "status": "degraded",
+  "version": "1.0.0", 
+  "timestamp": "2025-09-28T10:30:00Z",
+  "dependencies": [
+    {
+      "name": "GraphDB",
+      "status": "degraded",
+      "responseTime": 2500,
+      "lastCheck": "2025-09-28T10:30:00Z"
+    },
+    {
+      "name": "SHACL Validator",
+      "status": "up",
+      "responseTime": 120,
+      "lastCheck": "2025-09-28T10:30:00Z"
+    },
+    {
+      "name": "Auth Service",
+      "status": "up",
+      "responseTime": 89,
+      "lastCheck": "2025-09-28T10:30:00Z"
+    }
+  ],
+  "metrics": {
+    "uptime": 3600,
+    "memoryUsage": "125MB", 
+    "requestCount": 1234,
+    "averageResponseTime": 850
   }
 }
 ```
@@ -511,11 +661,34 @@ Accept: application/json
 ```json
 {
   "status": "unhealthy",
-  "timestamp": "2025-09-28T10:30:00Z",
   "version": "1.0.0",
-  "services": {
-    "graphdb": "unhealthy",
-    "shacl_validator": "healthy"
+  "timestamp": "2025-09-28T10:30:00Z", 
+  "dependencies": [
+    {
+      "name": "GraphDB",
+      "status": "down",
+      "responseTime": 5000,
+      "lastCheck": "2025-09-28T10:30:00Z",
+      "error": "Connection timeout"
+    },
+    {
+      "name": "SHACL Validator",
+      "status": "up",
+      "responseTime": 120,
+      "lastCheck": "2025-09-28T10:30:00Z"
+    },
+    {
+      "name": "Auth Service", 
+      "status": "up",
+      "responseTime": 89,
+      "lastCheck": "2025-09-28T10:30:00Z"
+    }
+  ],
+  "metrics": {
+    "uptime": 3600,
+    "memoryUsage": "125MB",
+    "requestCount": 1234,
+    "averageResponseTime": 1750
   }
 }
 ```
@@ -862,7 +1035,7 @@ https://esg.platform/problems/internal-error
 **✅ 数据写入** - 必须使用JSON：
 ```javascript
 // 单个指标写入
-const response = await fetch('/public/v1/ingest', {
+const response = await fetch('/public/v1/ingest/metric', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',  // 🟢 必须是JSON
@@ -871,7 +1044,7 @@ const response = await fetch('/public/v1/ingest', {
   },
   body: JSON.stringify({
     framework: "SASB",
-    industry: "Commercial Banks", 
+    industry: "Commercial Banks",
     code: "FN-CB-410a.1",
     entityId: "bank-001",
     value: 1250000.00,
@@ -919,7 +1092,7 @@ const validateTtl = await fetch('/public/v1/validate', {
 
 ```javascript
 // 🚫 错误：试图直接POST TTL到写入端点
-fetch('/public/v1/ingest', {
+fetch('/public/v1/ingest/metric', {
   method: 'POST',
   headers: { 'Content-Type': 'text/turtle' },  // ❌ 写入端点不支持
   body: '@prefix esg: <...> .'
@@ -948,7 +1121,7 @@ fetch('/public/v1/ingest/batch', {
 ```javascript
 async function ingestMetric(metric: ESGMetric): Promise<IngestResponse> {
   try {
-    const response = await fetch('/public/v1/ingest', {
+    const response = await fetch('/public/v1/ingest/metric', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

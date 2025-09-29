@@ -1,71 +1,204 @@
-# ESG Platform 错误处理与重试策略
+# ESG Platform Error Handling & Retry Strategy
 
-> 异常流设计、错误分类、重试机制和降级策略
+> Exception flow design, error classification, retry mechanisms, and fallback strategies with knowledge graph integration
 
-## 错误分类体系
+## Error Classification System
 
-### 1. 客户端错误 (4xx) - 不重试
+### 1. Client Errors (4xx) - No Retry
 
-#### 422 Unprocessable Entity - SHACL验证失败
-**触发条件**：
-- SHACL约束违反
-- 数据完整性检查失败
-- 业务规则验证不通过
+#### 422 Unprocessable Entity - Validation Failed
+**Trigger Conditions**:
+- SHACL constraint violations
+- Data integrity check failures
+- Business rule validation failures
+- Knowledge graph model validation errors
+- Calculation model input validation failures
 
-**处理策略**：
+**Enhanced Handling Strategy**:
 ```typescript
 // ValidationService.ts
 async validateMetric(data: ESGMetric): Promise<ValidationResult> {
   let violations: ConstraintViolation[] = [];
   
   try {
+    // Basic SHACL validation
     violations = await this.shaclValidator.validateData(data);
+    
+    // Knowledge graph context validation
+    if (data.calculationMethod === 'calculation_model') {
+      const modelValidation = await this.validateCalculationModel(data.metricData);
+      violations.push(...modelValidation.violations);
+    }
+    
+    // Knowledge graph structure validation
+    const kgValidation = await this.validateKGContext(data);
+    violations.push(...kgValidation.violations);
+    
     if (violations.length > 0) {
       throw new ValidationError('VALIDATION_FAILED', violations);
     }
-    // 验证通过
+    
     return { isValid: true, violations: [] };
   } catch (error) {
-    // 不重试，直接返回422
     if (error instanceof ValidationError) {
       throw new HttpError(422, 'VALIDATION_FAILED', {
         type: 'https://esg.platform/problems/validation-failed',
         violations: error.violations.map(v => ({
-          path: v.path,
+          field: v.path,
           message: v.message,
-          value: v.value
+          code: v.code,
+          rejectedValue: v.value
         }))
       });
     }
-    throw error; // 重新抛出其他类型错误
+    throw error;
+  }
+}
+
+async validateCalculationModel(metricData: CalculatedMetricData): Promise<ValidationResult> {
+  // Validate model exists in knowledge graph
+  const modelExists = await this.knowledgeGraphService.modelExists(metricData.modelName);
+  if (!modelExists) {
+    return {
+      isValid: false,
+      violations: [{
+        path: 'metricData.modelName',
+        message: `Calculation model '${metricData.modelName}' not found in knowledge graph`,
+        code: 'MODEL_NOT_FOUND',
+        value: metricData.modelName
+      }]
+    };
+  }
+  
+  // Validate required inputs
+  const requiredInputs = await this.knowledgeGraphService.getModelRequiredInputs(metricData.modelName);
+  const providedInputs = Object.keys(metricData.inputMetrics);
+  const missingInputs = requiredInputs.filter(input => !providedInputs.includes(input));
+  
+  if (missingInputs.length > 0) {
+    return {
+      isValid: false,
+      violations: missingInputs.map(input => ({
+        path: `metricData.inputMetrics.${input}`,
+        message: `Required input '${input}' missing for model '${metricData.modelName}'`,
+        code: 'REQUIRED_INPUT_MISSING',
+        value: undefined
+      }))
+    };
+  }
+  
+  return { isValid: true, violations: [] };
+}
+```
+
+#### 400 Bad Request - Calculation Execution Error
+**Trigger Conditions**:
+- Calculation model execution failures  
+- Invalid input metric combinations
+- Model formula evaluation errors (division by zero, etc.)
+- Runtime calculation exceptions
+
+**Handling Strategy**:
+```typescript
+// CalculationService.ts
+async executeCalculationModel(
+  modelName: string, 
+  inputs: Record<string, MetricInput>
+): Promise<CalculationResult> {
+  try {
+    const model = await this.knowledgeGraphService.getModel(modelName);
+    if (!model) {
+      throw new HttpError(422, 'VALIDATION_FAILED', {
+        type: 'https://esg.platform/problems/validation-failed',
+        detail: `Calculation model '${modelName}' not found`,
+        violations: [{
+          path: 'metricData.modelName',
+          code: 'MODEL_NOT_FOUND',
+          message: `Model '${modelName}' does not exist`
+        }]
+      });
+    }
+    
+    const result = await this.executeModel(model, inputs);
+    return result;
+  } catch (error) {
+    if (error.code === 'DIVISION_BY_ZERO') {
+      throw new HttpError(400, 'CALCULATION_ERROR', {
+        type: 'https://esg.platform/problems/calculation-failed',
+        detail: 'Division by zero in calculation model',
+        modelName,
+        formula: model.formula
+      });
+    }
+    throw error;
   }
 }
 ```
 
-#### 409 Conflict - 幂等性冲突
-**触发条件**：
-- 相同 `计算代码(code) + entityId + asOf` 的指标已存在
+#### 409 Conflict - Resource Conflict
+**触发条件**:
+- 相同 `entityId + framework + industry + code + date` 的指标已存在
 - 批次ID重复提交
 - 命名图版本冲突
+
+**冲突键定义**：
+```typescript
+interface ConflictKey {
+  entityId: string;    // 报告实体标识符
+  framework: string;   // ESG框架 (SASB, GRI, TCFD等)
+  industry: string;    // 行业分类 (URL编码后)
+  code: string;        // 计算代码标识
+  date: string;        // 规范化日期 (YYYY-MM-DD)
+}
+```
+
+> 📌 **重要**: 冲突检测基于完整的Metric IRI路径组件，与IRI生成策略完全一致：
+> `https://esg.platform/data/metric/{entityId}/{framework}/{industry}/{code}/{asOf}`
 
 **处理策略**：
 ```typescript
 // IngestService.ts
 async ingestMetric(metric: ESGMetric): Promise<IngestResult> {
+  // 检查是否存在重复指标
   const existingIri = await this.checkDuplicate(metric);
   if (existingIri) {
     throw new HttpError(409, 'CONFLICT', {
       type: 'https://esg.platform/problems/conflict',
-      detail: 'Metric already exists for this entity, framework, calculation code and date',
+      detail: 'Metric already exists for this entity, framework, industry, calculation code and date',
       existing: {
         iri: existingIri
+      },
+      conflictKey: {
+        entityId: metric.entityId,
+        framework: metric.framework,
+        industry: metric.industry,
+        code: metric.code,
+        date: this.extractDateFromAsOf(metric.asOf)
       }
     });
   }
+  
+  // 处理计算型指标的模型执行
+  let calculationResults: CalculationResults | undefined;
+  if (metric.calculationMethod === 'calculation_model') {
+    try {
+      calculationResults = await this.executeCalculationModel(metric);
+    } catch (error) {
+      throw new HttpError(400, 'CALCULATION_ERROR', {
+        type: 'https://esg.platform/problems/calculation-failed',
+        detail: 'Calculation model execution failed during ingestion',
+        modelName: metric.metricData.modelName,
+        error: error.message
+      });
+    }
+  }
+  
+  // 执行写入操作
+  return await this.performIngestion(metric, calculationResults);
 }
 
 private async checkDuplicate(metric: ESGMetric): Promise<string | null> {
-  // 构造规范化的Metric IRI (注意：code是运算代码，对应特定的计算逻辑)
+  // 构造基于知识图谱结构的规范化 Metric IRI
   const metricIri = this.generateMetricIri(metric);
   
   // 使用ASK查询检查Metric IRI是否存在
@@ -77,6 +210,34 @@ private async checkDuplicate(metric: ESGMetric): Promise<string | null> {
   
   const exists = await this.graphWriter.executeAskQuery(query);
   return exists ? metricIri : null;
+}
+
+private generateMetricIri(metric: ESGMetric): string {
+  // 提取并规范化冲突键的各个组件
+  const entityId = encodeURIComponent(metric.entityId);
+  const framework = encodeURIComponent(metric.framework);
+  const industry = encodeURIComponent(metric.industry); // 关键：包含行业
+  const code = encodeURIComponent(metric.code);
+  const date = this.extractDateFromAsOf(metric.asOf); // 规范化为YYYY-MM-DD
+  
+  // 构造完整的Metric IRI，包含所有冲突键组件
+  return `https://esg.platform/data/metric/${entityId}/${framework}/${industry}/${code}/${date}`;
+}
+
+private extractDateFromAsOf(asOf: string): string {
+  // 将 "2023-12-31T23:59:59Z" 规范化为 "2023-12-31"
+  return new Date(asOf).toISOString().split('T')[0];
+}
+
+private async executeCalculationModel(metric: ESGMetric): Promise<CalculationResults> {
+  if (metric.metricData.type !== 'calculation_model') {
+    throw new Error('Invalid metric data type for calculation');
+  }
+  
+  return await this.calculationService.executeModel(
+    metric.metricData.modelName,
+    metric.metricData.inputMetrics
+  );
 }
 ```
 

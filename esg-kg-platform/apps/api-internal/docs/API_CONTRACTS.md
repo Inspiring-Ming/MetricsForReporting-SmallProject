@@ -121,40 +121,7 @@ X-Request-ID: optional-request-id
 }
 ```
 
-### 1.4 POST /internal/v1/computation-methods
-
-> **对应现有API**: `POST /SAGE/MC/getComputationMethod`  
-> **功能**: 获取运算代码对应的计算方法
-
-#### 输入 (Input)
-**请求体**:
-```json
-{
-  "code": "FN-CB-410a.1"
-}
-```
-
-#### 输出 (Output)
-
-**成功响应 (200 OK)**:
-```json
-{
-  "code": "FN-CB-410a.1",
-  "computationMethod": "percentage_ratio",
-  "parameters": [
-    {
-      "name": "numerator",
-      "description": "Numerator value"
-    },
-    {
-      "name": "denominator", 
-      "description": "Denominator value"
-    }
-  ]
-}
-```
-
-### 1.5 POST /internal/v1/sparql
+### 1.4 POST /internal/v1/sparql
 
 > **对应现有功能**: 直接SPARQL查询接口 (基于现有的Comunica/N3实现)  
 > **功能**: 执行SPARQL查询获取知识图谱数据，主要用于复杂查询和数据探索
@@ -223,7 +190,109 @@ LIMIT 100
 }
 ```
 
-### 1.6 GET /internal/v1/health
+### 1.6 GET /internal/v1/computation-methods
+
+> 功能: 列出平台中已注册且可用的计算方法（Computation Methods / Models）的元数据。仅返回元数据，不执行计算。
+
+#### 输入 (Input)
+**查询参数 (可选)**:
+- `framework`: 过滤指定报告框架（如 `SASB`, `GRI`）
+- `industry`: 过滤指定行业（如 `Commercial Banks`）
+
+**Headers**:
+```http
+Authorization: Bearer <JWT_TOKEN>
+Accept: application/json
+X-Request-ID: optional-request-id
+```
+
+#### 输出 (Output)
+
+**成功响应 (200 OK)**:
+```json
+{
+  "items": [
+    {
+      "code": "FN-CB-410a.1",
+      "name": "Small Business Lending Balance",
+      "description": "Compute balance for small business lending",
+      "framework": "SASB",
+      "industry": "Commercial Banks",
+      "inputMetrics": [
+        { "name": "LoanAmount", "dataType": "number", "required": true, "unit": "http://qudt.org/vocab/unit/USD" }
+      ],
+      "outputUnit": "http://qudt.org/vocab/unit/USD",
+      "formula": "sum(LoanAmount)",
+      "modelName": "SmallBusinessLoanModel",
+      "implementedBy": "platform"
+    }
+  ],
+  "total": 1
+}
+```
+
+**错误响应示例 (500 Internal Error)**:
+```json
+{
+  "type": "https://esg.platform/problems/internal-error",
+  "title": "Internal Server Error",
+  "status": 500,
+  "detail": "Failed to retrieve computation methods",
+  "instance": "/internal/v1/computation-methods",
+  "code": "INTERNAL_ERROR"
+}
+```
+
+### 1.7 GET /internal/v1/computation-methods/{code}
+
+> 功能: 获取单个计算方法的详细元数据，按 code 精确匹配。仅返回元数据，不执行计算。
+
+#### 输入 (Input)
+**路径参数**:
+- `code`: 计算方法代码（如 `TC-SC-110a.3`）
+
+**Headers**:
+```http
+Authorization: Bearer <JWT_TOKEN>
+Accept: application/json
+X-Request-ID: optional-request-id
+```
+
+#### 输出 (Output)
+
+**成功响应 (200 OK)**:
+```json
+{
+  "code": "TC-SC-110a.3",
+  "name": "GHG Emission Intensity",
+  "description": "Calculates emission intensity based on scope emissions and revenue",
+  "framework": "SASB",
+  "industry": "Semiconductors",
+  "inputMetrics": [
+    { "name": "Scope1Emission", "dataType": "number", "required": true, "unit": "http://qudt.org/vocab/unit/TNE_CO2e" },
+    { "name": "Scope2Emission", "dataType": "number", "required": true, "unit": "http://qudt.org/vocab/unit/TNE_CO2e" },
+    { "name": "Revenue", "dataType": "number", "required": true, "unit": "http://qudt.org/vocab/unit/1E6_USD" }
+  ],
+  "outputUnit": "http://qudt.org/vocab/unit/TNE_CO2e-PER-1E6_USD",
+  "formula": "(Scope1Emission + Scope2Emission) / Revenue",
+  "modelName": "GHGEmissionIntensityModel",
+  "implementedBy": "platform"
+}
+```
+
+**未找到 (404 Not Found)**:
+```json
+{
+  "type": "https://esg.platform/problems/resource-not-found",
+  "title": "Resource Not Found",
+  "status": 404,
+  "detail": "Computation method not found for code 'ABC-123'",
+  "instance": "/internal/v1/computation-methods/ABC-123",
+  "code": "COMPUTATION_METHOD_NOT_FOUND"
+}
+```
+
+### 1.8 GET /internal/v1/health
 
 > **对应现有API**: `GET /health` (健康检查)  
 > **功能**: 服务健康状态检查
@@ -238,7 +307,7 @@ LIMIT 100
   "version": "1.0.0",
   "services": {
     "graphdb": "healthy",
-    "computation_engine": "healthy"
+    "redis": "healthy"
   }
 }
 ```
