@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://esg.platform/schemas/metric.schema.json",
+  "title": "ESG Metric Schema",
+  "description": "JSON Schema for ESG metrics compliant with OpenAPI specification and SHACL rules",
+  "type": "object",
+  "required": [
+    "framework",
+    "industry", 
+    "code",
+    "entityId",
+    "value",
+    "unitIri",
+    "asOf",
+    "source"
+  ],
+  "properties": {
+    "framework": {
+      "type": "string",
+      "title": "ESG Framework",
+      "description": "The ESG reporting framework (e.g., SASB, GRI, TCFD)",
+      "enum": ["SASB", "GRI", "TCFD", "EU_TAXONOMY", "CSRD"],
+      "examples": ["SASB", "GRI"]
+    },
+    "industry": {
+      "type": "string", 
+      "title": "Industry Sector",
+      "description": "Industry classification for the metric",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9\\s\\-_]+$",
+      "examples": ["Commercial Banks", "Semiconductors", "Oil & Gas"]
+    },
+    "code": {
+      "type": "string",
+      "title": "Computation Code",
+      "description": "平台内部注册的运算代码标识，对应特定的指标计算逻辑。每个code代表一个计算服务接口，用于执行相应的指标计算方法。",
+      "minLength": 1,
+      "maxLength": 50,
+      "pattern": "^[A-Za-z0-9\\-._]+$",
+      "examples": ["FN-CB-410a.1", "201-1", "TCFD-Risk-1a"]
+    },
+    "entityId": {
+      "type": "string",
+      "title": "Entity Identifier", 
+      "description": "Unique identifier for the reporting entity",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9\\-._]+$",
+      "examples": ["entity-001", "company-abc", "org-xyz"]
+    },
+    "value": {
+      "type": "number",
+      "title": "Metric Value",
+      "description": "Numerical value of the metric",
+      "minimum": 0,
+      "examples": [1000.50, 0, 99.99]
+    },
+    "unitIri": {
+      "type": "string",
+      "title": "Unit IRI",
+      "description": "QUDT unit IRI for the metric value",
+      "format": "uri",
+      "pattern": "^https?://",
+      "examples": [
+        "http://qudt.org/vocab/unit/USD",
+        "http://qudt.org/vocab/unit/PERCENT", 
+        "http://qudt.org/vocab/unit/KiloGM-PER-YR"
+      ]
+    },
+    "asOf": {
+      "type": "string",
+      "title": "Reporting Date",
+      "description": "ISO 8601 datetime when the metric applies",
+      "format": "date-time",
+      "examples": ["2023-12-31T23:59:59Z", "2024-06-30T12:00:00+00:00"]
+    },
+    "source": {
+      "type": "string",
+      "title": "Data Source",
+      "description": "Source of the metric data for provenance tracking",
+      "minLength": 1,
+      "maxLength": 500,
+      "examples": ["Annual Report 2023", "Sustainability Report Q3", "Internal Assessment"]
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "framework": "SASB",
+      "industry": "Commercial Banks",
+      "code": "FN-CB-410a.1", 
+      "entityId": "bank-001",
+      "value": 1250000.00,
+      "unitIri": "http://qudt.org/vocab/unit/USD",
+      "asOf": "2023-12-31T23:59:59Z",
+      "source": "Annual Report 2023"
+    }
+  ]
+}

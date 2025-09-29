@@ -1,0 +1,120 @@
+# ESG Knowledge Graph Platform - Development Infrastructure
+# This compose file sets up the infrastructure services needed for local development
+
+networks:
+  esg-network:
+    driver: bridge
+
+volumes:
+  graphdb-data:
+    driver: local
+  redis-data:
+    driver: local
+  redis-insight-data:
+    driver: local
+
+services:
+  # GraphDB - RDF Database for Knowledge Graph storage
+  graphdb:
+    image: ontotext/graphdb:10.0.0
+    container_name: esg-kg-graphdb
+    restart: unless-stopped
+    ports:
+      - "7200:7200"
+    environment:
+      GDB_HEAP_SIZE: 2g
+      GDB_JAVA_OPTS: >-
+        -Xms1g -Xmx2g
+        -Dgraphdb.workbench.importDirectory=/opt/graphdb/home/graphdb-import
+        -Dgraphdb.workbench.cors.enable=true
+        -Denable-context-index=true
+        -Dentity-pool-implementation=transactional
+        -Dhealth.max.query.time.seconds=60
+    volumes:
+      - graphdb-data:/opt/graphdb/home
+      - ./graphdb/repositories:/opt/graphdb/home/repositories
+      - ./graphdb/data:/opt/graphdb/home/graphdb-import:ro
+      - ./graphdb/init-scripts:/docker-entrypoint-initdb.d:ro
+    networks:
+      - esg-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7200/rest/repositories"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # GraphDB Initializer - Creates ESG repository and imports initial data
+  graphdb-init:
+    image: curlimages/curl:latest
+    container_name: esg-kg-graphdb-init
+    depends_on:
+      graphdb:
+        condition: service_healthy
+    volumes:
+      - ./graphdb/init-scripts:/scripts:ro
+      - ./graphdb/data:/opt/graphdb/home/graphdb-import:ro
+    networks:
+      - esg-network
+    command: ["sh", "/scripts/01-create-repository.sh"]
+    restart: "no"
+
+  # Redis - Caching and session storage
+  redis:
+    image: redis:7-alpine
+    container_name: esg-kg-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --auto-aof-rewrite-percentage 100
+      --auto-aof-rewrite-min-size 64mb
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - esg-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Optional: Redis Insight for Redis management (development only)
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    container_name: esg-kg-redis-insight
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      RIPORT: 8001
+    volumes:
+      - redis-insight-data:/db
+    networks:
+      - esg-network
+    profiles:
+      - redis-tools
+    depends_on:
+      - redis
+
+  # Development proxy/gateway (optional, for advanced routing)
+  nginx:
+    image: nginx:alpine
+    container_name: esg-kg-gateway
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - esg-network
+    profiles:
+      - gateway
+    depends_on:
+      - graphdb
+      - redis

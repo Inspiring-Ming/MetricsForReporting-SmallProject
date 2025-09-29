@@ -1,0 +1,36 @@
+{
+  "name": "@esg-platform/dto",
+  "version": "1.0.0",
+  "description": "Data Transfer Objects and JSON Schema definitions for ESG Knowledge Graph Platform",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "files": [
+    "src/",
+    "*.schema.json"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "validate": "ajv validate -s metric.schema.json -d examples/*.json",
+    "test": "node --test src/**/*.test.js"
+  },
+  "keywords": [
+    "esg", 
+    "dto", 
+    "json-schema", 
+    "openapi",
+    "typescript"
+  ],
+  "author": "ESG Platform Team",
+  "license": "MIT",
+  "devDependencies": {
+    "ajv": "^8.12.0",
+    "ajv-cli": "^5.0.0",
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "dependencies": {
+    "ajv-formats": "^2.1.1"
+  }
+}

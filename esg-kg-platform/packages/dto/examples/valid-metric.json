@@ -1,0 +1,10 @@
+{
+  "framework": "SASB",
+  "industry": "Commercial Banks",
+  "code": "FN-CB-410a.1",
+  "entityId": "bank-001", 
+  "value": 1250000.00,
+  "unitIri": "http://qudt.org/vocab/unit/USD",
+  "asOf": "2023-12-31T23:59:59Z",
+  "source": "Annual Report 2023"
+}

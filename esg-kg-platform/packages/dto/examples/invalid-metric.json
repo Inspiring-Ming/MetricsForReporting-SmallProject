@@ -1,0 +1,10 @@
+{
+  "framework": "INVALID_FRAMEWORK",
+  "industry": "",
+  "code": "invalid@code",
+  "entityId": "",
+  "value": -100,
+  "unitIri": "not-a-uri",
+  "asOf": "invalid-date",
+  "source": ""
+}

@@ -1,0 +1,79 @@
+# pnpm workspace configuration for ESG Knowledge Graph Platform
+packages:
+  # Application services (TypeScript only)
+  - 'apps/api-public'
+  - 'apps/web'
+  
+  # Shared packages
+  - 'packages/*'
+
+# Exclude patterns
+exclude:
+  # Go service doesn't use pnpm
+  - 'apps/api-internal'
+  
+  # Infrastructure and documentation
+  - 'infra/**'
+  - 'docs/**'
+  - 'scripts/**'
+  - 'contracts/**'
+  
+  # Build artifacts and dependencies
+  - '**/node_modules/**'
+  - '**/dist/**'
+  - '**/build/**'
+  - '**/.next/**'
+  - '**/.turbo/**'
+
+# Catalog for shared dependencies
+catalog:
+  # Core Node.js and TypeScript
+  "@types/node": "^20.11.0"
+  "typescript": "^5.3.3"
+  "tsx": "^4.7.0"
+  
+  # Testing framework
+  "vitest": "^1.2.2"
+  "@vitest/ui": "^1.2.2"
+  
+  # Linting and formatting
+  "eslint": "^8.56.0"
+  "@typescript-eslint/eslint-plugin": "^6.19.0"
+  "@typescript-eslint/parser": "^6.19.0"
+  "eslint-config-prettier": "^9.1.0"
+  "eslint-plugin-import": "^2.29.1"
+  "eslint-plugin-prettier": "^5.1.3"
+  "prettier": "^3.2.4"
+  
+  # Fastify ecosystem (for api-public)
+  "fastify": "^4.25.2"
+  "@fastify/cors": "^8.4.2"
+  "@fastify/helmet": "^11.1.1"
+  "@fastify/rate-limit": "^9.1.0"
+  "@fastify/jwt": "^7.2.4"
+  "@fastify/env": "^4.2.0"
+  
+  # Validation and schemas
+  "zod": "^3.22.4"
+  "@sinclair/typebox": "^0.32.5"
+  "ajv": "^8.12.0"
+  
+  # RDF and SPARQL libraries
+  "n3": "^1.17.2"
+  "sparql-http-client": "^2.4.1"
+  
+  # Utilities
+  "dotenv": "^16.3.1"
+  "pino": "^8.17.2"
+  "pino-pretty": "^10.3.1"
+  "uuid": "^9.0.1"
+  "@types/uuid": "^9.0.7"
+  
+  # HTTP client
+  "undici": "^6.6.0"
+
+# Shared configuration for all workspaces
+shared-workspace-lockfile: true
+
+# Use node-linker for better compatibility
+node-linker: isolated
