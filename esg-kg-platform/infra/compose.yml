@@ -102,6 +102,42 @@ services:
     depends_on:
       - redis
 
+  # ESG Public API (Write Service) - TypeScript/Express
+  api-public:
+    build:
+      context: ..
+      dockerfile: apps/api-public/Dockerfile
+    container_name: esg-kg-api-public
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      GRAPHDB_URL: http://graphdb:7200
+      GRAPHDB_REPOSITORY: esg-repo
+      REDIS_URL: redis://redis:6379
+      LOG_LEVEL: info
+      CORS_ENABLED: "true"
+      AUTH_ENABLED: "false"
+    volumes:
+      - ../apps/api-public/.env:/app/.env:ro
+    networks:
+      - esg-network
+    depends_on:
+      graphdb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    profiles:
+      - api
+
   # Development proxy/gateway (optional, for advanced routing)
   nginx:
     image: nginx:alpine
@@ -118,3 +154,4 @@ services:
     depends_on:
       - graphdb
       - redis
+      - api-public

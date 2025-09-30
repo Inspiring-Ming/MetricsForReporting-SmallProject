@@ -29,7 +29,7 @@ export interface AuthContext {
  * - In production mode, throws error (requires implementation)
  */
 export const createAuthMiddleware = (requiredScopes: string[] = []) => {
-  return (request: any, response: any, next?: Function) => {
+  return (request: any, _response: any, next?: Function): void => {
     // Check if auth is enabled from environment
     const authEnabled = process?.env?.AUTH_ENABLED === 'true';
     
@@ -57,7 +57,7 @@ export const createAuthMiddleware = (requiredScopes: string[] = []) => {
       
       // Continue to next middleware/handler
       if (next) next();
-      return mockAuth;
+      return;
     }
 
     // TODO: Future production implementation
@@ -80,10 +80,9 @@ export const createAuthMiddleware = (requiredScopes: string[] = []) => {
  * No-auth middleware for public endpoints (health checks, docs)
  */
 export const noAuthRequired = () => {
-  return (request: any, response: any, next?: Function) => {
+  return (_request: any, _response: any, next?: Function): void => {
     // Always pass through
     if (next) next();
-    return true;
   };
 };
 

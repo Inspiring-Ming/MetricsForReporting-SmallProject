@@ -11,7 +11,6 @@
   "packageManager": "pnpm@8.15.0",
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "install": "pnpm install --recursive",
     "dev": "echo 'Use make dev-public or make dev-internal to start services'",
     "build": "pnpm --recursive --filter './apps/*' --filter './packages/*' build",
     "test": "pnpm --recursive --filter './apps/*' --filter './packages/*' test",

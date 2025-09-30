@@ -33,8 +33,6 @@
   "devDependencies": {
     "typescript": "^5.0.0",
     "@types/node": "^20.0.0",
-    "riot": "^4.10.0",
-    "shacl-js": "^1.4.0",
     "markdown-toc": "^1.2.0"
   },
   "dependencies": {

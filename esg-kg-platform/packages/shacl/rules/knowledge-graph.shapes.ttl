@@ -1,0 +1,239 @@
+@prefix sh:    <http://www.w3.org/ns/shacl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix esg:   <http://example.org/esg#> .
+
+######################################################################
+# ESG Knowledge Graph - Metric Shape
+# - 适配实际知识图谱中的属性结构
+# - 使用正确的命名空间: http://example.org/esg#
+######################################################################
+
+esg:KnowledgeGraphMetricShape
+  a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+  sh:closed false ;  # 允许其他属性存在
+  rdfs:label "ESG Knowledge Graph Metric Shape" ;
+  rdfs:comment "Validation rules for metrics in the knowledge graph ontology" ;
+
+  # hasType - 必填属性，应该是字符串
+  sh:property [
+    sh:path esg:hasType ;
+    sh:name "hasType" ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:in ( "SASBRequirement" "GRIRequirement" "TCFDRequirement" "CustomMetric" ) ;
+    sh:message "hasType must be one of: SASBRequirement | GRIRequirement | TCFDRequirement | CustomMetric" ;
+  ] ;
+
+  # hasCalculationMethod - 必填属性
+  sh:property [
+    sh:path esg:hasCalculationMethod ;
+    sh:name "hasCalculationMethod" ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:in ( "direct_measurement" "calculated" "ratio" "percentage" "aggregation" ) ;
+    sh:message "hasCalculationMethod must be one of: direct_measurement | calculated | ratio | percentage | aggregation" ;
+  ] ;
+
+  # hasDescription - 必填属性，描述性文本
+  sh:property [
+    sh:path esg:hasDescription ;
+    sh:name "hasDescription" ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:minLength 10 ;
+    sh:maxLength 1000 ;
+    sh:message "hasDescription must be a string between 10-1000 characters" ;
+  ] ;
+
+  # hasMetricType - 必填属性
+  sh:property [
+    sh:path esg:hasMetricType ;
+    sh:name "hasMetricType" ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:in ( "Quantitative" "Discussion" "Boolean" "Qualitative" ) ;
+    sh:message "hasMetricType must be one of: Quantitative | Discussion | Boolean | Qualitative" ;
+  ] ;
+
+  # hasUnit - 必填属性，单位描述
+  sh:property [
+    sh:path esg:hasUnit ;
+    sh:name "hasUnit" ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:minLength 1 ;
+    sh:maxLength 100 ;
+    sh:message "hasUnit must be a string between 1-100 characters" ;
+  ] ;
+
+  # obtainedFrom - 可选属性，指向数据集变量
+  sh:property [
+    sh:path esg:obtainedFrom ;
+    sh:name "obtainedFrom" ;
+    sh:maxCount 1 ;
+    sh:nodeKind sh:IRI ;
+    sh:message "obtainedFrom should be an IRI reference to a dataset variable" ;
+  ] ;
+
+  # rdfs:label - 标准RDF标签，必填
+  sh:property [
+    sh:path rdfs:label ;
+    sh:name "label" ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:minLength 1 ;
+    sh:maxLength 200 ;
+    sh:message "rdfs:label must be provided and be 1-200 characters" ;
+  ] .
+
+######################################################################
+# Industry Shape - 行业验证
+######################################################################
+
+esg:IndustryShape
+  a sh:NodeShape ;
+  sh:targetClass esg:Industry ;
+  rdfs:label "ESG Industry Shape" ;
+
+  # rdfs:label - 必填
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "Industry must have an rdfs:label" ;
+  ] ;
+
+  # reportsUsing - 应该指向报告框架
+  sh:property [
+    sh:path esg:reportsUsing ;
+    sh:nodeKind sh:IRI ;
+    sh:class esg:ReportingFramework ;
+    sh:message "reportsUsing should reference a ReportingFramework" ;
+  ] .
+
+######################################################################
+# ReportingFramework Shape - 报告框架验证
+######################################################################
+
+esg:ReportingFrameworkShape
+  a sh:NodeShape ;
+  sh:targetClass esg:ReportingFramework ;
+  rdfs:label "ESG Reporting Framework Shape" ;
+
+  # rdfs:label - 必填
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "ReportingFramework must have an rdfs:label" ;
+  ] ;
+
+  # includes - 应该指向类别
+  sh:property [
+    sh:path esg:includes ;
+    sh:nodeKind sh:IRI ;
+    sh:class esg:Category ;
+    sh:message "includes should reference Categories" ;
+  ] ;
+
+  # sourceDocument - 可选的源文档
+  sh:property [
+    sh:path esg:sourceDocument ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "sourceDocument should be a string" ;
+  ] .
+
+######################################################################
+# Category Shape - 类别验证
+######################################################################
+
+esg:CategoryShape
+  a sh:NodeShape ;
+  sh:targetClass esg:Category ;
+  rdfs:label "ESG Category Shape" ;
+
+  # rdfs:label - 必填
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:maxCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "Category must have an rdfs:label" ;
+  ] ;
+
+  # consistsOf - 应该指向指标
+  sh:property [
+    sh:path esg:consistsOf ;
+    sh:nodeKind sh:IRI ;
+    sh:class esg:Metric ;
+    sh:message "consistsOf should reference Metrics" ;
+  ] .
+
+######################################################################
+# Business Rules and Constraints
+######################################################################
+
+# SASB要求类型的指标应该有合理的单位
+esg:SASBMetricUnitConstraint
+  a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+  rdfs:label "SASB Metric Unit Consistency" ;
+  sh:sparql [
+    sh:severity sh:Warning ;
+    sh:message "SASB quantitative metrics should have meaningful units (not 'n/a')" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this esg:hasType "SASBRequirement" ;
+              esg:hasMetricType "Quantitative" ;
+              esg:hasUnit ?unit .
+        FILTER (?unit = "n/a")
+      }
+    """ ;
+  ] .
+
+# Discussion类型指标通常不需要具体数值单位
+esg:DiscussionMetricUnitConstraint
+  a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+  rdfs:label "Discussion Metric Unit Consistency" ;
+  sh:sparql [
+    sh:severity sh:Info ;
+    sh:message "Discussion metrics typically use 'n/a' as unit" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this esg:hasMetricType "Discussion" ;
+              esg:hasUnit ?unit .
+        FILTER (?unit != "n/a")
+      }
+    """ ;
+  ] .
+
+# 指标应该有对应的数据源
+esg:MetricDataSourceConstraint
+  a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+  rdfs:label "Metric Data Source" ;
+  sh:sparql [
+    sh:severity sh:Warning ;
+    sh:message "Direct measurement metrics should have a data source (obtainedFrom)" ;
+    sh:select """
+      SELECT $this WHERE {
+        $this esg:hasCalculationMethod "direct_measurement" .
+        FILTER NOT EXISTS {
+          $this esg:obtainedFrom ?source .
+        }
+      }
+    """ ;
+  ] .
