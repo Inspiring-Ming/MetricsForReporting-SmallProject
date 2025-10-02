@@ -1,1 +1,0 @@
-{"version":3,"file":"knowledge-graph.routes.d.ts","sourceRoot":"","sources":["../../../../src/interfaces/http/routes/knowledge-graph.routes.ts"],"names":[],"mappings":"AAIA,OAAO,EAAE,MAAM,EAAE,MAAM,SAAS,CAAC;AACjC,OAAO,EAAE,wBAAwB,EAAE,MAAM,2CAA2C,CAAC;AAYrF,wBAAgB,0BAA0B,CAAC,wBAAwB,EAAE,wBAAwB,GAAG,MAAM,CA+CrG"}
