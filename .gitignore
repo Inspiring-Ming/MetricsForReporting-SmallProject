@@ -6,3 +6,5 @@ AWS/
 backup/
 backend/data/Raw_data_with_industry.csv
 .env
+
+.DS_Store
