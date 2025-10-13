@@ -1,0 +1,22 @@
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rep:    <http://www.openrdf.org/config/repository#> .
+@prefix sr:     <http://www.openrdf.org/config/repository/sail#> .
+@prefix sail:   <http://www.openrdf.org/config/sail#> .
+@prefix graphdb:<http://www.ontotext.com/config/graphdb#> .
+
+[] a rep:Repository ;
+   rep:repositoryID "esg-repo" ;
+   rdfs:label "ESG Repository (GraphDB 11.x)" ;
+   rep:repositoryImpl [
+     rep:repositoryType "graphdb:FreeSailRepository" ;
+     sr:sailImpl [
+       sail:sailType "graphdb:Sail" ;
+       graphdb:ruleset "owl-horst-optimized" ;
+       graphdb:disable-sameAs "true" ;
+       graphdb:enable-context-index "true" ;
+       graphdb:check-for-inconsistencies "false" ;
+       graphdb:entity-pool-implementation "transactional" ;
+       graphdb:query-timeout "60" ;
+       graphdb:query-limit-results "1000000"
+     ]
+   ] .
