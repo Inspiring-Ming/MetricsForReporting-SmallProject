@@ -9,9 +9,9 @@ services:
       GDB_HEAP_SIZE: "2g"
       JAVA_TOOL_OPTIONS: "-Dgraphdb.license.file=/opt/graphdb/home/conf/graphdb.license"
     volumes:
-      # ✅ 持久化到项目路径（graphDB/data）
+      # ✅ Persist data to project path (graphDB/data)
       - ./graphDB/data:/opt/graphdb/home
-      # ✅ 映射导入目录（GraphDB可访问）
+      # ✅ Map import directory (accessible by GraphDB)
       - ./graphDB/import:/opt/graphdb/home/graphdb-import:ro
       - ./graphDB/conf:/opt/graphdb/home/conf:ro
     healthcheck:
@@ -43,68 +43,68 @@ services:
 
         log() { echo "[init] $$1"; }
 
-        log '等待 GraphDB 启动...'
+        log 'Waiting for GraphDB to start...'
         i=1
         while [ $$i -le 120 ]; do
           # GraphDB 使用 /rest/repositories 端点
           if curl -fsS "$$BASE/rest/repositories" >/dev/null 2>&1; then
-            log 'GraphDB 已启动'; break
+            log 'GraphDB started'; break
           fi
-          log "等待中... ($$i/120)"
+          log "Waiting... ($$i/120)"
           i=$$(( $$i + 1 ))
           sleep 1
         done
 
-        log "检查仓库 $$REPO_ID 是否存在..."
+        log "Checking if repository $$REPO_ID exists..."
         # GraphDB 返回 JSON 格式，检查 id 字段
         if curl -fsS "$$BASE/rest/repositories" | grep -q "\"id\":\"$$REPO_ID\""; then
-          log "仓库 $$REPO_ID 已存在，跳过创建"
+          log "Repository $$REPO_ID already exists, skipping creation"
         else
-          log "创建仓库 $$REPO_ID ..."
+          log "Creating repository $$REPO_ID ..."
           # 使用 GraphDB 特有的 API: POST /rest/repositories
           http=$$(curl -sS -w '%{http_code}' -o /tmp/resp.txt -X POST "$$BASE/rest/repositories" -F 'config=@/work/repo-config.ttl' || true)
           if [ "$$http" != '201' ] && [ "$$http" != '200' ]; then
-            log "仓库创建失败(HTTP $$http)：$$(cat /tmp/resp.txt || true)"
+            log "Repository creation failed (HTTP $$http): $$(cat /tmp/resp.txt || true)"
             exit 1
           fi
-          log '仓库创建完成'
+          log 'Repository creation completed'
         fi
 
-        log '验证仓库是否可用...'
+        log 'Verifying repository availability...'
         i=1
         while [ $$i -le 30 ]; do
           # 使用 /size 端点来检查仓库是否可用 (RDF4J 标准)
           code=$$(curl -s -o /dev/null -w '%{http_code}' "$$BASE/repositories/$$REPO_ID/size" || echo 000)
-          if [ "$$code" = '200' ]; then log '仓库验证通过'; break; fi
-          log "等待仓库就绪... ($$i/30) [HTTP: $$code]"
+          if [ "$$code" = '200' ]; then log 'Repository verification passed'; break; fi
+          log "Waiting for repository to be ready... ($$i/30) [HTTP: $$code]"
           i=$$(( $$i + 1 ))
           sleep 2
         done
 
         COUNT=$$(curl -fsS "$$BASE/repositories/$$REPO_ID/size" 2>/dev/null || echo '0')
-        log "当前仓库中有 $$COUNT 条数据"
+        log "Current repository contains $$COUNT data entries"
         if [ "$$COUNT" != '0' ]; then
-          log '仓库已有数据，跳过导入'; exit 0
+          log 'Repository already has data, skipping import'; exit 0
         fi
 
-        log '开始导入 esg_knowledge_graph_latest.ttl ...'
+        log 'Starting import of esg_knowledge_graph_latest.ttl ...'
         if [ -f /work/import/esg_knowledge_graph_latest.ttl ]; then
           # 使用 RDF4J 标准 API: POST /repositories/{repositoryID}/statements
           http=$$(curl -sS -w '%{http_code}' -o /tmp/import_resp.txt -X POST "$$BASE/repositories/$$REPO_ID/statements" -H 'Content-Type: text/turtle' --data-binary '@/work/import/esg_knowledge_graph_latest.ttl' || true)
           if [ "$$http" = '204' ] || [ "$$http" = '200' ]; then
-            log '数据导入成功'
+            log 'Data import successful'
           else
-            log "数据导入失败(HTTP $$http)：$$(cat /tmp/import_resp.txt || true)"
+            log "Data import failed (HTTP $$http): $$(cat /tmp/import_resp.txt || true)"
             exit 1
           fi
         else
-          log '错误: 找不到 /work/import/esg_knowledge_graph_latest.ttl（请把文件放到宿主 ./graphDB/import/ 下）'
+          log 'Error: /work/import/esg_knowledge_graph_latest.ttl not found (please place the file in host ./graphDB/import/ directory)'
           exit 1
         fi
 
         sleep 5
         FINAL_COUNT=$$(curl -fsS "$$BASE/repositories/$$REPO_ID/size" 2>/dev/null || echo '0')
-        log "导入完成，仓库中共有 $$FINAL_COUNT 条数据"
+        log "Import completed, repository now contains $$FINAL_COUNT data entries"
     restart: "no"
     networks:
       - esg-network

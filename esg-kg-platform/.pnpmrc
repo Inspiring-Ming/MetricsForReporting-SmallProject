@@ -1,19 +1,19 @@
-# pnpm配置文件
-# 严格的对等依赖
+# pnpm configuration file
+# Strict peer dependencies
 strict-peer-dependencies=false
 
-# 使用hoisting模式
+# Use hoisting mode
 hoist=true
 
-# 排除某些包被提升
+# Exclude certain packages from being hoisted
 public-hoist-pattern[]=*eslint*
 public-hoist-pattern[]=*prettier*
 
-# 缓存配置
+# Cache configuration
 store-dir=~/.pnpm-store
 
-# 自动安装peer dependencies
+# Auto install peer dependencies
 auto-install-peers=true
 
-# 解决Node.js模块解析问题
+# Resolve Node.js module resolution issues
 shamefully-hoist=false
