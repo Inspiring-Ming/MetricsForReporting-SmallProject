@@ -15,7 +15,8 @@ async function requestHelper(
   server_url: string,
   path?: string,
   payload?: object,
-  token?: string): Promise<any> {
+  token?: string
+): Promise<any> {
 
   // Path is optional for multi functional path on a server
   const url = server_url + (path ?? "");
