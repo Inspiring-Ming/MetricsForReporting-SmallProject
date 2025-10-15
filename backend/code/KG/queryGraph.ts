@@ -1,5 +1,4 @@
 import HTTPError from "http-errors";
-import { wrapError } from "../utils/generalHelper";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -64,7 +63,7 @@ async function getReportFramework(industry: string) {
     }
 
     return { result: res };
-  } catch (error) {
+  } catch {
     throw HTTPError(500, `Failed to get report framework for industry ${industry}`);
   }
 }
@@ -112,7 +111,7 @@ async function getCategoriesByIndustryAndReportFramework(
     }
 
     return { result: res };
-  } catch (error) {
+  } catch {
     throw HTTPError(500, `Failed to get categories for industry ${industry} and framework ${framework}`);
   }
 }
@@ -168,7 +167,7 @@ async function getMetricsByIndustryAndCategory(
     }
 
     return { result: res };
-  } catch (error) {
+  } catch {
     throw HTTPError(500, `Failed to get metrics for industry ${industry}, category ${categoryLabel}, framework ${framework}`);
   }
 }
@@ -220,13 +219,13 @@ async function getMetricAtributes(metric_label: string)
 
   try {
     const result = await executeSparqlQuery(query);
-    
+
     if (result.results && result.results.bindings) {
       return createDataMapFromGraphDB(result.results.bindings);
     }
-    
+
     return new Map<string, string>();
-  } catch (error) {
+  } catch {
     throw HTTPError(500, `Failed to get attributes for metric ${metric_label}`);
   }
 }
@@ -246,13 +245,13 @@ async function getDataPointAtribute(metric: string)
 
   try {
     const result = await executeSparqlQuery(query);
-    
+
     if (result.results && result.results.bindings) {
       return createDataMapFromGraphDB(result.results.bindings);
     }
-    
+
     return new Map<string, string>();
-  } catch (error) {
+  } catch {
     throw HTTPError(500, `Failed to get data point attributes for ${metric}`);
   }
 }
@@ -277,21 +276,21 @@ async function getDataSourceInfo(source: string) {
 
   try {
     const result = await executeSparqlQuery(query);
-    
+
     if (result.results && result.results.bindings) {
       const resultMap = createDataMapFromGraphDB(result.results.bindings);
       return resultMap.get("label");
     }
-    
+
     return undefined;
-  } catch (error) {
+  } catch {
     throw HTTPError(404, `Failed to retrieve source of node ${source}`);
   }
 }
 
 // auto choose the best data source for a given metric, following IFRS disclosure hierarchy
 async function getBestDataSourceForMetric(metricID: string): Promise<{ dataSourceID: string; disclosureType: string } | null> {
-    const query = `
+  const query = `
         ${ESG}
         ${RDFS}
         SELECT ?dataSourceID ?disclosureType WHERE {
@@ -309,29 +308,29 @@ async function getBestDataSourceForMetric(metricID: string): Promise<{ dataSourc
                     IF(?disclosureType = esg:third_party, 3, 4))))
     `;
 
-    try {
-        const results = await executeSparqlQuery(query);
-        console.log(`Querying data sources for metric ${metricID}, found ${results.results.bindings.length} results`);
-        
-        if (results.results.bindings.length > 0) {
-            const binding = results.results.bindings[0];
-            const dataSourceID = binding.dataSourceID?.value || '';
-            const disclosureType = binding.disclosureType?.value?.split('#')[1] || 'unknown';
-            
-            console.log(`Selected data source for metric ${metricID}: ${dataSourceID} (disclosure type: ${disclosureType})`);
-            
-            return {
-                dataSourceID,
-                disclosureType
-            };
-        }
-        
-        console.log(`No data source found for metric ${metricID}`);
-        return null;
-    } catch (error) {
-        console.error('Error querying best data source:', error);
-        return null;
+  try {
+    const results = await executeSparqlQuery(query);
+    console.log(`Querying data sources for metric ${metricID}, found ${results.results.bindings.length} results`);
+
+    if (results.results.bindings.length > 0) {
+      const binding = results.results.bindings[0];
+      const dataSourceID = binding.dataSourceID?.value || "";
+      const disclosureType = binding.disclosureType?.value?.split("#")[1] || "unknown";
+
+      console.log(`Selected data source for metric ${metricID}: ${dataSourceID} (disclosure type: ${disclosureType})`);
+
+      return {
+        dataSourceID,
+        disclosureType
+      };
     }
+
+    console.log(`No data source found for metric ${metricID}`);
+    return null;
+  } catch (error) {
+    console.error("Error querying best data source:", error);
+    return null;
+  }
 }
 
 /**
@@ -340,12 +339,12 @@ async function getBestDataSourceForMetric(metricID: string): Promise<{ dataSourc
  * @param modelLabel - The label of the model
  * @returns Promise containing implementation information
  */
-async function getImplementationByModel(modelLabel: string): Promise<{ 
-  implementationLabel: string; 
-  language: string; 
-  filePath: string; 
-  functionName: string; 
-  description: string; 
+async function getImplementationByModel(modelLabel: string): Promise<{
+  implementationLabel: string;
+  language: string;
+  filePath: string;
+  functionName: string;
+  description: string;
 }> {
   const query = `
     ${ESG}
@@ -367,18 +366,18 @@ async function getImplementationByModel(modelLabel: string): Promise<{
 
   try {
     const result = await executeSparqlQuery(query);
-    
+
     if (result.results && result.results.bindings && result.results.bindings.length > 0) {
       const binding = result.results.bindings[0];
       return {
-        implementationLabel: binding.implementationLabel?.value || '',
-        language: binding.language?.value || '',
-        filePath: binding.filePath?.value || '',
-        functionName: binding.functionName?.value || '',
-        description: binding.description?.value || ''
+        implementationLabel: binding.implementationLabel?.value || "",
+        language: binding.language?.value || "",
+        filePath: binding.filePath?.value || "",
+        functionName: binding.functionName?.value || "",
+        description: binding.description?.value || ""
       };
     }
-    
+
     throw HTTPError(404, `No implementation found for model: ${modelLabel}`);
   } catch (error) {
     throw HTTPError(500, `Failed to get implementation for model ${modelLabel}: ${error}`);
@@ -421,21 +420,21 @@ async function getImplementationDetails(implementationLabel: string): Promise<{
 
   try {
     const result = await executeSparqlQuery(query);
-    
+
     if (result.results && result.results.bindings && result.results.bindings.length > 0) {
       const binding = result.results.bindings[0];
       return {
-        label: binding.label?.value || '',
-        language: binding.language?.value || '',
-        filePath: binding.filePath?.value || '',
-        functionName: binding.functionName?.value || '',
-        description: binding.description?.value || '',
-        inputParameters: binding.inputParameters?.value || '',
-        returnType: binding.returnType?.value || '',
-        validation: binding.validation?.value || ''
+        label: binding.label?.value || "",
+        language: binding.language?.value || "",
+        filePath: binding.filePath?.value || "",
+        functionName: binding.functionName?.value || "",
+        description: binding.description?.value || "",
+        inputParameters: binding.inputParameters?.value || "",
+        returnType: binding.returnType?.value || "",
+        validation: binding.validation?.value || ""
       };
     }
-    
+
     throw HTTPError(404, `No implementation found with label: ${implementationLabel}`);
   } catch (error) {
     throw HTTPError(500, `Failed to get implementation details for ${implementationLabel}: ${error}`);
@@ -586,7 +585,7 @@ async function getAllCalculationTypes(): Promise<{
         if (binding.calculationType && binding.modelLabel) {
           const calcType = binding.calculationType.value;
           const modelLabel = binding.modelLabel.value;
-          
+
           if (!calculationTypeMap.has(calcType)) {
             calculationTypeMap.set(calcType, new Set());
           }
