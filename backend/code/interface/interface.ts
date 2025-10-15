@@ -17,3 +17,26 @@ export interface MappedRecord {
   headquarter_country: string,
   industry: string,
 }
+
+export interface Implementation {
+  label: string;
+  language: string;
+  filePath: string;
+  functionName: string;
+  description: string;
+}
+
+export interface ImplementationDetails extends Implementation {
+  inputParameters: string;
+  returnType: string;
+  validation: string;
+}
+
+export interface ModelImplementationMapping {
+  modelLabel: string;
+  implementation: Implementation;
+}
+
+export interface ImplementationListResponse {
+  result: Implementation[];
+}
