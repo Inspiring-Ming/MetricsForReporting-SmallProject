@@ -82,24 +82,28 @@ export type ReportData = {
 };
 
 export function getCompanyIndustryReq(perm_id: string): Promise<Result<IndustryRes>> {
-  // If using proxy: url starts with /SAGE...
+  // DynamoDB API - goes to root backend (port 3001)
   return requestHelper("GET", "/SAGE/dynamoDB/retrieve/industry", { perm_id });
 }
 
 export function getReportFrameworkReq(industry: string): Promise<Result<FrameworkRes>> {
-  return requestHelper("GET", "/SAGE/KG/retrieve/framework", { industry });
+  // KG API - goes to docker backend (port 3000)
+  return requestHelper("GET", "/api/kg/frameworks", { industry });
 }
 
 export function getCategoriesReq(industry: string, framework: string): Promise<Result<CategoryRes>> {
-  return requestHelper("GET", "/SAGE/KG/retrieve/categories", { industry, framework });
+  // KG API - goes to docker backend (port 3000)
+  return requestHelper("GET", "/api/kg/categories", { industry, framework });
 }
 
 export function getMetricsReq(industry: string, category_label:string, framework: string): Promise<Result<MetricRes>> {
-  return requestHelper("GET", "/SAGE/KG/retrieve/category/metrics", { industry, category_label, framework });
+  // KG API - goes to docker backend (port 3000)
+  return requestHelper("GET", "/api/kg/metrics", { industry, category_label, framework });
 }
 
 export function getMetricComputationMethodReq(metric_label: string): Promise<Result<MetricMethod>> {
-  return requestHelper("GET", "/SAGE/KG/metric/computation/method", { metric_label });
+  // KG Computation API - goes to docker backend (port 3000)
+  return requestHelper("GET", "/api/computation/method", { metric_label });
 }
 
 export function getMetricValueReq(

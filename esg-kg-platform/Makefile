@@ -1,17 +1,7 @@
 # ESG Knowledge Graph Platform - Complete Docker Management
 # Usage: make [target]
 
-.PHONY: helclean: ## 🧹 Sreset: clean up ## 🔄 Reset: clean data and restart
-	@echo "🔄 Reset completed, restarting..."
-	@echo "⏳ Please wait 2-3 minutes for all services to fully start..." services and clean data
-	@echo "🧹 Cleaning ESG platform data..."
-	docker-compose down -v
-	sudo rm -rf graphDB/data/
-	@echo "✅ Data cleaned"
-
-reset: clean up ## 🔄 Reset: clean data and restart
-	@echo "🔄 Reset completed, restarting..."
-	@echo "⏳ Please wait 2-3 minutes for all services to fully start..." restart build logs logs-all status clean reset health dev test
+.PHONY: help up down restart build rebuild logs logs-all logs-graphdb logs-backend logs-frontend logs-init status health clean reset dev test start stop ps up-graphdb up-backend up-frontend
 
 # Default target
 help: ## Show help information
@@ -28,7 +18,7 @@ up: ## 🚀 Start complete platform (GraphDB + Backend + Frontend)
 	@echo "📊 Included services:"
 	@echo "   • GraphDB     - http://localhost:7200"
 	@echo "   • Backend API - http://localhost:3000" 
-	@echo "   • Frontend    - http://localhost:3001"
+	@echo "   • Frontend    - http://localhost:5172"
 	@echo ""
 	docker-compose up -d
 	@echo ""
@@ -95,8 +85,8 @@ health: ## 🏥 Check health status of all services
 	@curl -s http://localhost:3000/health >/dev/null 2>&1 && \
 		echo "   ✅ Backend is healthy" || echo "   ❌ Backend is unhealthy"
 	@echo ""
-	@echo "🎨 Frontend (http://localhost:3001):"
-	@curl -s http://localhost:3001 >/dev/null 2>&1 && \
+	@echo "🎨 Frontend (http://localhost:5172):"
+	@curl -s http://localhost:5172 >/dev/null 2>&1 && \
 		echo "   ✅ Frontend is healthy" || echo "   ❌ Frontend is unhealthy"
 	@echo ""
 	@echo "📈 GraphDB data statistics:"
@@ -109,9 +99,9 @@ clean: ## 🧹 Stop services and clean data
 	sudo rm -rf graphDB/data/
 	@echo "✅ Data cleaned"
 
-reset: clean up ## 🔄 重置：清理数据并重新启动
-	@echo "� 重置完成，正在重新启动..."
-	@echo "⏳ 请等待2-3分钟让所有服务完全启动..."
+reset: clean up ## 🔄 Reset: clean data and restart
+	@echo "🔄 Reset completed, restarting..."
+	@echo "⏳ Please wait 2-3 minutes for all services to fully start..."
 
 dev: ## 🛠️ Development mode: start and show logs
 	@echo "🛠️ Starting in development mode..."

@@ -8,7 +8,7 @@
 
 ## Now you have three services runing:
 
-- **Frontend:** [http://localhost:3001](http://localhost:3001)  
+- **Frontend:** [http://localhost:5172](http://localhost:5172)  
 - **Backend API:** [http://localhost:3000](http://localhost:3000)  
 - **GraphDB:** [http://localhost:7200](http://localhost:7200)
 

@@ -145,7 +145,7 @@ services:
         BACKEND_URL: http://backend:3000
     container_name: esg-frontend
     ports:
-      - "3001:3001"
+      - "5172:5172"
     environment:
       NODE_ENV: production
       BACKEND_URL: http://backend:3000
@@ -155,7 +155,7 @@ services:
     networks:
       - esg-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001"]
+      test: ["CMD", "curl", "-f", "http://localhost:5172"]
       interval: 30s
       timeout: 10s
       retries: 3
