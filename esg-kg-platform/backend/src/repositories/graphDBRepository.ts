@@ -284,6 +284,84 @@ export class GraphDBRepository {
   }
 
   /**
+   * 清空 repository 中的所有数据
+   */
+  async clearAllData(): Promise<{ ok: boolean; message: string }> {
+    try {
+      const sparqlUpdate = `DELETE WHERE { ?s ?p ?o }`;
+      
+      const response = await fetch(
+        `${this.baseUrl}/repositories/${encodeURIComponent(this.repositoryName)}/statements`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/sparql-update',
+          },
+          body: sparqlUpdate,
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new GraphDBWriteError(
+          `Failed to clear all data: ${response.status} ${response.statusText}`,
+          {
+            status: response.status,
+            statusText: response.statusText,
+            errorDetails: errorText
+          }
+        );
+      }
+
+      return { 
+        ok: true, 
+        message: 'All data cleared successfully' 
+      };
+    } catch (error) {
+      if (error instanceof GraphDBWriteError) {
+        throw error;
+      }
+      throw new GraphDBWriteError('Failed to clear all data', { 
+        originalError: error 
+      });
+    }
+  }
+
+  /**
+   * 获取 repository 中的三元组数量
+   */
+  async countTriples(): Promise<number> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/repositories/${encodeURIComponent(this.repositoryName)}/size`,
+        {
+          method: 'GET',
+          headers: {
+            'Accept': 'text/plain',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new GraphDBQueryError(
+          `Failed to count triples: ${response.status} ${response.statusText}`,
+          { status: response.status }
+        );
+      }
+
+      const count = await response.text();
+      return parseInt(count.trim(), 10);
+    } catch (error) {
+      if (error instanceof GraphDBQueryError) {
+        throw error;
+      }
+      throw new GraphDBQueryError('Failed to count triples', { 
+        originalError: error 
+      });
+    }
+  }
+
+  /**
    * 健康检查
    */
   async healthCheck(): Promise<{ ok: boolean; repo: string; graphdb: string }> {

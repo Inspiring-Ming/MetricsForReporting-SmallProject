@@ -1,3 +1,5 @@
+import path from 'path';
+
 /**
  * 环境变量配置
  */
@@ -10,6 +12,10 @@ export const config = {
   GRAPHDB_URL: process.env.GRAPHDB_URL || 'http://localhost:7200',
   GRAPHDB_REPO: process.env.GRAPHDB_REPO || 'esg-repo',
   DEFAULT_GRAPH: process.env.DEFAULT_GRAPH, // 可选命名图
+  
+  // Reset 功能配置
+  INITIAL_TTL_PATH: process.env.INITIAL_TTL_PATH || 
+    path.join(__dirname, '../../../graphDB/import/esg_knowledge_graph_latest.ttl'),
   
   // 安全配置
   CORS_ORIGIN: process.env.CORS_ORIGIN || '*',

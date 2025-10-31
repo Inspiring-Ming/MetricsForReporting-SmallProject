@@ -260,6 +260,81 @@ paths:
                     items:
                       type: string
 
+  /kg/metrics/model-calculation:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get metrics with model calculation method
+      description: Get all metrics in a specific category that use model calculation method (calculation_model)
+      parameters:
+        - name: industry
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "Semiconductors"
+          description: Industry name (e.g., "Commercial Banks", "Semiconductors")
+        - name: category_label
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "Greenhouse Gas Emissions"
+          description: Category label (e.g., "Data Security", "Energy Management in Manufacturing")
+        - name: framework
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "SASB Semiconductors"
+          description: Reporting framework name (e.g., "SASB Commercial Banks", "SASB Semiconductors")
+      responses:
+        '200':
+          description: List of metrics with model calculation method
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: string
+                    description: Array of metric labels that use calculation_model method
+              example:
+                result: ["GHGEmissionIntensity", "Percentage Grid Electricity", "Percentage Renewable Energy"]
+        '400':
+          description: Validation error - missing required parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                  code:
+                    type: string
+              example:
+                ok: false
+                error: "Industry query parameter is required"
+                code: "VALIDATION_ERROR"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                  code:
+                    type: string
+
   /kg/metrics/attributes:
     get:
       tags: [Knowledge Graph]
@@ -434,6 +509,247 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/ImplementationSummary'
+    post:
+      tags: [Knowledge Graph]
+      summary: Create a new implementation
+      description: |
+        Create a new implementation node in the knowledge graph.
+        An implementation defines how a calculation model is executed (e.g., a Python function).
+        
+        **Required fields**: name, language, file_path
+        **Optional fields**: function_name, description, input_parameters, return_type, validation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - language
+                - file_path
+              properties:
+                name:
+                  type: string
+                  description: Unique identifier for the implementation (will be used as URI suffix)
+                  example: "WaterRecyclingRateImpl"
+                language:
+                  type: string
+                  description: Programming language of the implementation
+                  example: "Python"
+                  enum: ["Python", "JavaScript", "R", "SQL"]
+                file_path:
+                  type: string
+                  description: Path to the implementation file
+                  example: "/models/water_recycling.py"
+                function_name:
+                  type: string
+                  description: Name of the function to execute (optional)
+                  example: "calculate_water_recycling_rate"
+                description:
+                  type: string
+                  description: Description of what this implementation does (optional)
+                  example: "Python implementation for calculating water recycling percentage"
+                input_parameters:
+                  type: string
+                  description: Description of input parameters with types (optional)
+                  example: "recycled_water: float, total_water: float"
+                return_type:
+                  type: string
+                  description: Return type of the function (optional)
+                  example: "float"
+                validation:
+                  type: string
+                  description: Validation rules or constraints (optional)
+                  example: "Total water must be greater than 0 to avoid division by zero"
+            examples:
+              minimal:
+                summary: Minimal request (required fields only)
+                value:
+                  name: "WaterRecyclingRateImpl"
+                  language: "Python"
+                  file_path: "/models/water_recycling.py"
+              complete:
+                summary: Complete request (with all optional fields)
+                value:
+                  name: "WaterRecyclingRateImpl"
+                  language: "Python"
+                  file_path: "/models/water_recycling.py"
+                  function_name: "calculate_water_recycling_rate"
+                  description: "Python implementation for calculating water recycling percentage"
+                  input_parameters: "recycled_water: float, total_water: float"
+                  return_type: "float"
+                  validation: "Total water must be greater than 0 to avoid division by zero"
+      responses:
+        '201':
+          description: Implementation created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      uri:
+                        type: string
+                        example: "http://example.org/esg#WaterRecyclingRateImpl"
+                      label:
+                        type: string
+                        example: "WaterRecyclingRateImpl"
+                      language:
+                        type: string
+                        example: "Python"
+                      file_path:
+                        type: string
+                        example: "/models/water_recycling.py"
+                      created_at:
+                        type: string
+                        format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Implementation already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /kg/models:
+    post:
+      tags: [Knowledge Graph]
+      summary: Create a new calculation model
+      description: |
+        Create a new model node in the knowledge graph.
+        A model defines how a metric is calculated, including the calculation type,
+        required inputs, and the implementation to execute.
+        
+        **Required fields**: name, calculation_type, input_metrics, implementation
+        **Optional fields**: description, formula, mathematical_expression
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - calculation_type
+                - input_metrics
+                - implementation
+              properties:
+                name:
+                  type: string
+                  description: Unique identifier for the model (will be used as URI suffix)
+                  example: "WaterRecyclingRateModel"
+                calculation_type:
+                  type: string
+                  description: Type of calculation (must be a supported type)
+                  example: "percentage_ratio"
+                input_metrics:
+                  type: array
+                  description: Array of input metric labels or URIs required by this model
+                  items:
+                    type: string
+                  example: ["RecycledWater", "TotalWater"]
+                  minItems: 1
+                implementation:
+                  type: string
+                  description: Name or URI of the implementation that executes this model
+                  example: "WaterRecyclingRateImpl"
+                description:
+                  type: string
+                  description: Description of what this model calculates (optional)
+                  example: "Calculates the percentage of water that is recycled"
+                formula:
+                  type: string
+                  description: Machine-readable formula (optional)
+                  example: "(recycled_water / total_water) * 100"
+                mathematical_expression:
+                  type: string
+                  description: Human-readable mathematical expression (optional)
+                  example: "Recycling_Rate = (Recycled_Water / Total_Water) × 100%"
+            examples:
+              minimal:
+                summary: Minimal request (required fields only)
+                value:
+                  name: "WaterRecyclingRateModel"
+                  calculation_type: "percentage_ratio"
+                  input_metrics: ["RecycledWater", "TotalWater"]
+                  implementation: "WaterRecyclingRateImpl"
+              complete:
+                summary: Complete request (with all optional fields)
+                value:
+                  name: "WaterRecyclingRateModel"
+                  calculation_type: "percentage_ratio"
+                  input_metrics: ["RecycledWater", "TotalWater"]
+                  implementation: "WaterRecyclingRateImpl"
+                  description: "Calculates the percentage of water that is recycled"
+                  formula: "(recycled_water / total_water) * 100"
+                  mathematical_expression: "Recycling_Rate = (Recycled_Water / Total_Water) × 100%"
+      responses:
+        '201':
+          description: Model created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      uri:
+                        type: string
+                        example: "http://example.org/esg#WaterRecyclingRateModel"
+                      label:
+                        type: string
+                        example: "WaterRecyclingRateModel"
+                      calculation_type:
+                        type: string
+                        example: "percentage_ratio"
+                      input_metrics:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            uri:
+                              type: string
+                            label:
+                              type: string
+                      implementation:
+                        type: object
+                        properties:
+                          uri:
+                            type: string
+                          label:
+                            type: string
+                      created_at:
+                        type: string
+                        format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Input metric(s) or implementation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Model already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   /kg/implementations/by-calculation-type:
     get:
@@ -485,6 +801,149 @@ paths:
                   - calculationType: "percentage_ratio"
                     count: 1
                     modelLabels: ["Renewable Energy Use"]
+
+  /kg/metrics/{metric_label}/calculation-method:
+    patch:
+      tags: [Knowledge Graph]
+      summary: Link a calculation model to a metric
+      description: |
+        Update a metric's calculation method to use a calculation model.
+        This establishes the relationship: Metric --isCalculatedBy--> Model
+      parameters:
+        - name: metric_label
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Label of the metric to update
+          example: "WaterRecyclingRate"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - model
+              properties:
+                model:
+                  type: string
+                  description: Name or URI of the model to link to this metric
+                  example: "WaterRecyclingRateModel"
+      responses:
+        '200':
+          description: Metric calculation method updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      metric_uri:
+                        type: string
+                        example: "http://example.org/esg#WaterRecyclingRate"
+                      metric_label:
+                        type: string
+                        example: "WaterRecyclingRate"
+                      calculation_method:
+                        type: string
+                        example: "calculation_model"
+                      model:
+                        type: object
+                        properties:
+                          uri:
+                            type: string
+                          label:
+                            type: string
+                      updated_at:
+                        type: string
+                        format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Metric or model not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /kg/reset:
+    post:
+      tags: [Knowledge Graph]
+      summary: Reset knowledge graph to initial state
+      description: |
+        Clear all data in the repository and reload the initial TTL file (esg_knowledge_graph_latest.ttl).
+        **WARNING**: This is a destructive operation. All uploaded/modified data will be permanently lost.
+        This operation cannot be undone.
+      responses:
+        '200':
+          description: Reset successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Knowledge graph reset to initial state successfully"
+                  stats:
+                    type: object
+                    properties:
+                      triplesCleared:
+                        type: integer
+                        description: Number of triples cleared before reset
+                        example: 1234
+                      triplesImported:
+                        type: integer
+                        description: Number of triples imported from initial file
+                        example: 1234
+                      resetAt:
+                        type: string
+                        format: date-time
+                        description: ISO timestamp of when the reset occurred
+                        example: "2025-10-31T12:34:56.789Z"
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                    example: "Initial TTL file not found"
+                  code:
+                    type: string
+                    example: "VALIDATION_ERROR"
+        '500':
+          description: Reset operation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                    example: "Failed to reset knowledge graph"
+                  code:
+                    type: string
+                    example: "GRAPHDB_ERROR"
 
   # Metric APIs
   /metric/{id}:
@@ -711,6 +1170,16 @@ paths:
                     type: boolean
                   data:
                     type: array
+                    items:
+                      type: object
+                      properties:
+                        query:
+                          type: string
+                        timestamp:
+                          type: string
+                          format: date-time
+                        executionTime:
+                          type: number
 
   /upload-ttl/upload:
     post:
@@ -1003,6 +1472,17 @@ paths:
                         type: object
                       violations:
                         type: array
+                        items:
+                          type: object
+                          properties:
+                            focusNode:
+                              type: string
+                            severity:
+                              type: string
+                            message:
+                              type: string
+                            path:
+                              type: string
                       humanReadable:
                         type: string
                       rawReport:

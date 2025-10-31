@@ -102,6 +102,32 @@ export class KnowledgeGraphController {
   });
 
   /**
+   * 获取特定分类下使用 model calculation 方法的指标
+   * GET /api/kg/metrics/model-calculation?industry={industry}&category_label={category_label}&framework={framework}
+   */
+  getModelCalculationMetrics = asyncHandler(async (req: Request, res: Response) => {
+    const { industry, category_label, framework } = req.query as { 
+      industry: string; 
+      category_label: string; 
+      framework: string 
+    };
+    
+    if (!industry) {
+      throw new ValidationError('Industry query parameter is required');
+    }
+    if (!category_label) {
+      throw new ValidationError('Category_label query parameter is required');
+    }
+    if (!framework) {
+      throw new ValidationError('Framework query parameter is required');
+    }
+
+    const result = await this.kgService.getModelCalculationMetrics(industry, category_label, framework);
+    
+    res.json(result);
+  });
+
+  /**
    * 获取指标属性
    * GET /api/kg/metrics/attributes?metric_label={metric_label}
    */
@@ -284,5 +310,142 @@ export class KnowledgeGraphController {
     const result = await this.kgService.getMetricDatasets(id);
     
     res.json(result);
+  });
+
+  /**
+   * 重置知识图谱到初始状态
+   * POST /api/kg/reset
+   */
+  resetKnowledgeGraph = asyncHandler(async (req: Request, res: Response) => {
+    const result = await this.kgService.resetToInitialState();
+    
+    res.json(result);
+  });
+
+  /**
+   * 创建新的 Implementation
+   * POST /api/kg/implementations
+   */
+  createImplementation = asyncHandler(async (req: Request, res: Response) => {
+    const { 
+      name, 
+      language, 
+      file_path,
+      function_name,
+      description,
+      input_parameters,
+      return_type,
+      validation
+    } = req.body as { 
+      name: string; 
+      language: string; 
+      file_path: string;
+      function_name?: string;
+      description?: string;
+      input_parameters?: string;
+      return_type?: string;
+      validation?: string;
+    };
+    
+    if (!name) {
+      throw new ValidationError('name is required');
+    }
+    if (!language) {
+      throw new ValidationError('language is required');
+    }
+    if (!file_path) {
+      throw new ValidationError('file_path is required');
+    }
+
+    const result = await this.kgService.createImplementation(
+      name, 
+      language, 
+      file_path,
+      function_name,
+      description,
+      input_parameters,
+      return_type,
+      validation
+    );
+    
+    res.status(201).json({
+      success: true,
+      data: result
+    });
+  });
+
+  /**
+   * 创建新的 Model
+   * POST /api/kg/models
+   */
+  createModel = asyncHandler(async (req: Request, res: Response) => {
+    const { 
+      name, 
+      calculation_type, 
+      input_metrics, 
+      implementation,
+      description,
+      formula,
+      mathematical_expression
+    } = req.body as {
+      name: string;
+      calculation_type: string;
+      input_metrics: string[];
+      implementation: string;
+      description?: string;
+      formula?: string;
+      mathematical_expression?: string;
+    };
+    
+    if (!name) {
+      throw new ValidationError('name is required');
+    }
+    if (!calculation_type) {
+      throw new ValidationError('calculation_type is required');
+    }
+    if (!input_metrics || !Array.isArray(input_metrics) || input_metrics.length === 0) {
+      throw new ValidationError('input_metrics is required and must be a non-empty array');
+    }
+    if (!implementation) {
+      throw new ValidationError('implementation is required');
+    }
+
+    const result = await this.kgService.createModel(
+      name, 
+      calculation_type, 
+      input_metrics, 
+      implementation,
+      description,
+      formula,
+      mathematical_expression
+    );
+    
+    res.status(201).json({
+      success: true,
+      data: result
+    });
+  });
+
+  /**
+   * 更新 Metric 的计算方法，链接到 Model
+   * PATCH /api/kg/metrics/:metric_label/calculation-method
+   */
+  updateMetricCalculationMethod = asyncHandler(async (req: Request, res: Response) => {
+    const { metric_label } = req.params as { metric_label: string };
+    const { model } = req.body as { model: string };
+    
+    if (!metric_label) {
+      throw new ValidationError('metric_label parameter is required');
+    }
+    if (!model) {
+      throw new ValidationError('model is required');
+    }
+
+    const result = await this.kgService.updateMetricCalculationMethod(metric_label, model);
+    
+    res.json({
+      success: true,
+      data: result
+    });
   });
 }

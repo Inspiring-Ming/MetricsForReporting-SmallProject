@@ -1,4 +1,5 @@
 import { KnowledgeGraphRepository } from '../repositories/knowledgeGraphRepository';
+import { GraphDBRepository } from '../repositories/graphDBRepository';
 import { 
   KGQueryRequest, 
   FrameworkResult, 
@@ -16,15 +17,19 @@ import {
   MetricDatasetsResponse
 } from '../types/kg';
 import { ValidationError, GraphDBQueryError } from '../types/errors';
+import { config } from '../config';
+import { promises as fs } from 'fs';
 
 /**
  * Knowledge Graph 服务类 - 处理 KG 相关业务逻辑
  */
 export class KnowledgeGraphService {
   private kgRepository: KnowledgeGraphRepository;
+  private graphDBRepository: GraphDBRepository;
 
-  constructor(kgRepository: KnowledgeGraphRepository) {
+  constructor(kgRepository: KnowledgeGraphRepository, graphDBRepository?: GraphDBRepository) {
     this.kgRepository = kgRepository;
+    this.graphDBRepository = graphDBRepository || new GraphDBRepository();
   }
 
   /**
@@ -95,6 +100,25 @@ export class KnowledgeGraphService {
     } catch (error) {
       throw new GraphDBQueryError(
         `Failed to get metric URIs for industry: ${industry}, category: ${categoryLabel}, framework: ${framework}`,
+        { industry, categoryLabel, framework, originalError: error }
+      );
+    }
+  }
+
+  /**
+   * 获取特定分类下使用 model calculation 方法的指标
+   */
+  async getModelCalculationMetrics(industry: string, categoryLabel: string, framework: string): Promise<MetricResult> {
+    this.validateIndustry(industry);
+    this.validateFramework(framework);
+    this.validateCategoryLabel(categoryLabel);
+    
+    try {
+      const metrics = await this.kgRepository.getModelCalculationMetricsByCategory(industry, categoryLabel, framework);
+      return { result: metrics };
+    } catch (error) {
+      throw new GraphDBQueryError(
+        `Failed to get model calculation metrics for industry: ${industry}, category: ${categoryLabel}, framework: ${framework}`,
         { industry, categoryLabel, framework, originalError: error }
       );
     }
@@ -403,9 +427,279 @@ export class KnowledgeGraphService {
     }
   }
 
+  /**
+   * 重置知识图谱到初始状态
+   */
+  async resetToInitialState(): Promise<{
+    ok: boolean;
+    message: string;
+    stats: {
+      triplesCleared: number;
+      triplesImported: number;
+      resetAt: string;
+    };
+  }> {
+    try {
+      // 1. 获取清空前的三元组数量
+      const triplesBefore = await this.graphDBRepository.countTriples();
+      console.log(`[KG Reset] Current triples count: ${triplesBefore}`);
+
+      // 2. 清空所有数据
+      console.log('[KG Reset] Clearing all data...');
+      await this.graphDBRepository.clearAllData();
+      
+      // 验证清空成功
+      const triplesAfterClear = await this.graphDBRepository.countTriples();
+      if (triplesAfterClear !== 0) {
+        throw new GraphDBQueryError(
+          `Failed to clear all data: ${triplesAfterClear} triples remaining`,
+          { triplesAfterClear }
+        );
+      }
+      console.log('[KG Reset] All data cleared successfully');
+
+      // 3. 读取初始 TTL 文件
+      console.log(`[KG Reset] Reading initial TTL file from: ${config.INITIAL_TTL_PATH}`);
+      const initialTTL = await fs.readFile(config.INITIAL_TTL_PATH, 'utf-8');
+      
+      if (!initialTTL || initialTTL.trim().length === 0) {
+        throw new ValidationError('Initial TTL file is empty');
+      }
+
+      // 4. 重新导入初始数据
+      console.log('[KG Reset] Importing initial data...');
+      await this.graphDBRepository.uploadTTLFile(initialTTL);
+
+      // 5. 验证导入成功
+      const triplesAfterImport = await this.graphDBRepository.countTriples();
+      if (triplesAfterImport === 0) {
+        throw new GraphDBQueryError(
+          'Failed to import initial data: no triples found after import',
+          { triplesAfterImport }
+        );
+      }
+      console.log(`[KG Reset] Import successful: ${triplesAfterImport} triples imported`);
+
+      return {
+        ok: true,
+        message: 'Knowledge graph reset to initial state successfully',
+        stats: {
+          triplesCleared: triplesBefore,
+          triplesImported: triplesAfterImport,
+          resetAt: new Date().toISOString()
+        }
+      };
+    } catch (error) {
+      if (error instanceof ValidationError || error instanceof GraphDBQueryError) {
+        throw error;
+      }
+      
+      // 检查文件不存在错误
+      if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
+        throw new ValidationError(
+          `Initial TTL file not found at: ${config.INITIAL_TTL_PATH}`,
+          { path: config.INITIAL_TTL_PATH }
+        );
+      }
+
+      throw new GraphDBQueryError(
+        `Failed to reset knowledge graph: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        { originalError: error }
+      );
+    }
+  }
+
   private validateMetricId(metricId: string): void {
     if (!metricId || typeof metricId !== 'string' || metricId.trim().length === 0) {
       throw new ValidationError('Metric ID parameter is required and must be a non-empty string');
+    }
+  }
+
+  /**
+   * 创建新的 Implementation
+   */
+  async createImplementation(
+    name: string, 
+    language: string, 
+    filePath: string,
+    functionName?: string,
+    description?: string,
+    inputParameters?: string,
+    returnType?: string,
+    validation?: string
+  ): Promise<{ uri: string; label: string; language: string; file_path: string; created_at: string }> {
+    // 验证输入
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      throw new ValidationError('Implementation name is required');
+    }
+    if (!language || typeof language !== 'string' || language.trim().length === 0) {
+      throw new ValidationError('Language is required');
+    }
+    if (!filePath || typeof filePath !== 'string' || filePath.trim().length === 0) {
+      throw new ValidationError('File path is required');
+    }
+
+    // 验证语言类型
+    const supportedLanguages = ['Python', 'JavaScript', 'R', 'SQL'];
+    if (!supportedLanguages.includes(language)) {
+      throw new ValidationError(
+        `Unsupported language: ${language}. Supported languages: ${supportedLanguages.join(', ')}`
+      );
+    }
+
+    try {
+      const result = await this.kgRepository.createImplementation(
+        name, 
+        language, 
+        filePath,
+        functionName,
+        description,
+        inputParameters,
+        returnType,
+        validation
+      );
+      return {
+        uri: result.uri,
+        label: result.label,
+        language,
+        file_path: filePath,
+        created_at: new Date().toISOString()
+      };
+    } catch (error) {
+      if (error instanceof GraphDBQueryError && (error as any).code === 'IMPLEMENTATION_EXISTS') {
+        throw new ValidationError(`Implementation already exists: ${name}`);
+      }
+      throw new GraphDBQueryError(
+        `Failed to create implementation: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        { name, language, filePath, originalError: error }
+      );
+    }
+  }
+
+  /**
+   * 创建新的 Model
+   */
+  async createModel(
+    name: string,
+    calculationType: string,
+    inputMetrics: string[],
+    implementationName: string,
+    description?: string,
+    formula?: string,
+    mathematicalExpression?: string
+  ): Promise<{
+    uri: string;
+    label: string;
+    calculation_type: string;
+    input_metrics: Array<{ uri: string; label: string }>;
+    implementation: { uri: string; label: string };
+    created_at: string;
+  }> {
+    // 验证输入
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      throw new ValidationError('Model name is required');
+    }
+    if (!calculationType || typeof calculationType !== 'string' || calculationType.trim().length === 0) {
+      throw new ValidationError('Calculation type is required');
+    }
+    if (!Array.isArray(inputMetrics) || inputMetrics.length === 0) {
+      throw new ValidationError('Input metrics are required and must be a non-empty array');
+    }
+    if (!implementationName || typeof implementationName !== 'string' || implementationName.trim().length === 0) {
+      throw new ValidationError('Implementation name is required');
+    }
+
+    // 验证所有输入指标不为空
+    for (const metric of inputMetrics) {
+      if (!metric || typeof metric !== 'string' || metric.trim().length === 0) {
+        throw new ValidationError('All input metric names must be non-empty strings');
+      }
+    }
+
+    try {
+      const result = await this.kgRepository.createModel(
+        name,
+        calculationType,
+        inputMetrics,
+        implementationName,
+        description,
+        formula,
+        mathematicalExpression
+      );
+
+      return {
+        uri: result.uri,
+        label: result.label,
+        calculation_type: calculationType,
+        input_metrics: result.inputMetrics,
+        implementation: result.implementation,
+        created_at: new Date().toISOString()
+      };
+    } catch (error) {
+      if (error instanceof GraphDBQueryError) {
+        const err = error as any;
+        if (err.code === 'MODEL_EXISTS') {
+          throw new ValidationError(`Model already exists: ${name}`);
+        }
+        if (err.code === 'IMPLEMENTATION_NOT_FOUND') {
+          throw new ValidationError(`Implementation not found: ${implementationName}`);
+        }
+        if (err.code === 'METRIC_NOT_FOUND') {
+          throw new ValidationError(`One or more input metrics not found`);
+        }
+      }
+      throw new GraphDBQueryError(
+        `Failed to create model: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        { name, calculationType, inputMetrics, implementationName, originalError: error }
+      );
+    }
+  }
+
+  /**
+   * 更新 Metric 的计算方法，链接到 Model
+   */
+  async updateMetricCalculationMethod(
+    metricLabel: string,
+    modelName: string
+  ): Promise<{
+    metric_uri: string;
+    metric_label: string;
+    calculation_method: string;
+    model: { uri: string; label: string };
+    updated_at: string;
+  }> {
+    // 验证输入
+    if (!metricLabel || typeof metricLabel !== 'string' || metricLabel.trim().length === 0) {
+      throw new ValidationError('Metric label is required');
+    }
+    if (!modelName || typeof modelName !== 'string' || modelName.trim().length === 0) {
+      throw new ValidationError('Model name is required');
+    }
+
+    try {
+      const result = await this.kgRepository.updateMetricCalculationMethod(metricLabel, modelName);
+      
+      return {
+        metric_uri: result.metricUri,
+        metric_label: result.metricLabel,
+        calculation_method: 'calculation_model',
+        model: result.model,
+        updated_at: new Date().toISOString()
+      };
+    } catch (error) {
+      if (error instanceof GraphDBQueryError) {
+        const err = error as any;
+        if (err.code === 'METRIC_NOT_FOUND') {
+          throw new ValidationError(`Metric not found: ${metricLabel}`);
+        }
+        if (err.code === 'MODEL_NOT_FOUND') {
+          throw new ValidationError(`Model not found: ${modelName}`);
+        }
+      }
+      throw new GraphDBQueryError(
+        `Failed to update metric calculation method: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        { metricLabel, modelName, originalError: error }
+      );
     }
   }
 }

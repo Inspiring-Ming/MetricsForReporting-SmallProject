@@ -232,6 +232,59 @@ export class KnowledgeGraphRepository {
   }
 
   /**
+   * 获取分类下使用 model calculation 方法的指标
+   */
+  async getModelCalculationMetricsByCategory(
+    industry: string, 
+    categoryLabel: string, 
+    framework: string
+  ): Promise<string[]> {
+    const query = `
+      ${this.ESG_PREFIX}
+      ${this.RDFS_PREFIX}
+
+      SELECT ?metricLabel WHERE {
+        ?industry a esg:Industry ;
+                  rdfs:label "${industry}" ;
+                  esg:reportsUsing ?framework .
+
+        ?framework a esg:ReportingFramework ;
+                   rdfs:label "${framework}" ;
+                   esg:includes ?category .
+
+        ?category a esg:Category ;
+                  rdfs:label "${categoryLabel}" ;
+                  esg:consistsOf ?metric .
+
+        ?metric a esg:Metric ;
+                rdfs:label ?metricLabel ;
+                esg:hasCalculationMethod "calculation_model" .
+      }
+      ORDER BY ?metricLabel
+    `;
+
+    try {
+      const result = await this.executeSparqlQuery(query);
+      const metrics: string[] = [];
+
+      if (result.results && result.results.bindings) {
+        for (const binding of result.results.bindings) {
+          if (binding.metricLabel && binding.metricLabel.value) {
+            metrics.push(binding.metricLabel.value);
+          }
+        }
+      }
+
+      return metrics;
+    } catch (error) {
+      throw new GraphDBQueryError(
+        `Failed to get model calculation metrics for industry: ${industry}, category: ${categoryLabel}, framework: ${framework}`,
+        { industry, categoryLabel, framework, originalError: error }
+      );
+    }
+  }
+
+  /**
    * 获取指标属性
    */
   async getMetricAttributes(metricLabel: string): Promise<MetricAttributesMap> {
@@ -917,5 +970,315 @@ export class KnowledgeGraphRepository {
    */
   private removeIRI(line: string): string {
     return line.includes('#') ? line.split('#').slice(1).join('#') : line;
+  }
+
+  /**
+   * 执行 SPARQL UPDATE 操作
+   */
+  private async executeSparqlUpdate(updateQuery: string): Promise<void> {
+    try {
+      const response = await fetch(this.graphDBEndpoint + '/statements', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/sparql-update',
+        },
+        body: updateQuery
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new GraphDBQueryError(
+          `GraphDB update failed: ${response.status} ${response.statusText}`,
+          { updateQuery, status: response.status, errorDetails: errorText }
+        );
+      }
+    } catch (error) {
+      if (error instanceof GraphDBQueryError) {
+        throw error;
+      }
+      throw new GraphDBQueryError(
+        `GraphDB update execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        { updateQuery, originalError: error }
+      );
+    }
+  }
+
+  /**
+   * 检查实体是否存在
+   */
+  private async checkEntityExists(label: string, entityType: 'Implementation' | 'Model' | 'Metric'): Promise<boolean> {
+    const query = `
+      ${this.ESG_PREFIX}
+      ${this.RDFS_PREFIX}
+
+      ASK WHERE {
+        ?entity a esg:${entityType} ;
+                rdfs:label "${label}" .
+      }
+    `;
+
+    try {
+      const result = await this.executeSparqlQuery(query);
+      return result.boolean === true;
+    } catch (error) {
+      throw new GraphDBQueryError(
+        `Failed to check if ${entityType} exists: ${label}`,
+        { label, entityType, originalError: error }
+      );
+    }
+  }
+
+  /**
+   * 根据 label 获取实体的完整信息
+   */
+  private async getEntityByLabel(label: string, entityType: 'Implementation' | 'Model' | 'Metric'): Promise<{ uri: string; label: string } | null> {
+    const query = `
+      ${this.ESG_PREFIX}
+      ${this.RDFS_PREFIX}
+
+      SELECT ?entity ?label WHERE {
+        ?entity a esg:${entityType} ;
+                rdfs:label "${label}" .
+        BIND("${label}" as ?label)
+      }
+    `;
+
+    try {
+      const result = await this.executeSparqlQuery(query);
+      if (result.results && result.results.bindings && result.results.bindings.length > 0) {
+        const binding = result.results.bindings[0];
+        return {
+          uri: binding.entity.value,
+          label: binding.label.value
+        };
+      }
+      return null;
+    } catch (error) {
+      throw new GraphDBQueryError(
+        `Failed to get ${entityType} by label: ${label}`,
+        { label, entityType, originalError: error }
+      );
+    }
+  }
+
+  /**
+   * 创建 Implementation
+   */
+  async createImplementation(
+    name: string, 
+    language: string, 
+    filePath: string,
+    functionName?: string,
+    description?: string,
+    inputParameters?: string,
+    returnType?: string,
+    validation?: string
+  ): Promise<{ uri: string; label: string }> {
+    // 检查是否已存在
+    const exists = await this.checkEntityExists(name, 'Implementation');
+    if (exists) {
+      throw new GraphDBQueryError(
+        `Implementation already exists: ${name}`,
+        { name, code: 'IMPLEMENTATION_EXISTS' }
+      );
+    }
+
+    const implementationUri = `http://example.org/esg#${name}`;
+    
+    // 构建可选属性
+    const optionalTriples: string[] = [];
+    if (functionName) optionalTriples.push(`esg:hasFunction "${functionName}"`);
+    if (description) optionalTriples.push(`esg:hasDescription "${description}"`);
+    if (inputParameters) optionalTriples.push(`esg:hasInputParameters "${inputParameters}"`);
+    if (returnType) optionalTriples.push(`esg:hasReturnType "${returnType}"`);
+    if (validation) optionalTriples.push(`esg:hasValidation "${validation}"`);
+    
+    const optionalTriplesStr = optionalTriples.length > 0 
+      ? ' ;\n                    ' + optionalTriples.join(' ;\n                    ') 
+      : '';
+    
+    const insertQuery = `
+      ${this.ESG_PREFIX}
+      ${this.RDFS_PREFIX}
+
+      INSERT DATA {
+        esg:${name} a esg:Implementation ;
+                    rdfs:label "${name}" ;
+                    esg:hasLanguage "${language}" ;
+                    esg:hasFilePath "${filePath}"${optionalTriplesStr} .
+      }
+    `;
+
+    try {
+      await this.executeSparqlUpdate(insertQuery);
+      return {
+        uri: implementationUri,
+        label: name
+      };
+    } catch (error) {
+      throw new GraphDBQueryError(
+        `Failed to create implementation: ${name}`,
+        { name, language, filePath, originalError: error }
+      );
+    }
+  }
+
+  /**
+   * 创建 Model
+   */
+  async createModel(
+    name: string, 
+    calculationType: string, 
+    inputMetrics: string[], 
+    implementationName: string,
+    description?: string,
+    formula?: string,
+    mathematicalExpression?: string
+  ): Promise<{ 
+    uri: string; 
+    label: string; 
+    inputMetrics: Array<{ uri: string; label: string }>; 
+    implementation: { uri: string; label: string } 
+  }> {
+    // 检查 Model 是否已存在
+    const modelExists = await this.checkEntityExists(name, 'Model');
+    if (modelExists) {
+      throw new GraphDBQueryError(
+        `Model already exists: ${name}`,
+        { name, code: 'MODEL_EXISTS' }
+      );
+    }
+
+    // 检查 Implementation 是否存在
+    const implementation = await this.getEntityByLabel(implementationName, 'Implementation');
+    if (!implementation) {
+      throw new GraphDBQueryError(
+        `Implementation not found: ${implementationName}`,
+        { implementationName, code: 'IMPLEMENTATION_NOT_FOUND' }
+      );
+    }
+
+    // 检查所有输入指标是否存在
+    const resolvedInputMetrics: Array<{ uri: string; label: string }> = [];
+    for (const metricLabel of inputMetrics) {
+      const metric = await this.getEntityByLabel(metricLabel, 'Metric');
+      if (!metric) {
+        throw new GraphDBQueryError(
+          `Input metric not found: ${metricLabel}`,
+          { metricLabel, code: 'METRIC_NOT_FOUND' }
+        );
+      }
+      resolvedInputMetrics.push(metric);
+    }
+
+    const modelUri = `http://example.org/esg#${name}`;
+    
+    // 构建 requiresInputFrom 三元组
+    const requiresInputFromTriples = resolvedInputMetrics
+      .map(m => `<${m.uri}>`)
+      .join(', ');
+
+    // 构建可选属性
+    const optionalTriples: string[] = [];
+    if (description) optionalTriples.push(`esg:hasDescription "${description}"`);
+    if (formula) optionalTriples.push(`esg:hasFormula "${formula}"`);
+    if (mathematicalExpression) optionalTriples.push(`esg:hasMathematicalExpression "${mathematicalExpression}"`);
+    
+    const optionalTriplesStr = optionalTriples.length > 0 
+      ? ' ;\n                    ' + optionalTriples.join(' ;\n                    ') 
+      : '';
+
+    const insertQuery = `
+      ${this.ESG_PREFIX}
+      ${this.RDFS_PREFIX}
+
+      INSERT DATA {
+        esg:${name} a esg:Model ;
+                    rdfs:label "${name}" ;
+                    esg:hasCalculationType "${calculationType}" ;
+                    esg:requiresInputFrom ${requiresInputFromTriples} ;
+                    esg:executesWith <${implementation.uri}>${optionalTriplesStr} .
+      }
+    `;
+
+    try {
+      await this.executeSparqlUpdate(insertQuery);
+      return {
+        uri: modelUri,
+        label: name,
+        inputMetrics: resolvedInputMetrics,
+        implementation
+      };
+    } catch (error) {
+      throw new GraphDBQueryError(
+        `Failed to create model: ${name}`,
+        { name, calculationType, inputMetrics, implementationName, originalError: error }
+      );
+    }
+  }
+
+  /**
+   * 更新 Metric 的计算方法，链接到 Model
+   */
+  async updateMetricCalculationMethod(
+    metricLabel: string, 
+    modelName: string
+  ): Promise<{ 
+    metricUri: string; 
+    metricLabel: string; 
+    model: { uri: string; label: string } 
+  }> {
+    // 检查 Metric 是否存在
+    const metric = await this.getEntityByLabel(metricLabel, 'Metric');
+    if (!metric) {
+      throw new GraphDBQueryError(
+        `Metric not found: ${metricLabel}`,
+        { metricLabel, code: 'METRIC_NOT_FOUND' }
+      );
+    }
+
+    // 检查 Model 是否存在
+    const model = await this.getEntityByLabel(modelName, 'Model');
+    if (!model) {
+      throw new GraphDBQueryError(
+        `Model not found: ${modelName}`,
+        { modelName, code: 'MODEL_NOT_FOUND' }
+      );
+    }
+
+    // 删除旧的计算方法关系，插入新的
+    const updateQuery = `
+      ${this.ESG_PREFIX}
+      ${this.RDFS_PREFIX}
+
+      DELETE {
+        <${metric.uri}> esg:hasCalculationMethod ?oldMethod .
+        <${metric.uri}> esg:obtainedFrom ?oldDataPoint .
+        <${metric.uri}> esg:isCalculatedBy ?oldModel .
+      }
+      INSERT {
+        <${metric.uri}> esg:hasCalculationMethod "calculation_model" .
+        <${metric.uri}> esg:isCalculatedBy <${model.uri}> .
+      }
+      WHERE {
+        <${metric.uri}> esg:hasCalculationMethod ?oldMethod .
+        OPTIONAL { <${metric.uri}> esg:obtainedFrom ?oldDataPoint . }
+        OPTIONAL { <${metric.uri}> esg:isCalculatedBy ?oldModel . }
+      }
+    `;
+
+    try {
+      await this.executeSparqlUpdate(updateQuery);
+      return {
+        metricUri: metric.uri,
+        metricLabel: metric.label,
+        model
+      };
+    } catch (error) {
+      throw new GraphDBQueryError(
+        `Failed to update metric calculation method: ${metricLabel}`,
+        { metricLabel, modelName, originalError: error }
+      );
+    }
   }
 }

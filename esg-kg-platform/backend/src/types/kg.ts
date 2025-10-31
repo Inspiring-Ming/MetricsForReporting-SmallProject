@@ -158,6 +158,34 @@ export interface ModelExecutionRequest {
   metricArray: any[];
 }
 
+/** 创建实现请求 */
+export interface CreateImplementationRequest {
+  name: string;                         // 唯一标识符（必填）
+  language: string;                     // 编程语言: Python, JavaScript, etc（必填）
+  file_path: string;                    // 文件路径（必填）
+  function_name?: string;               // 函数名称（可选）
+  description?: string;                 // 描述（可选）
+  input_parameters?: string;            // 输入参数说明（可选）
+  return_type?: string;                 // 返回类型（可选）
+  validation?: string;                  // 验证规则（可选）
+}
+
+/** 创建模型请求 */
+export interface CreateModelRequest {
+  name: string;                         // 唯一标识符（必填）
+  calculation_type: string;             // 计算类型: percentage_ratio, intensity_ratio, etc（必填）
+  input_metrics: string[];              // 输入指标的 label 或 URI（必填）
+  implementation: string;               // 实现的 name 或 URI（必填）
+  description?: string;                 // 模型描述（可选）
+  formula?: string;                     // 公式（可选）
+  mathematical_expression?: string;     // 数学表达式（可选）
+}
+
+/** 更新指标计算方法请求 */
+export interface UpdateMetricCalculationMethodRequest {
+  model: string;                        // 模型的 name 或 URI
+}
+
 // =====================================================
 // 5. 响应类型 (Response Types)
 // =====================================================
@@ -201,6 +229,43 @@ export interface CalculationModelResponse extends PaginationInfo {
 
 /** 指标数据血缘响应联合类型 */
 export type MetricDatasetsResponse = DirectMeasurementResponse | CalculationModelResponse;
+
+/** 创建实现响应 */
+export interface CreateImplementationResponse {
+  uri: string;
+  label: string;
+  language: string;
+  file_path: string;
+  created_at: string;
+}
+
+/** 创建模型响应 */
+export interface CreateModelResponse {
+  uri: string;
+  label: string;
+  calculation_type: string;
+  input_metrics: Array<{
+    uri: string;
+    label: string;
+  }>;
+  implementation: {
+    uri: string;
+    label: string;
+  };
+  created_at: string;
+}
+
+/** 更新指标计算方法响应 */
+export interface UpdateMetricCalculationMethodResponse {
+  metric_uri: string;
+  metric_label: string;
+  calculation_method: string;
+  model: {
+    uri: string;
+    label: string;
+  };
+  updated_at: string;
+}
 
 // =====================================================
 // 6. 兼容性类型 (Legacy Types) - 向后兼容

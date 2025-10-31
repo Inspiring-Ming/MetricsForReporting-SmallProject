@@ -26,6 +26,9 @@ export const createKnowledgeGraphRoutes = (): Router => {
   // CQ4: 获取特定分类下的指标URIs（高性能版本）
   router.get('/metrics/uris', kgController.getMetricUris);
 
+  // 获取特定分类下使用 model calculation 方法的指标
+  router.get('/metrics/model-calculation', kgController.getModelCalculationMetrics);
+
   // 获取指标属性
   router.get('/metrics/attributes', kgController.getMetricAttributes);
 
@@ -52,6 +55,18 @@ export const createKnowledgeGraphRoutes = (): Router => {
 
   // 获取所有计算类型
   router.get('/calculation-types', kgController.getAllCalculationTypes);
+
+  // 重置知识图谱到初始状态
+  router.post('/reset', kgController.resetKnowledgeGraph);
+
+  // 创建 Implementation
+  router.post('/implementations', kgController.createImplementation);
+
+  // 创建 Model
+  router.post('/models', kgController.createModel);
+
+  // 更新 Metric 的计算方法
+  router.patch('/metrics/:metric_label/calculation-method', kgController.updateMetricCalculationMethod);
 
   return router;
 };
