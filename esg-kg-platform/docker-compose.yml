@@ -122,6 +122,10 @@ services:
       PORT: 3000
       GRAPHDB_URL: http://graphdb:7200
       GRAPHDB_REPO: esg-repo
+      INITIAL_TTL_PATH: /app/graphDB/import/esg_knowledge_graph_latest.ttl
+    volumes:
+      # Mount import directory for reset functionality
+      - ./graphDB/import:/app/graphDB/import:ro
     depends_on:
       graphdb:
         condition: service_healthy
