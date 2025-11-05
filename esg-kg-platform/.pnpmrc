@@ -1,0 +1,19 @@
+# pnpm configuration file
+# Strict peer dependencies
+strict-peer-dependencies=false
+
+# Use hoisting mode
+hoist=true
+
+# Exclude certain packages from being hoisted
+public-hoist-pattern[]=*eslint*
+public-hoist-pattern[]=*prettier*
+
+# Cache configuration
+store-dir=~/.pnpm-store
+
+# Auto install peer dependencies
+auto-install-peers=true
+
+# Resolve Node.js module resolution issues
+shamefully-hoist=false

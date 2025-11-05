@@ -8,7 +8,8 @@ export default defineConfig({
     proxy: { 
       "^/SAGE/report": { target: "http://localhost:3001", changeOrigin: true },
       '^/SAGE/reports': { target: 'http://localhost:3001', changeOrigin: true },
-      "^/SAGE":   { target: "http://localhost:3000", changeOrigin: true },
+      "^/api": { target: "http://localhost:3000", changeOrigin: true },  // Docker backend for KG APIs
+      "^/SAGE":   { target: "http://localhost:3001", changeOrigin: true },  // Root backend for DynamoDB
     } 
   }
 })
