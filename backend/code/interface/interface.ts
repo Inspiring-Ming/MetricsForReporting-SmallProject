@@ -40,3 +40,8 @@ export interface ModelImplementationMapping {
 export interface ImplementationListResponse {
   result: Implementation[];
 }
+
+export interface ValidatePythonScriptResponse {
+  ok: boolean;
+  error?: { message: string; line?: number; column?: number; text?: string }
+}

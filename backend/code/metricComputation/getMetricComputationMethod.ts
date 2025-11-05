@@ -113,6 +113,8 @@ async function modelExecutaion(
     throw HTTPError(404, "Must be at least one input metric");
   }
 
+  console.log("metricArray:", metricArray);
+
   const metricValueArr: string[] = [];
 
   let pillar: string | undefined = undefined;
@@ -125,6 +127,8 @@ async function modelExecutaion(
         return data;
       })
     );
+
+    console.log("metricAtrArrMap:", metricAtrArrMap);
 
     const metricInforArr = [];
 
@@ -194,11 +198,11 @@ async function handleComputationMethod(
 ): Promise<number>
 {
 
-  const modelFolderPath = isFolder("models_computing");
+  const modelFolderPath = isFolder("models");
   const filePath = path.join(modelFolderPath, `${calculation_type}.py`);
 
   if (!fs.existsSync(filePath)) {
-    throw HTTPError(404, "Unvalid or unimplemented model execution file: ", calculation_type);
+    throw HTTPError(404, `Invalid or unimplemented model execution file: ${calculation_type}`);
   }
 
   try {
@@ -225,6 +229,8 @@ function isFolder(folderName: string) {
   return folderPath;
 }
 
-export { getMetricComputationMethod,
-  getMetricValue, modelExecutaion,
+export {
+  getMetricComputationMethod,
+  getMetricValue,
+  modelExecutaion,
 };

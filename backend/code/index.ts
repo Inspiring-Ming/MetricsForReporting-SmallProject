@@ -24,6 +24,11 @@ import {
   getMetricValue,
   modelExecutaion,
 } from "./metricComputation/getMetricComputationMethod";
+import {
+  validatePythonCode,
+  saveAndCompileUserPythonScript,
+  executeSavedUserPythonScript,
+} from "./metricComputation/implementationUpload";
 
 const app = express();
 const PORT: number = parseInt(process.env.PORT || "3001");
@@ -69,7 +74,7 @@ app.get("/SAGE/dynamoDB/retrieve", async (req, res) => {
  * CQ1: Which Industry does [company X] belong to?
  * 🔍 GET: Industry that company belong to given their perm id
  */
-app.get("/SAGE/dynamoDB/retrieve/industry", async (req, res) => {
+app.get("/SAGE/dynamoDB/company/info", async (req, res) => {
   const perm_id = req.query.perm_id as string;
 
   try {
@@ -254,6 +259,40 @@ app.post("/SAGE/model/computation", async (req, res) => {
 
   try {
     const result = await modelExecutaion(perm_id, calculation_type, year, metricArray);
+    res.json(result);
+  } catch (error) {
+    handleHttpError(res, error);
+  }
+});
+
+// ========================================================================= //
+// ============================ CODE UTILITIES ============================== //
+// ========================================================================= //
+
+app.post("/SAGE/code/validate", async (req, res) => {
+  const { language, code } = req.body || {};
+  try {
+    const result = await validatePythonCode(code, language);
+    res.json(result);
+  } catch (error) {
+    handleHttpError(res, error);
+  }
+});
+
+app.post("/SAGE/code/submit", async (req, res) => {
+  const { language, code } = req.body || {};
+  try {
+    const result = await saveAndCompileUserPythonScript(code, language);
+    res.json(result);
+  } catch (error) {
+    handleHttpError(res, error);
+  }
+});
+
+app.post("/SAGE/code/execute", async (req, res) => {
+  const { id, inputs } = req.body || {};
+  try {
+    const result = await executeSavedUserPythonScript(id, inputs);
     res.json(result);
   } catch (error) {
     handleHttpError(res, error);

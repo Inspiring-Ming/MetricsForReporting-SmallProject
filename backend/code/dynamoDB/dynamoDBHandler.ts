@@ -46,7 +46,7 @@ async function getMetric(perm_id: string, metric_name: string, year: string)
 }
 
 async function getCompanyIndustry(perm_id: string)
-: Promise< { result: string } >
+: Promise< { industry: string, company_name: string } >
 {
   // Partition key of DynamoDB
   const pk = `COMP#${perm_id}`;
@@ -55,7 +55,7 @@ async function getCompanyIndustry(perm_id: string)
     TableName: tableName,
     KeyConditionExpression: "PK = :pk",
     ExpressionAttributeValues: { ":pk": pk },
-    ProjectionExpression: "industry",
+    ProjectionExpression: "industry, company_name",
     Limit: 1,
   });
 
@@ -63,12 +63,17 @@ async function getCompanyIndustry(perm_id: string)
     const res = await docClient.send(cmd);
 
     if (res.Items && res.Items.length > 0) {
-      const item = res.Items[0] as { industry?: string };
+      const item = res.Items[0] as { industry?: string, company_name?: string };
 
       if (!item.industry) {
         throw HTTPError(500, `❌ No industry field for perm id "${perm_id}" on metric(s) DynamoDB.`);
       }
-      return { result: item.industry };
+
+      if (!item.company_name) {
+        throw HTTPError(500, `❌ No company_name field for perm id "${perm_id}" on metric(s) DynamoDB.`);
+      }
+
+      return { industry: item.industry, company_name: item.company_name };
     } else {
       console.log(`❌ No industry found for the given company perm id: "${perm_id}".`);
       throw HTTPError(404, `❌ No industry found for the given company perm id: "${perm_id}".`);

@@ -23,8 +23,8 @@ export type DirectValueResult = {
   value: number | string;
   pillar?: string;
   reported_date?: string;
-  source?: string | null;        // ← NEW
-  obtainedFrom?: string | null;  // ← NEW
+  source?: string | null;
+  obtainedFrom?: string | null;
 };
 
 type Props = {
