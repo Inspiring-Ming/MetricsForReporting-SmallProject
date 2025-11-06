@@ -48,6 +48,7 @@ async function getMetricComputationMethod(metric_label: string) {
       measureMethod: "calculation_model",
       isCalculatedBy: modelAtr.get("label"),
       hasCalculationType: modelAtr.get("hasCalculationType"),
+      executesWith: modelAtr.get("executesWith"),
       hasFormula: modelAtr.get("hasMathematicalExpression"),
       requiresInputFrom: requiredInputArr,
     };
@@ -113,8 +114,6 @@ async function modelExecutaion(
     throw HTTPError(404, "Must be at least one input metric");
   }
 
-  console.log("metricArray:", metricArray);
-
   const metricValueArr: string[] = [];
 
   let pillar: string | undefined = undefined;
@@ -127,8 +126,6 @@ async function modelExecutaion(
         return data;
       })
     );
-
-    console.log("metricAtrArrMap:", metricAtrArrMap);
 
     const metricInforArr = [];
 
@@ -199,7 +196,13 @@ async function handleComputationMethod(
 {
 
   const modelFolderPath = isFolder("models");
-  const filePath = path.join(modelFolderPath, `${calculation_type}.py`);
+  let filePath;
+
+  if (calculation_type.includes("models/")) {
+    filePath = calculation_type;
+  } else {
+    filePath = path.join(modelFolderPath, `${calculation_type}.py`);
+  }
 
   if (!fs.existsSync(filePath)) {
     throw HTTPError(404, `Invalid or unimplemented model execution file: ${calculation_type}`);

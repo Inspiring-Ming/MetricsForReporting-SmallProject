@@ -445,7 +445,7 @@ export default function ESGDashboard() {
         }
         return;
       }
-
+      // Calculation model path
       const calcType = method.hasCalculationType ?? "calculation_model";
       const inputs = method.requiresInputFrom ?? [];
 

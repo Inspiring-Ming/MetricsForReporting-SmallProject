@@ -34,6 +34,12 @@ export type ModelExecutaionRes = {
 
 export type MetricMethod = DirectMeasure | CalcModel;
 
+// export type MetricMethod = {
+//   metric_label: string;
+//   computation_method: DirectMeasure | CalcModel;
+//   attributes: object;
+// }
+
 export type ReportGenRes = {
   rpId: string,
   fileName: string,
@@ -137,9 +143,21 @@ export function getMetricsReq(industry: string, category_label:string, framework
   return requestHelper("GET", "/api/kg/metrics", { industry, category_label, framework });
 }
 
+export function getModelCalMetricsReq(industry: string, category_label:string, framework: string): Promise<Result<MetricRes>> {
+  // KG API - goes to docker backend (port 3000)
+  return requestHelper("GET", "/api/kg/metrics/model-calculation", { industry, category_label, framework });
+}
+
+// Wrong output type -- NEEDS FIXING
+// export function getMetricComputationMethodReq(metric_label: string): Promise<Result<MetricMethod>> {
+//   // KG Computation API - goes to docker backend (port 3000)
+//   return requestHelper("GET", "/api/computation/method", { metric_label });
+// }
+
+// Using old endpoint for now
 export function getMetricComputationMethodReq(metric_label: string): Promise<Result<MetricMethod>> {
   // KG Computation API - goes to docker backend (port 3000)
-  return requestHelper("GET", "/api/computation/method", { metric_label });
+  return requestHelper("GET", "/SAGE/KG/metric/computation/method", { metric_label });
 }
 
 export function getMetricValueReq(

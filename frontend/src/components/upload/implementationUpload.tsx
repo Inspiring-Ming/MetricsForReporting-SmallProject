@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Taskbar from "../taskbar/Taskbar";
 import CodeIDE from "../ide/CodeIDE";
-import { getCompanyInfoReq, getReportFrameworkReq } from "../../api/esg";
+import {
+  getCompanyInfoReq, getReportFrameworkReq, 
+  getCategoriesReq, getModelCalMetricsReq,
+} from "../../api/esg";
 
 export default function ImplementationUpload() {
   const navigate = useNavigate();
@@ -10,16 +13,19 @@ export default function ImplementationUpload() {
   // Upload type: "metric" or "implementation"
   const [uploadType, setUploadType] = useState<"metric" | "implementation">("implementation");
 
-  // Mock data for implementation upload
-  const categories = ["Emissions", "Energy", "Water", "Waste"];
-  const metricsByCategory: Record<string, string[]> = {
-    Emissions: ["Scope 1 Emissions", "Scope 2 Emissions", "Scope 3 Emissions"],
-    Energy: ["Total Energy Consumption", "Renewable Energy Share", "Grid Intensity"],
-    Water: ["Water Withdrawal", "Water Discharge"],
-    Waste: ["Hazardous Waste", "Recycled Waste"],
-  };
+  // --- Categories (fetched) ---
+  const [categories, setCategories] = useState<string[]>([]);
+  const [catLoading, setCatLoading] = useState(false);
+  const [catErr, setCatErr] = useState<string | null>(null);
+
+  // Removed mock metricsByCategory; metrics are fetched via API
   const [category, setCategory] = useState<string>("");
   const [metric, setMetric] = useState<string>("");
+
+  // Fetched metrics
+  const [metrics, setMetrics] = useState<string[]>([]);
+  const [metricsLoading, setMetricsLoading] = useState(false);
+  const [metricsErr, setMetricsErr] = useState<string | null>(null);
 
   // Mock input metrics list
   const availableInputs = [
@@ -47,20 +53,16 @@ export default function ImplementationUpload() {
     window.setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
   };
 
-  const metricsForCategory = category ? metricsByCategory[category] ?? [] : [];
-
   // Company context similar to dashboard
-  const [permId, setPermId] = useState<string>(() => localStorage.getItem("permId") ?? ""); // CHANGED
-  const [companyName, setCompanyName] = useState<string>(() => localStorage.getItem("companyName") ?? ""); // CHANGED
+  const [permId, setPermId] = useState<string>(() => localStorage.getItem("permId") ?? "");
   const [industry, setIndustry] = useState<string>("");
-  const [framework, setFramework] = useState<string>(() => localStorage.getItem("framework") ?? ""); // CHANGED
+  const [framework, setFramework] = useState<string>(() => localStorage.getItem("framework") ?? "");
   const [frameworks, setFrameworks] = useState<string[]>([]);
   const [fwLoading, setFwLoading] = useState(false);
   const [fwErr, setFwErr] = useState<string | null>(null);
 
   // Persist to localStorage only when non-empty
   useEffect(() => { if (permId) localStorage.setItem("permId", permId); }, [permId]);
-  useEffect(() => { if (companyName) localStorage.setItem("companyName", companyName); }, [companyName]);
   useEffect(() => { if (framework) localStorage.setItem("framework", framework); }, [framework]);
 
   // Fetch company info and frameworks when permId changes (like dashboard)
@@ -68,18 +70,21 @@ export default function ImplementationUpload() {
     let alive = true;
     (async () => {
       if (!permId) {
-        setCompanyName("");
         setIndustry("");
         setFrameworks([]);
         setFramework("");
         setFwErr(null);
+        // reset categories when no permId
+        setCategories([]);
+        setCategory("");
+        setMetric("");
+        setCatErr(null);
         return;
       }
       const ir = await getCompanyInfoReq(permId);
       if (!alive) return;
 
       if (!ir.ok) {
-        setCompanyName("");
         setIndustry("");
         setFrameworks([]);
         setFramework("");
@@ -87,7 +92,6 @@ export default function ImplementationUpload() {
         return;
       }
 
-      if (!companyName) setCompanyName(ir.data.company_name ?? "");
       setIndustry(ir.data.industry ?? "");
 
       if (ir.data.industry) {
@@ -113,6 +117,69 @@ export default function ImplementationUpload() {
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [permId]);
+
+  // Fetch categories whenever industry and framework are available
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      setCategory("");
+      setMetric("");
+
+      if (!industry || !framework) {
+        setCategories([]);
+        setCatErr(null);
+        return;
+      }
+
+      setCatLoading(true);
+      const cr = await getCategoriesReq(industry, framework);
+      if (!alive) return;
+      setCatLoading(false);
+
+      if (cr.ok) {
+        const list = cr.data.result ?? [];
+        setCategories(list);
+        setCatErr(null);
+        // Auto-select single category
+        if (list.length === 1) setCategory(list[0]);
+      } else {
+        setCategories([]);
+        setCatErr(cr.message);
+      }
+    })();
+    return () => { alive = false; };
+  }, [industry, framework]);
+
+  // Fetch metrics for selected category (model-calculable metrics)
+  useEffect(() => {
+    let alive = true;
+
+    // Reset when category or context changes
+    setMetric("");
+    setMetrics([]);
+    setMetricsErr(null);
+
+    if (!industry || !framework || !category) return;
+
+    setMetricsLoading(true);
+    (async () => {
+      const res = await getModelCalMetricsReq(industry, category, framework);
+      if (!alive) return;
+      setMetricsLoading(false);
+
+      if (res.ok) {
+        const list = res.data.result ?? [];
+        setMetrics(list);
+        setMetricsErr(null);
+        if (list.length === 1) setMetric(list[0]);
+      } else {
+        setMetrics([]);
+        setMetricsErr(res.message);
+      }
+    })();
+
+    return () => { alive = false; };
+  }, [industry, framework, category]);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -160,15 +227,17 @@ export default function ImplementationUpload() {
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white shadow-sm text-sm"
                     />
                   </div>
+
                   <div className="space-y-1">
-                    <div className="text-xs text-slate-500">Company Name</div>
+                    <div className="text-xs text-slate-500">Industry</div>
                     <input
-                      value={companyName}
+                      value={industry}
                       readOnly
                       placeholder={permId ? "Fetching..." : "Enter Perm ID first"}
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-slate-100 shadow-sm text-sm"
                     />
                   </div>
+
                   <div className="space-y-1">
                     <div className="text-xs text-slate-500">Framework</div>
                     <select
@@ -196,9 +265,9 @@ export default function ImplementationUpload() {
                   </div>
                 )}
 
-                {/* Category and Metric selectors */}
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
+                  {/* Category selectors */}
+                  <div className="space-y-1 sm:col-span-2">
                     <div className="text-xs text-slate-500">Category</div>
                     <select
                       value={category}
@@ -206,36 +275,48 @@ export default function ImplementationUpload() {
                         setCategory(e.target.value);
                         setMetric("");
                       }}
-                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white shadow-sm text-sm"
+                      disabled={!framework || fwLoading || catLoading || !categories.length}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white shadow-sm text-sm disabled:bg-slate-100"
                     >
                       <option value="" disabled>
-                        Select category
+                        {!framework
+                          ? "Select framework first"
+                          : catLoading
+                            ? "Loading..."
+                            : categories.length
+                              ? "Select category"
+                              : "No categories available"}
                       </option>
                       {categories.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
+                        <option key={c} value={c}>{c}</option>
                       ))}
                     </select>
+                    {catErr && <div className="text-xs text-red-600">{catErr}</div>}
                   </div>
-
-                  <div className="space-y-1">
+                  
+                  {/* Metric selectors */}
+                  <div className="space-y-1 sm:col-span-2">
                     <div className="text-xs text-slate-500">Metric</div>
                     <select
                       value={metric}
                       onChange={(e) => setMetric(e.target.value)}
-                      disabled={!category}
+                      disabled={!category || metricsLoading || !metrics.length}
                       className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white shadow-sm text-sm disabled:bg-slate-100"
                     >
                       <option value="" disabled>
-                        {category ? "Select metric" : "Select a category first"}
+                        {!category
+                          ? "Select a category first"
+                          : metricsLoading
+                            ? "Loading..."
+                            : metrics.length
+                              ? "Select metric"
+                              : "No metrics available"}
                       </option>
-                      {metricsForCategory.map((m) => (
-                        <option key={m} value={m}>
-                          {m}
-                        </option>
+                      {metrics.map((m) => (
+                        <option key={m} value={m}>{m}</option>
                       ))}
                     </select>
+                    {metricsErr && <div className="text-xs text-red-600">{metricsErr}</div>}
                   </div>
                 </div>
 
@@ -289,7 +370,8 @@ export default function ImplementationUpload() {
                 {/* Show context summary in IDE view */}
                 <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
                   <div><span className="font-medium">Perm ID:</span> {permId || "—"}</div>
-                  <div><span className="font-medium">Company Name:</span> {companyName || "—"}</div>
+
+                  <div><span className="font-medium">Industry:</span> {industry || "—"}</div>
                   <div><span className="font-medium">Framework:</span> {framework || "—"}</div>
                 </div>
                 <CodeIDE
