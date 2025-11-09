@@ -383,10 +383,14 @@ export class KnowledgeGraphRepository {
       SELECT ?dataSourceID ?disclosureType WHERE {
         ?observation a esg:Observation ;
                     esg:metric ?metric ;
-                    esg:obtainedFrom ?dataSourceID ;
                     esg:disclosureType ?disclosureType .
         
         ?metric rdfs:label "${metricID}" .
+        
+        # obtainedFrom is optional - calculated metrics don't have it
+        OPTIONAL {
+          ?observation esg:obtainedFrom ?dataSourceID .
+        }
       }
       ORDER BY 
         (IF(?disclosureType = esg:regulatory_filing, 1, 
