@@ -8,22 +8,27 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { getCompanyIndustry, getMetric } from "./dynamoDB/dynamoDBHandler";
-import {
-  getReportFramework,
-  getCategoriesByIndustryAndReportFramework,
-  getMetricsByIndustryAndCategory,
-  getImplementationByModel,
-  getImplementationDetails,
-  getAllImplementations,
-  getImplementationsByCalculationType,
-  getAllCalculationTypes,
-} from "./KG/queryGraph";
+// import {
+//   getReportFramework,
+//   getCategoriesByIndustryAndReportFramework,
+//   getMetricsByIndustryAndCategory,
+//   getImplementationByModel,
+//   getImplementationDetails,
+//   getAllImplementations,
+//   getImplementationsByCalculationType,
+//   getAllCalculationTypes,
+// } from "./KG/queryGraph";
 
 import {
   getMetricComputationMethod,
   getMetricValue,
   modelExecutaion,
 } from "./metricComputation/getMetricComputationMethod";
+import {
+  validatePythonCode,
+  saveAndCompileUserPythonScript,
+  executeSavedUserPythonScript,
+} from "./metricComputation/implementationUpload";
 
 const app = express();
 const PORT: number = parseInt(process.env.PORT || "3001");
@@ -69,7 +74,7 @@ app.get("/SAGE/dynamoDB/retrieve", async (req, res) => {
  * CQ1: Which Industry does [company X] belong to?
  * 🔍 GET: Industry that company belong to given their perm id
  */
-app.get("/SAGE/dynamoDB/retrieve/industry", async (req, res) => {
+app.get("/SAGE/dynamoDB/company/info", async (req, res) => {
   const perm_id = req.query.perm_id as string;
 
   try {
@@ -140,16 +145,16 @@ app.get("/SAGE/dynamoDB/retrieve/industry", async (req, res) => {
 //  * CQ7: What Metrics are required as inputs for calculating [specific model]?
 //  * 🔍 GET: Get metric computation method by metric label
 //  */
-// app.get("/SAGE/KG/metric/computation/method", async (req, res) => {
-//   const metric_label = req.query.metric_label as string;
+app.get("/SAGE/KG/metric/computation/method", async (req, res) => {
+  const metric_label = req.query.metric_label as string;
 
-//   try {
-//     const result = await getMetricComputationMethod(metric_label);
-//     res.json(result);
-//   } catch (error) {
-//     handleHttpError(res, error);
-//   }
-// });
+  try {
+    const result = await getMetricComputationMethod(metric_label);
+    res.json(result);
+  } catch (error) {
+    handleHttpError(res, error);
+  }
+});
 
 // /**
 //  * CQ6: Which Implementation is used to execute [specific model]?
@@ -261,6 +266,40 @@ app.post("/SAGE/model/computation", async (req, res) => {
 });
 
 // ========================================================================= //
+// ============================ CODE UTILITIES ============================== //
+// ========================================================================= //
+
+app.post("/SAGE/code/validate", async (req, res) => {
+  const { language, code } = req.body || {};
+  try {
+    const result = await validatePythonCode(code, language);
+    res.json(result);
+  } catch (error) {
+    handleHttpError(res, error);
+  }
+});
+
+app.post("/SAGE/code/submit", async (req, res) => {
+  const { language, code } = req.body || {};
+  try {
+    const result = await saveAndCompileUserPythonScript(code, language);
+    res.json(result);
+  } catch (error) {
+    handleHttpError(res, error);
+  }
+});
+
+app.post("/SAGE/code/execute", async (req, res) => {
+  const { id, inputs } = req.body || {};
+  try {
+    const result = await executeSavedUserPythonScript(id, inputs);
+    res.json(result);
+  } catch (error) {
+    handleHttpError(res, error);
+  }
+});
+
+// ========================================================================= //
 // ========================== HELPER FUNCTIONS ============================= //
 // ========================================================================= //
 
@@ -282,6 +321,18 @@ function handleHttpError(res: any, error: any) {
 // start local server
 const server = app.listen(PORT, HOST, async () => {
   console.log(`⚡️ Server started on port ${PORT} at ${HOST}`);
+});
+
+// Catch listen() errors like EADDRINUSE (port in use) or EACCES (permission denied)
+server.on("error", (err: NodeJS.ErrnoException) => {
+  if (err.code === "EADDRINUSE") {
+    console.error(`❌ Port ${PORT} is already in use. Please stop the other process or use a different port.`);
+  } else if (err.code === "EACCES") {
+    console.error(`❌ Permission denied for port ${PORT}. Try running with elevated privileges or a different port.`);
+  } else {
+    console.error("❌ Server failed to start:", err);
+  }
+  process.exit(1);
 });
 
 process.on("SIGINT", () => {

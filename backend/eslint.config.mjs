@@ -37,6 +37,7 @@ export default [
       jest: jestPlugin,
     },
     rules: {
+      "no-undef": "off", // Turn off no-undef as TypeScript handles this
       "indent": ["error", 2], // Enforce 2-space indentation
       "quotes": ["error", "double", { "allowTemplateLiterals": true }], // Enforce double quotes or backticks
       "semi": ["error", "always"], // Require semicolons

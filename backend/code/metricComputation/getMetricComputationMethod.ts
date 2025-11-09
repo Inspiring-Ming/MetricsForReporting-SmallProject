@@ -48,6 +48,7 @@ async function getMetricComputationMethod(metric_label: string) {
       measureMethod: "calculation_model",
       isCalculatedBy: modelAtr.get("label"),
       hasCalculationType: modelAtr.get("hasCalculationType"),
+      executesWith: modelAtr.get("executesWith"),
       hasFormula: modelAtr.get("hasMathematicalExpression"),
       requiresInputFrom: requiredInputArr,
     };
@@ -194,11 +195,17 @@ async function handleComputationMethod(
 ): Promise<number>
 {
 
-  const modelFolderPath = isFolder("models_computing");
-  const filePath = path.join(modelFolderPath, `${calculation_type}.py`);
+  const modelFolderPath = isFolder("models");
+  let filePath;
+
+  if (calculation_type.includes("models/")) {
+    filePath = calculation_type;
+  } else {
+    filePath = path.join(modelFolderPath, `${calculation_type}.py`);
+  }
 
   if (!fs.existsSync(filePath)) {
-    throw HTTPError(404, "Unvalid or unimplemented model execution file: ", calculation_type);
+    throw HTTPError(404, `Invalid or unimplemented model execution file: ${calculation_type}`);
   }
 
   try {
@@ -225,6 +232,8 @@ function isFolder(folderName: string) {
   return folderPath;
 }
 
-export { getMetricComputationMethod,
-  getMetricValue, modelExecutaion,
+export {
+  getMetricComputationMethod,
+  getMetricValue,
+  modelExecutaion,
 };

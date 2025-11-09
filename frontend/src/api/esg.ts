@@ -2,7 +2,7 @@ import { requestHelper } from "./callout";
 import type { Result } from "./callout";
 
 // Response Type
-export type IndustryRes = { result: string };
+export type CompanyInfoRes = { industry: string, company_name: string };
 export type FrameworkRes = { result: string[] };
 export type CategoryRes  = { result: string[] };
 export type MetricRes  = { result: string[] };
@@ -33,6 +33,12 @@ export type ModelExecutaionRes = {
 };
 
 export type MetricMethod = DirectMeasure | CalcModel;
+
+// export type MetricMethod = {
+//   metric_label: string;
+//   computation_method: DirectMeasure | CalcModel;
+//   attributes: object;
+// }
 
 export type ReportGenRes = {
   rpId: string,
@@ -81,9 +87,45 @@ export type ReportData = {
   items: ReportItem[];
 };
 
-export function getCompanyIndustryReq(perm_id: string): Promise<Result<IndustryRes>> {
+// --- Code validation/submit/execute (IDE) ----------------------------------
+export type CodeValidationError = { message: string; line?: number; column?: number; text?: string };
+export type CodeValidationRes = { ok: boolean; error?: CodeValidationError; errors?: CodeValidationError[] };
+
+export function validateCodeReq(language: "python", code: string): Promise<Result<CodeValidationRes>> {
+  return requestHelper("POST", "/SAGE/code/validate", { language, code });
+}
+
+export type SaveUserScriptRes = {
+  ok: boolean;
+  id?: string;
+  file?: { path: string; bytes: number };
+  bytecode?: { path: string; bytes: number };
+  error?: CodeValidationError;
+  errors?: CodeValidationError[];
+};
+
+export function submitCodeReq(language: "python", code: string): Promise<Result<SaveUserScriptRes>> {
+  return requestHelper("POST", "/SAGE/code/submit", { language, code });
+}
+
+export type ExecuteUserScriptRes = {
+  ok: boolean;
+  result?: unknown;
+  logs?: string[];
+  error?: CodeValidationError;
+};
+
+export function executeCodeReq(id: string, inputs: unknown): Promise<Result<ExecuteUserScriptRes>> {
+  return requestHelper("POST", "/SAGE/code/execute", { id, inputs });
+}
+
+export function executeTempCodeReq(language: "python", code: string, inputs: unknown): Promise<Result<ExecuteUserScriptRes>> {
+  return requestHelper("POST", "/SAGE/code/execute-temp", { language, code, inputs });
+}
+
+export function getCompanyInfoReq(perm_id: string): Promise<Result<CompanyInfoRes>> {
   // DynamoDB API - goes to root backend (port 3001)
-  return requestHelper("GET", "/SAGE/dynamoDB/retrieve/industry", { perm_id });
+  return requestHelper("GET", "/SAGE/dynamoDB/company/info", { perm_id });
 }
 
 export function getReportFrameworkReq(industry: string): Promise<Result<FrameworkRes>> {
@@ -101,9 +143,21 @@ export function getMetricsReq(industry: string, category_label:string, framework
   return requestHelper("GET", "/api/kg/metrics", { industry, category_label, framework });
 }
 
+export function getModelCalMetricsReq(industry: string, category_label:string, framework: string): Promise<Result<MetricRes>> {
+  // KG API - goes to docker backend (port 3000)
+  return requestHelper("GET", "/api/kg/metrics/model-calculation", { industry, category_label, framework });
+}
+
+// Wrong output type -- NEEDS FIXING
+// export function getMetricComputationMethodReq(metric_label: string): Promise<Result<MetricMethod>> {
+//   // KG Computation API - goes to docker backend (port 3000)
+//   return requestHelper("GET", "/api/computation/method", { metric_label });
+// }
+
+// Using old endpoint for now
 export function getMetricComputationMethodReq(metric_label: string): Promise<Result<MetricMethod>> {
   // KG Computation API - goes to docker backend (port 3000)
-  return requestHelper("GET", "/api/computation/method", { metric_label });
+  return requestHelper("GET", "/SAGE/KG/metric/computation/method", { metric_label });
 }
 
 export function getMetricValueReq(

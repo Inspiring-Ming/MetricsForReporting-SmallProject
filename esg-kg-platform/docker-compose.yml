@@ -141,29 +141,29 @@ services:
       start_period: 40s
 
   # Frontend Web Application
-  frontend:
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
-      args:
-        BACKEND_URL: http://backend:3000
-    container_name: esg-frontend
-    ports:
-      - "5172:5172"
-    environment:
-      NODE_ENV: production
-      BACKEND_URL: http://backend:3000
-    depends_on:
-      backend:
-        condition: service_healthy
-    networks:
-      - esg-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5172"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+  # frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: frontend/Dockerfile
+  #     args:
+  #       BACKEND_URL: http://backend:3000
+  #   container_name: esg-frontend
+  #   ports:
+  #     - "5172:5172"
+  #   environment:
+  #     NODE_ENV: production
+  #     BACKEND_URL: http://backend:3000
+  #   depends_on:
+  #     backend:
+  #       condition: service_healthy
+  #   networks:
+  #     - esg-network
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:5172"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 40s
 
 networks:
   esg-network:
