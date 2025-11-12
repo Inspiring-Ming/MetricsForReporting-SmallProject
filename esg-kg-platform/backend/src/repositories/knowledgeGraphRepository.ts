@@ -423,25 +423,55 @@ export class KnowledgeGraphRepository {
 
   /**
    * 获取模型对应的实现
+   * 
+   * @param modelIRIOrLabel - 可以是完整 IRI（如 "http://example.org/esg#GridElectricityRateModel"）
+   *                          或 label（如 "Grid Electricity Rate Model"）
+   * @returns Implementation 信息
    */
-  async getImplementationByModel(modelLabel: string): Promise<Implementation> {
-    const query = `
-      ${this.ESG_PREFIX}
-      ${this.RDFS_PREFIX}
+  async getImplementationByModel(modelIRIOrLabel: string): Promise<Implementation> {
+    // 判断是完整 IRI 还是 label
+    const isFullIRI = modelIRIOrLabel.startsWith('http://') || modelIRIOrLabel.startsWith('https://');
+    
+    let query: string;
+    
+    if (isFullIRI) {
+      // 使用完整 IRI 查询（最精确、最快速）
+      query = `
+        ${this.ESG_PREFIX}
+        ${this.RDFS_PREFIX}
 
-      SELECT ?implementationLabel ?language ?filePath ?functionName ?description WHERE {
-        ?model a esg:Model ;
-               rdfs:label "${modelLabel}" ;
-               esg:executesWith ?implementation .
-        
-        ?implementation a esg:Implementation ;
-                       rdfs:label ?implementationLabel ;
-                       esg:hasLanguage ?language ;
-                       esg:hasFilePath ?filePath ;
-                       esg:hasFunction ?functionName ;
-                       esg:hasDescription ?description .
-      }
-    `;
+        SELECT ?implementation ?implementationLabel ?language ?filePath ?functionName ?description WHERE {
+          <${modelIRIOrLabel}> a esg:Model ;
+                               esg:executesWith ?implementation .
+          
+          ?implementation a esg:Implementation ;
+                         rdfs:label ?implementationLabel ;
+                         esg:hasLanguage ?language ;
+                         esg:hasFilePath ?filePath ;
+                         esg:hasFunction ?functionName ;
+                         esg:hasDescription ?description .
+        }
+      `;
+    } else {
+      // 使用 label 查询（向后兼容）
+      query = `
+        ${this.ESG_PREFIX}
+        ${this.RDFS_PREFIX}
+
+        SELECT ?implementation ?implementationLabel ?language ?filePath ?functionName ?description WHERE {
+          ?model a esg:Model ;
+                 rdfs:label "${modelIRIOrLabel}" ;
+                 esg:executesWith ?implementation .
+          
+          ?implementation a esg:Implementation ;
+                         rdfs:label ?implementationLabel ;
+                         esg:hasLanguage ?language ;
+                         esg:hasFilePath ?filePath ;
+                         esg:hasFunction ?functionName ;
+                         esg:hasDescription ?description .
+        }
+      `;
+    }
 
     try {
       const result = await this.executeSparqlQuery(query);
@@ -458,16 +488,16 @@ export class KnowledgeGraphRepository {
       }
       
       throw new GraphDBQueryError(
-        `No implementation found for model: ${modelLabel}`,
-        { modelLabel }
+        `No implementation found for model: ${modelIRIOrLabel}`,
+        { modelIRIOrLabel }
       );
     } catch (error) {
       if (error instanceof GraphDBQueryError) {
         throw error;
       }
       throw new GraphDBQueryError(
-        `Failed to get implementation for model: ${modelLabel}`,
-        { modelLabel, originalError: error }
+        `Failed to get implementation for model: ${modelIRIOrLabel}`,
+        { modelIRIOrLabel, originalError: error }
       );
     }
   }
@@ -668,6 +698,9 @@ export class KnowledgeGraphRepository {
 
   /**
    * 辅助方法：从 GraphDB 绑定创建数据映射
+   * 
+   * 对于 URI 类型的值，保留完整 IRI 以便后续精确查询
+   * 对于 literal 类型的值，移除 IRI 前缀（如果有）
    */
   private createDataMapFromGraphDB(bindings: any[]): Map<string, string> {
     const dataMap = new Map<string, string>();
@@ -675,11 +708,14 @@ export class KnowledgeGraphRepository {
     bindings.forEach(binding => {
       const p = binding.p?.value;
       const o = binding.o?.value;
+      const oType = binding.o?.type; // 'uri' or 'literal'
 
       if (p && o) {
-        // 去除 IRI 前缀
+        // 谓词始终移除 IRI 前缀（用作 Map 的 key）
         const predicate = this.removeIRI(p);
-        const object = this.removeIRI(o);
+        
+        // 对象值：URI 类型保留完整 IRI，literal 类型移除前缀
+        const object = oType === 'uri' ? o : this.removeIRI(o);
 
         // 如果谓词已存在，追加对象值
         if (dataMap.has(predicate)) {
@@ -1061,6 +1097,46 @@ export class KnowledgeGraphRepository {
       throw new GraphDBQueryError(
         `Failed to get ${entityType} by label: ${label}`,
         { label, entityType, originalError: error }
+      );
+    }
+  }
+
+  /**
+   * 根据完整 IRI 获取实体的基本信息
+   * 这是一个通用方法，适用于任何 RDF 实体
+   * 
+   * @param iri - 完整的 IRI，例如 "http://example.org/esg#GridElectricityRateModel"
+   * @param entityType - 实体类型（可选），用于验证实体类型
+   * @returns 实体的 URI 和 label，如果不存在返回 null
+   */
+  private async getEntityByIRI(iri: string, entityType?: 'Implementation' | 'Model' | 'Metric'): Promise<{ uri: string; label: string } | null> {
+    const typeFilter = entityType ? `?entity a esg:${entityType} .` : '';
+    
+    const query = `
+      ${this.ESG_PREFIX}
+      ${this.RDFS_PREFIX}
+
+      SELECT ?entity ?label WHERE {
+        BIND(<${iri}> AS ?entity)
+        ${typeFilter}
+        ?entity rdfs:label ?label .
+      }
+    `;
+
+    try {
+      const result = await this.executeSparqlQuery(query);
+      if (result.results && result.results.bindings && result.results.bindings.length > 0) {
+        const binding = result.results.bindings[0];
+        return {
+          uri: binding.entity.value,
+          label: binding.label.value
+        };
+      }
+      return null;
+    } catch (error) {
+      throw new GraphDBQueryError(
+        `Failed to get entity by IRI: ${iri}`,
+        { iri, entityType, originalError: error }
       );
     }
   }
