@@ -1,5 +1,5 @@
 services:
-  # GraphDB Database Service
+  # GraphDB Database Service (Development)
   graphdb:
     image: ontotext/graphdb:11.1.1
     container_name: esg-graphdb
@@ -23,7 +23,33 @@ services:
     networks:
       - esg-network
 
-  # GraphDB Data Initialization Service
+  # GraphDB Test Database Service (Testing Environment)
+  graphdb-test:
+    image: ontotext/graphdb:11.1.1
+    container_name: esg-graphdb-test
+    ports:
+      - "7201:7200"  # Different port to avoid conflicts
+    environment:
+      GDB_HEAP_SIZE: "1g"  # Less memory for test environment
+      JAVA_TOOL_OPTIONS: "-Dgraphdb.license.file=/opt/graphdb/home/conf/graphdb.license"
+    volumes:
+      # ✅ Separate test data directory
+      - ./graphDB/test-data:/opt/graphdb/home
+      # ✅ Share import directory (for test data if needed)
+      - ./graphDB/import:/opt/graphdb/home/graphdb-import:ro
+      - ./graphDB/conf:/opt/graphdb/home/conf:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7200/rest/repositories"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - esg-network
+    profiles:
+      - test  # Only start when explicitly requested
+
+  # GraphDB Data Initialization Service (Development)
   init-loader:
     image: curlimages/curl:8.10.1
     container_name: esg-init-loader
@@ -108,6 +134,59 @@ services:
     restart: "no"
     networks:
       - esg-network
+
+  # GraphDB Test Initialization Service (Testing Environment)
+  init-loader-test:
+    image: curlimages/curl:8.10.1
+    container_name: esg-init-loader-test
+    depends_on:
+      graphdb-test:
+        condition: service_healthy
+    volumes:
+      - ./graphDB/repo-config-test.ttl:/work/repo-config.ttl:ro
+      - ./graphDB/import:/work/import:ro
+    command:
+      - sh
+      - -c
+      - |
+        set -euo pipefail
+        BASE='http://graphdb-test:7200'
+        REPO_ID='esg-repo-test'
+
+        log() { echo "[test-init] $$1"; }
+
+        log 'Waiting for GraphDB Test to start...'
+        i=1
+        while [ $$i -le 120 ]; do
+          if curl -fsS "$$BASE/rest/repositories" >/dev/null 2>&1; then
+            log 'GraphDB Test started'; break
+          fi
+          log "Waiting... ($$i/120)"
+          i=$$(( $$i + 1 ))
+          sleep 1
+        done
+
+        log "Checking if test repository $$REPO_ID exists..."
+        if curl -fsS "$$BASE/rest/repositories" | grep -q "\"id\":\"$$REPO_ID\""; then
+          log "Test repository $$REPO_ID already exists"
+        else
+          log "Creating test repository $$REPO_ID ..."
+          http=$$(curl -sS -w '%{http_code}' -o /tmp/resp.txt -X POST "$$BASE/rest/repositories" -F 'config=@/work/repo-config.ttl' || true)
+          if [ "$$http" != '201' ] && [ "$$http" != '200' ]; then
+            log "Test repository creation failed (HTTP $$http): $$(cat /tmp/resp.txt || true)"
+            exit 1
+          fi
+          log 'Test repository creation completed'
+        fi
+
+        log 'Test repository is ready - no data import (empty for testing)'
+        FINAL_COUNT=$$(curl -fsS "$$BASE/repositories/$$REPO_ID/size" 2>/dev/null || echo '0')
+        log "Test repository contains $$FINAL_COUNT data entries"
+    restart: "no"
+    networks:
+      - esg-network
+    profiles:
+      - test
 
   # Backend API Service
   backend:

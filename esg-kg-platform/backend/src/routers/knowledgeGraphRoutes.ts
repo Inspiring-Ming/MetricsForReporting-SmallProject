@@ -14,9 +14,6 @@ export const createKnowledgeGraphRoutes = (): Router => {
   const kgService = new KnowledgeGraphService(kgRepository);
   const kgController = new KnowledgeGraphController(kgService);
 
-  // CQ2: 获取特定行业适用的报告框架
-  router.get('/frameworks', kgController.getReportFrameworks);
-
   // CQ3: 获取报告框架中包含的分类  
   router.get('/categories', kgController.getCategories);
 

@@ -48,7 +48,10 @@ export interface RDFEntity {
 
 /** 行业实体 */
 export interface Industry extends RDFEntity {
-  // esg:Industry 相关属性可以在这里扩展
+  reportsUsing?: string[];              // esg:reportsUsing - 使用的报告框架
+  description?: string;                 // 行业描述
+  createdAt?: string;                   // 创建时间
+  updatedAt?: string;                   // 更新时间
 }
 
 /** 报告框架实体 */
@@ -131,6 +134,38 @@ export interface HierarchyDTO {
   industry?: Pick<Industry, 'iri' | 'label'>;
 }
 
+/** 行业DTO - 用于列表展示 */
+export type IndustryDTO = Pick<Industry, 'iri' | 'label' | 'description'>;
+
+/** 行业详情DTO - 包含关联的报告框架 */
+export interface IndustryDetailDTO extends IndustryDTO {
+  reportsUsing?: Array<Pick<ReportingFramework, 'iri' | 'label'>>;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/** 报告框架DTO - 用于列表展示 */
+export type FrameworkDTO = Pick<ReportingFramework, 'iri' | 'label'>;
+
+/** 报告框架详情DTO - 包含关联的分类 */
+export interface FrameworkDetailDTO extends FrameworkDTO {
+  categories?: Array<Pick<Category, 'iri' | 'label'>>;
+  sourceDocument?: string;              // esg:sourceDocument
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/** 分类DTO - 用于列表展示 */
+export type CategoryDTO = Pick<Category, 'iri' | 'label'>;
+
+/** 分类详情DTO - 包含关联的指标 */
+export interface CategoryDetailDTO extends CategoryDTO {
+  metrics?: Array<Pick<Metric, 'iri' | 'label'>>;
+  frameworks?: Array<Pick<ReportingFramework, 'iri' | 'label'>>;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // =====================================================
 // 4. 请求类型 (Request Types)
 // =====================================================
@@ -148,6 +183,110 @@ export interface KGQueryRequest {
   perm_id?: string;
   year?: string;
   metric_name?: string;
+}
+
+/** 行业列表查询请求 */
+export interface GetIndustriesRequest {
+  page?: number;                        // 页码（从1开始）
+  size?: number;                        // 每页数量
+  search?: string;                      // 搜索关键词（label模糊匹配）
+  sort?: 'label' | 'createdAt';         // 排序字段
+  order?: 'asc' | 'desc';               // 排序顺序
+}
+
+/** 创建行业请求 */
+export interface CreateIndustryRequest {
+  label: string;                        // 行业名称（必填）
+  description?: string;                 // 行业描述（可选）
+  reportsUsing?: string[];              // 使用的报告框架 URIs（可选）
+}
+
+/** 更新行业请求 */
+export interface UpdateIndustryRequest {
+  label?: string;                       // 行业名称（可选）
+  description?: string;                 // 行业描述（可选）
+  reportsUsing?: string[];              // 使用的报告框架 URIs（可选）
+}
+
+/** 删除行业请求 */
+export interface DeleteIndustryRequest {
+  force?: boolean;                      // 强制删除（包括有关联的行业）
+}
+
+/** 报告框架列表查询请求 */
+export interface GetFrameworksRequest {
+  page?: number;                        // 页码（从1开始）
+  size?: number;                        // 每页数量
+  search?: string;                      // 搜索关键词（label模糊匹配）
+  industry?: string;                    // 按行业筛选（可选）
+  sort?: 'label' | 'createdAt';         // 排序字段
+  order?: 'asc' | 'desc';               // 排序顺序
+}
+
+/** 创建报告框架请求 */
+export interface CreateFrameworkRequest {
+  label: string;                        // 框架名称（必填）
+  sourceDocument?: string;              // 来源文档（可选）
+  categories?: string[];                // 包含的分类 URIs（可选）
+}
+
+/** 更新报告框架请求 */
+export interface UpdateFrameworkRequest {
+  label?: string;                       // 框架名称（可选）
+  sourceDocument?: string;              // 来源文档（可选）
+  categories?: string[];                // 包含的分类 URIs（可选）
+}
+
+/** 删除报告框架请求 */
+export interface DeleteFrameworkRequest {
+  force?: boolean;                      // 强制删除（包括有关联的框架）
+}
+
+/** 添加分类到框架请求 */
+export interface AddCategoriesToFrameworkRequest {
+  categories: string[];                 // 要添加的分类 URIs
+}
+
+/** 从框架删除分类请求 */
+export interface RemoveCategoryFromFrameworkRequest {
+  categoryId: string;                   // 要删除的分类 ID
+}
+
+/** 分类列表查询请求 */
+export interface GetCategoriesRequest {
+  page?: number;                        // 页码（从1开始）
+  size?: number;                        // 每页数量
+  search?: string;                      // 搜索关键词（label模糊匹配）
+  framework?: string;                   // 按框架筛选（可选）
+  sort?: 'label' | 'createdAt';         // 排序字段
+  order?: 'asc' | 'desc';               // 排序顺序
+}
+
+/** 创建分类请求 */
+export interface CreateCategoryRequest {
+  label: string;                        // 分类名称（必填）
+  metrics?: string[];                   // 包含的指标 URIs（可选）
+}
+
+/** 更新分类请求 */
+export interface UpdateCategoryRequest {
+  label?: string;                       // 分类名称（可选）
+  metrics?: string[];                   // 包含的指标 URIs（可选）
+}
+
+/** 删除分类请求 */
+export interface DeleteCategoryRequest {
+  force?: boolean;                      // 强制删除（包括有关联的分类）
+}
+
+/** 添加指标到分类请求 */
+export interface AddMetricsToCategoryRequest {
+  metrics: string[];                    // 要添加的指标 URIs
+}
+
+/** 从分类删除指标请求 */
+export interface RemoveMetricFromCategoryRequest {
+  metricId: string;                     // 要删除的指标 ID
 }
 
 /** 模型执行请求 */
@@ -206,6 +345,141 @@ export type MetricResult = ListResponse<string>;
 
 /** 指标URI查询响应 */
 export type MetricUriResult = ListResponse<string>;
+
+/** 行业列表响应 */
+export interface IndustriesResponse extends PaginationInfo {
+  result: IndustryDTO[];
+}
+
+/** 行业详情响应 */
+export interface IndustryDetailResponse {
+  result: IndustryDetailDTO;
+}
+
+/** 创建行业响应 */
+export interface CreateIndustryResponse {
+  uri: string;
+  label: string;
+  description?: string;
+  created_at: string;
+}
+
+/** 更新行业响应 */
+export interface UpdateIndustryResponse {
+  uri: string;
+  label: string;
+  description?: string;
+  updated_at: string;
+}
+
+/** 删除行业响应 */
+export interface DeleteIndustryResponse {
+  uri: string;
+  deleted: boolean;
+  deleted_at: string;
+}
+
+/** 报告框架列表响应 */
+export interface FrameworksResponse extends PaginationInfo {
+  result: FrameworkDTO[];
+}
+
+/** 报告框架详情响应 */
+export interface FrameworkDetailResponse {
+  result: FrameworkDetailDTO;
+}
+
+/** 创建报告框架响应 */
+export interface CreateFrameworkResponse {
+  uri: string;
+  label: string;
+  sourceDocument?: string;
+  created_at: string;
+}
+
+/** 更新报告框架响应 */
+export interface UpdateFrameworkResponse {
+  uri: string;
+  label: string;
+  sourceDocument?: string;
+  updated_at: string;
+}
+
+/** 删除报告框架响应 */
+export interface DeleteFrameworkResponse {
+  uri: string;
+  deleted: boolean;
+  deleted_at: string;
+}
+
+/** 框架分类列表响应 */
+export interface FrameworkCategoriesResponse {
+  result: CategoryDTO[];
+}
+
+/** 添加分类到框架响应 */
+export interface AddCategoriesToFrameworkResponse {
+  framework_uri: string;
+  added_categories: CategoryDTO[];
+  added_at: string;
+}
+
+/** 从框架删除分类响应 */
+export interface RemoveCategoryFromFrameworkResponse {
+  framework_uri: string;
+  removed_category_uri: string;
+  removed_at: string;
+}
+
+/** 分类列表响应 */
+export interface CategoriesResponse extends PaginationInfo {
+  result: CategoryDTO[];
+}
+
+/** 分类详情响应 */
+export interface CategoryDetailResponse {
+  result: CategoryDetailDTO;
+}
+
+/** 创建分类响应 */
+export interface CreateCategoryResponse {
+  uri: string;
+  label: string;
+  created_at: string;
+}
+
+/** 更新分类响应 */
+export interface UpdateCategoryResponse {
+  uri: string;
+  label: string;
+  updated_at: string;
+}
+
+/** 删除分类响应 */
+export interface DeleteCategoryResponse {
+  uri: string;
+  deleted: boolean;
+  deleted_at: string;
+}
+
+/** 分类指标列表响应 */
+export interface CategoryMetricsResponse {
+  result: MetricDTO[];
+}
+
+/** 添加指标到分类响应 */
+export interface AddMetricsToCategoryResponse {
+  category_uri: string;
+  added_metrics: MetricDTO[];
+  added_at: string;
+}
+
+/** 从分类删除指标响应 */
+export interface RemoveMetricFromCategoryResponse {
+  category_uri: string;
+  removed_metric_uri: string;
+  removed_at: string;
+}
 
 /** 指标元数据响应 */
 export interface MetricMetadataResponse {
