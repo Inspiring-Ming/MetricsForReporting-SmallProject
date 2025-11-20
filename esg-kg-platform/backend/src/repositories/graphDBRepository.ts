@@ -45,27 +45,40 @@ export class GraphDBRepository {
   async executeSparqlQuery(query: string, infer?: boolean, sameAs?: boolean): Promise<any> {
     try {
       const params = new URLSearchParams();
-      params.set('query', query);
+      
       if (infer !== undefined) params.set('infer', infer ? 'true' : 'false');
       if (sameAs !== undefined) params.set('sameAs', sameAs ? 'true' : 'false');
 
       const isSelect = /\bselect\b/i.test(query);
+      const isAsk = /\bask\b/i.test(query);
       const isConstruct = /\b(construct|describe)\b/i.test(query);
+      const isUpdate = /\b(insert|delete|load|clear|create|drop)\b/i.test(query);
       
       const headers: Record<string, string> = {
         'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
       };
 
-      if (isSelect) {
-        headers['Accept'] = 'application/sparql-results+json';
-      } else if (isConstruct) {
-        headers['Accept'] = 'text/turtle';
+      let endpoint = '';
+      
+      if (isUpdate) {
+        // UPDATE queries use /statements endpoint
+        params.set('update', query);
+        headers['Accept'] = '*/*';
+        endpoint = 'statements';
       } else {
-        headers['Accept'] = 'application/sparql-results+json';
+        // SELECT, ASK, CONSTRUCT, DESCRIBE use base repository endpoint
+        params.set('query', query);
+        if (isSelect || isAsk) {
+          headers['Accept'] = 'application/sparql-results+json';
+        } else if (isConstruct) {
+          headers['Accept'] = 'text/turtle';
+        } else {
+          headers['Accept'] = 'application/sparql-results+json';
+        }
       }
 
       const response = await fetch(
-        `${this.baseUrl}/repositories/${encodeURIComponent(this.repositoryName)}`,
+        `${this.baseUrl}/repositories/${encodeURIComponent(this.repositoryName)}${endpoint ? '/' + endpoint : ''}`,
         {
           method: 'POST',
           headers,
@@ -86,12 +99,19 @@ export class GraphDBRepository {
         );
       }
 
-      if (isSelect) {
+      // Handle different query types
+      if (isUpdate) {
+        // UPDATE queries typically don't return data
+        return { ok: true };
+      } else if (isSelect || isAsk) {
+        // SELECT and ASK return JSON
         return await response.json();
       } else if (isConstruct) {
+        // CONSTRUCT returns turtle
         return await response.text();
       } else {
-        return { ok: true };
+        // Default: try to parse as JSON
+        return await response.json();
       }
     } catch (error) {
       if (error instanceof GraphDBQueryError) {

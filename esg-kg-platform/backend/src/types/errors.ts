@@ -26,7 +26,10 @@ export enum ErrorCode {
   
   // TTL 相关错误
   TTL_PARSE_ERROR = 'TTL_PARSE_ERROR',
-  TTL_UPLOAD_ERROR = 'TTL_UPLOAD_ERROR'
+  TTL_UPLOAD_ERROR = 'TTL_UPLOAD_ERROR',
+  
+  // 删除冲突错误
+  DELETE_CONFLICT = 'DELETE_CONFLICT'
 }
 
 export class AppError extends Error {
@@ -108,5 +111,11 @@ export class WizardError extends AppError {
 export class TTLError extends AppError {
   constructor(message: string, details?: any) {
     super(ErrorCode.TTL_PARSE_ERROR, message, 400, true, details);
+  }
+}
+
+export class DeleteConflictError extends AppError {
+  constructor(message: string, details?: any) {
+    super(ErrorCode.DELETE_CONFLICT, message, 409, true, details);
   }
 }

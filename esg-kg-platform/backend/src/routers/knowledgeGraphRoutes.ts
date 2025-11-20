@@ -14,9 +14,6 @@ export const createKnowledgeGraphRoutes = (): Router => {
   const kgService = new KnowledgeGraphService(kgRepository);
   const kgController = new KnowledgeGraphController(kgService);
 
-  // CQ2: 获取特定行业适用的报告框架
-  router.get('/frameworks', kgController.getReportFrameworks);
-
   // CQ3: 获取报告框架中包含的分类  
   router.get('/categories', kgController.getCategories);
 
@@ -33,6 +30,11 @@ export const createKnowledgeGraphRoutes = (): Router => {
   router.get('/metrics/attributes', kgController.getMetricAttributes);
 
   // CQ8: 获取数据点属性
+  /**
+   * @deprecated This endpoint is deprecated and will be removed in v2.0.0 (June 2026)
+   * @deprecationReason The concept of "DataPoint" is redundant with "Metric".
+   *                    Use GET /api/kg/metrics/:id instead.
+   */
   router.get('/datapoints/attributes', kgController.getDataPointAttributes);
 
   // 获取数据源信息
@@ -64,9 +66,6 @@ export const createKnowledgeGraphRoutes = (): Router => {
 
   // 创建 Model
   router.post('/models', kgController.createModel);
-
-  // 更新 Metric 的计算方法
-  router.patch('/metrics/:metric_label/calculation-method', kgController.updateMetricCalculationMethod);
 
   return router;
 };

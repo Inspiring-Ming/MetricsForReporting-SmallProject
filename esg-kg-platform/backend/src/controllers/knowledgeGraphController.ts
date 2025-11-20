@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { KnowledgeGraphService } from '../services/knowledgeGraphService';
-import { KGQueryRequest } from '../types/kg';
 import { ValidationError } from '../types/errors';
 import { asyncHandler } from '../middlewares/errorHandler';
 
@@ -51,84 +50,91 @@ export class KnowledgeGraphController {
 
   /**
    * CQ4: 获取特定分类下的指标
-   * GET /api/kg/metrics?industry={industry}&category_label={category_label}&framework={framework}
+   * GET /api/kg/metrics?industry={industry}&category={category}&framework={framework}
    */
   getMetrics = asyncHandler(async (req: Request, res: Response) => {
-    const { industry, category_label, framework } = req.query as { 
+    const { industry, category, framework } = req.query as { 
       industry: string; 
-      category_label: string; 
+      category: string; 
       framework: string 
     };
     
     if (!industry) {
       throw new ValidationError('Industry query parameter is required');
     }
-    if (!category_label) {
-      throw new ValidationError('Category_label query parameter is required');
+    if (!category) {
+      throw new ValidationError('Category query parameter is required');
     }
     if (!framework) {
       throw new ValidationError('Framework query parameter is required');
     }
 
-    const result = await this.kgService.getMetricsByIndustryAndCategory(industry, category_label, framework);
+    const result = await this.kgService.getMetricsByIndustryAndCategory(industry, category, framework);
     
     res.json(result);
   });
 
   /**
    * CQ4: 获取特定分类下的指标URIs（高性能版本）
-   * GET /api/kg/metrics/uris?industry={industry}&category_label={category_label}&framework={framework}
+   * GET /api/kg/metrics/uris?industry={industry}&category={category}&framework={framework}
    */
   getMetricUris = asyncHandler(async (req: Request, res: Response) => {
-    const { industry, category_label, framework } = req.query as { 
+    const { industry, category, framework } = req.query as { 
       industry: string; 
-      category_label: string; 
+      category: string; 
       framework: string 
     };
     
     if (!industry) {
       throw new ValidationError('Industry query parameter is required');
     }
-    if (!category_label) {
-      throw new ValidationError('Category_label query parameter is required');
+    if (!category) {
+      throw new ValidationError('Category query parameter is required');
     }
     if (!framework) {
       throw new ValidationError('Framework query parameter is required');
     }
 
-    const result = await this.kgService.getMetricUrisByIndustryAndCategory(industry, category_label, framework);
+    const result = await this.kgService.getMetricUrisByIndustryAndCategory(industry, category, framework);
     
     res.json(result);
   });
 
   /**
    * 获取特定分类下使用 model calculation 方法的指标
-   * GET /api/kg/metrics/model-calculation?industry={industry}&category_label={category_label}&framework={framework}
+   * @deprecated Use GET /api/kg/metrics?calculationMethod=calculation_model instead. Will be removed in v2.0.0 (June 2026)
+   * GET /api/kg/metrics/model-calculation?industry={industry}&category={category}&framework={framework}
    */
   getModelCalculationMetrics = asyncHandler(async (req: Request, res: Response) => {
-    const { industry, category_label, framework } = req.query as { 
+    const { industry, category, framework } = req.query as { 
       industry: string; 
-      category_label: string; 
+      category: string; 
       framework: string 
     };
     
     if (!industry) {
       throw new ValidationError('Industry query parameter is required');
     }
-    if (!category_label) {
-      throw new ValidationError('Category_label query parameter is required');
+    if (!category) {
+      throw new ValidationError('Category query parameter is required');
     }
     if (!framework) {
       throw new ValidationError('Framework query parameter is required');
     }
 
-    const result = await this.kgService.getModelCalculationMetrics(industry, category_label, framework);
+    // 添加废弃警告头
+    res.setHeader('X-Deprecated-Endpoint', 'true');
+    res.setHeader('X-Deprecated-Message', 'Use GET /api/kg/metrics?calculationMethod=calculation_model&industry=...&category=...&framework=... instead');
+    res.setHeader('X-Deprecation-Date', '2026-06-01');
+
+    const result = await this.kgService.getModelCalculationMetrics(industry, category, framework);
     
     res.json(result);
   });
 
   /**
    * 获取指标属性
+   * @deprecated Use GET /api/kg/metrics/:id instead. Will be removed in v2.0.0 (June 2026)
    * GET /api/kg/metrics/attributes?metric_label={metric_label}
    */
   getMetricAttributes = asyncHandler(async (req: Request, res: Response) => {
@@ -137,6 +143,11 @@ export class KnowledgeGraphController {
     if (!metric_label) {
       throw new ValidationError('Metric_label query parameter is required');
     }
+
+    // 添加废弃警告头
+    res.setHeader('X-Deprecated-Endpoint', 'true');
+    res.setHeader('X-Deprecated-Message', 'Use GET /api/kg/metrics/:id instead');
+    res.setHeader('X-Deprecation-Date', '2026-06-01');
 
     const attributes = await this.kgService.getMetricAttributes(metric_label);
     
@@ -151,6 +162,11 @@ export class KnowledgeGraphController {
 
   /**
    * CQ8: 获取数据点属性
+   * @deprecated This endpoint is deprecated and will be removed in v2.0.0 (June 2026)
+   * @deprecationReason The concept of "DataPoint" is redundant with "Metric" in our knowledge graph.
+   *                    DataPoints were originally intended to represent measurement instances,
+   *                    but in practice they map 1:1 to Metrics. This caused API confusion and
+   *                    duplicate code maintenance. Use GET /api/kg/metrics/:id instead.
    * GET /api/kg/datapoints/attributes?metric={metric}
    */
   getDataPointAttributes = asyncHandler(async (req: Request, res: Response) => {
@@ -159,6 +175,12 @@ export class KnowledgeGraphController {
     if (!metric) {
       throw new ValidationError('Metric query parameter is required');
     }
+
+    // 添加废弃警告头
+    res.setHeader('X-Deprecated-Endpoint', 'true');
+    res.setHeader('X-Deprecated-Message', 'DataPoint concept removed. Use GET /api/kg/metrics/:id instead');
+    res.setHeader('X-Deprecation-Date', '2026-06-01');
+    res.setHeader('X-Deprecation-Reason', 'The concept of DataPoint is redundant with Metric. This caused API confusion and duplicate code maintenance.');
 
     const attributes = await this.kgService.getDataPointAttributes(metric);
     
@@ -192,6 +214,7 @@ export class KnowledgeGraphController {
 
   /**
    * 获取指标的最佳数据源
+   * @deprecated Use GET /api/kg/metrics/:id/best-datasource instead. Will be removed in v2.0.0 (June 2026)
    * GET /api/kg/metrics/best-datasource?metric_id={metric_id}
    */
   getBestDataSource = asyncHandler(async (req: Request, res: Response) => {
@@ -200,6 +223,11 @@ export class KnowledgeGraphController {
     if (!metric_id) {
       throw new ValidationError('Metric_id query parameter is required');
     }
+
+    // 添加废弃警告头
+    res.setHeader('X-Deprecated-Endpoint', 'true');
+    res.setHeader('X-Deprecated-Message', 'Use GET /api/kg/metrics/:id/best-datasource instead');
+    res.setHeader('X-Deprecation-Date', '2026-06-01');
 
     const dataSource = await this.kgService.getBestDataSourceForMetric(metric_id);
     
@@ -282,7 +310,8 @@ export class KnowledgeGraphController {
 
   /**
    * 获取Metric元数据
-   * GET /api/metric/:id
+   * @deprecated This method is deprecated. Use MetricController.getMetricById instead.
+   * GET /api/metric/:id - This route is deprecated, use GET /api/kg/metrics/:id
    */
   getMetricMetadata = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params as { id: string };
@@ -298,7 +327,8 @@ export class KnowledgeGraphController {
 
   /**
    * 获取Metric数据血缘
-   * GET /api/metric/:id/datasets
+   * @deprecated This method is deprecated. Use MetricController.getMetricDatasets instead.
+   * GET /api/metric/:id/datasets - This route is deprecated, use GET /api/kg/metrics/:id/datasets
    */
   getMetricDatasets = asyncHandler(async (req: Request, res: Response) => {
     const { id } = req.params as { id: string };
@@ -421,29 +451,6 @@ export class KnowledgeGraphController {
     );
     
     res.status(201).json({
-      success: true,
-      data: result
-    });
-  });
-
-  /**
-   * 更新 Metric 的计算方法，链接到 Model
-   * PATCH /api/kg/metrics/:metric_label/calculation-method
-   */
-  updateMetricCalculationMethod = asyncHandler(async (req: Request, res: Response) => {
-    const { metric_label } = req.params as { metric_label: string };
-    const { model } = req.body as { model: string };
-    
-    if (!metric_label) {
-      throw new ValidationError('metric_label parameter is required');
-    }
-    if (!model) {
-      throw new ValidationError('model is required');
-    }
-
-    const result = await this.kgService.updateMetricCalculationMethod(metric_label, model);
-    
-    res.json({
       success: true,
       data: result
     });

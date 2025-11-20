@@ -48,6 +48,17 @@ coverage/
 *.tmp
 *.temp
 
+# GraphDB 数据库 - 运行时生成文件
+graphDB/data/data/
+graphDB/data/logs/
+graphDB/data/work/
+graphDB/data/conf/
+graphDB/**/tmp/
+graphDB/**/lock/
+
+# GraphDB 测试数据 - 完全忽略
+graphDB/test-data/
+
 # 数据目录 - 保留配置文件但忽略运行时数据
-# 保留: data/graphdb/init/, data/graphdb/preload/
+# 保留: repo-config.ttl, import/ 中的源数据文件
 # 忽略: 其他动态生成的数据目录

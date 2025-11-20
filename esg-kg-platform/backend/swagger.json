@@ -1,0 +1,495 @@
+{
+	"openapi": "3.0.0",
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"Pick_Industry.iri-or-label-or-description_": {
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"IndustryDTO": {
+				"$ref": "#/components/schemas/Pick_Industry.iri-or-label-or-description_",
+				"description": "行业DTO - 用于列表展示"
+			},
+			"IndustriesResponse": {
+				"description": "行业列表响应",
+				"properties": {
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"size": {
+						"type": "number",
+						"format": "double"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/IndustryDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Pick_ReportingFramework.iri-or-label_": {
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"IndustryDetailDTO": {
+				"description": "行业详情DTO - 包含关联的报告框架",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"reportsUsing": {
+						"items": {
+							"$ref": "#/components/schemas/Pick_ReportingFramework.iri-or-label_"
+						},
+						"type": "array"
+					},
+					"createdAt": {
+						"type": "string"
+					},
+					"updatedAt": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IndustryDetailResponse": {
+				"description": "行业详情响应",
+				"properties": {
+					"result": {
+						"$ref": "#/components/schemas/IndustryDetailDTO"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateIndustryResponse": {
+				"description": "创建行业响应",
+				"properties": {
+					"uri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"created_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"uri",
+					"label",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateIndustryRequest": {
+				"description": "创建行业请求",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"reportsUsing": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"label"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateIndustryResponse": {
+				"description": "更新行业响应",
+				"properties": {
+					"uri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"updated_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"uri",
+					"label",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateIndustryRequest": {
+				"description": "更新行业请求",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"reportsUsing": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DeleteIndustryResponse": {
+				"description": "删除行业响应",
+				"properties": {
+					"uri": {
+						"type": "string"
+					},
+					"deleted": {
+						"type": "boolean"
+					},
+					"deleted_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"uri",
+					"deleted",
+					"deleted_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {}
+	},
+	"info": {
+		"title": "ESG Knowledge Graph API",
+		"version": "1.0.0",
+		"description": "ESG Knowledge Graph platform backend API with auto-generated OpenAPI documentation",
+		"license": {
+			"name": "MIT"
+		},
+		"contact": {
+			"name": "ESG Knowledge Graph API Support"
+		}
+	},
+	"paths": {
+		"/api/kg/industries": {
+			"get": {
+				"operationId": "GetIndustriesWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IndustriesResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "获取行业列表（支持分页和搜索）",
+				"tags": [
+					"Industries"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "页码（从1开始，默认1）",
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "每页数量（默认10，最大100）",
+						"in": "query",
+						"name": "size",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "搜索关键词（模糊匹配 label）",
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "排序字段（默认 label）",
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"label",
+								"createdAt"
+							]
+						}
+					},
+					{
+						"description": "排序顺序（默认 asc）",
+						"in": "query",
+						"name": "order",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"asc",
+								"desc"
+							]
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "CreateIndustryWithTsoa",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreateIndustryResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "创建新行业",
+				"tags": [
+					"Industries"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "创建行业的请求数据",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateIndustryRequest",
+								"description": "创建行业的请求数据"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/industries/{id}": {
+			"get": {
+				"operationId": "GetIndustryByIdWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IndustryDetailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "获取行业详情",
+				"tags": [
+					"Industries"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "行业 ID（可以是 URI、命名空间格式或简短 ID）",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"patch": {
+				"operationId": "UpdateIndustryWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UpdateIndustryResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "部分更新行业",
+				"tags": [
+					"Industries"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "行业 ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "更新行业的请求数据",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateIndustryRequest",
+								"description": "更新行业的请求数据"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteIndustryWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DeleteIndustryResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "删除行业",
+				"tags": [
+					"Industries"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "行业 ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "是否强制删除（忽略 reportsUsing 关联检查）",
+						"in": "query",
+						"name": "force",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "https://[object Object]/"
+		},
+		{
+			"url": "https://[object Object]/"
+		}
+	],
+	"tags": [
+		{
+			"name": "Industries",
+			"description": "Industry management operations"
+		},
+		{
+			"name": "Knowledge Graph",
+			"description": "ESG knowledge graph query operations"
+		},
+		{
+			"name": "Health & System",
+			"description": "Health check and system status endpoints"
+		}
+	]
+}

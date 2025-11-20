@@ -1,0 +1,47 @@
+{
+  "entryFile": "src/server.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": [
+    "src/controllers/**/*Controller.ts"
+  ],
+  "spec": {
+    "outputDirectory": ".",
+    "specVersion": 3,
+    "name": "ESG Knowledge Graph API",
+    "description": "ESG Knowledge Graph platform backend API with auto-generated OpenAPI documentation",
+    "version": "1.0.0",
+    "contact": {
+      "name": "ESG Knowledge Graph API Support"
+    },
+    "license": "MIT",
+    "servers": [
+      {
+        "url": "http://localhost:3000/api",
+        "description": "Development server"
+      },
+      {
+        "url": "https://api.esg-platform.com/api",
+        "description": "Production server"
+      }
+    ],
+    "tags": [
+      {
+        "name": "Industries",
+        "description": "Industry management operations"
+      },
+      {
+        "name": "Knowledge Graph",
+        "description": "ESG knowledge graph query operations"
+      },
+      {
+        "name": "Health & System",
+        "description": "Health check and system status endpoints"
+      }
+    ],
+    "securityDefinitions": {}
+  },
+  "routes": {
+    "routesDir": "src/routes",
+    "middleware": "express"
+  }
+}

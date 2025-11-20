@@ -1,7 +1,6 @@
 import { KnowledgeGraphRepository } from '../repositories/knowledgeGraphRepository';
 import { GraphDBRepository } from '../repositories/graphDBRepository';
 import { 
-  KGQueryRequest, 
   FrameworkResult, 
   CategoryResult, 
   MetricResult, 
@@ -70,18 +69,18 @@ export class KnowledgeGraphService {
   /**
    * CQ4: 获取特定分类下的指标
    */
-  async getMetricsByIndustryAndCategory(industry: string, categoryLabel: string, framework: string): Promise<MetricResult> {
+  async getMetricsByIndustryAndCategory(industry: string, category: string, framework: string): Promise<MetricResult> {
     this.validateIndustry(industry);
     this.validateFramework(framework);
-    this.validateCategoryLabel(categoryLabel);
+    this.validateCategoryLabel(category);
     
     try {
-      const metrics = await this.kgRepository.getMetricsByIndustryAndCategory(industry, categoryLabel, framework);
+      const metrics = await this.kgRepository.getMetricsByIndustryAndCategory(industry, category, framework);
       return { result: metrics };
     } catch (error) {
       throw new GraphDBQueryError(
-        `Failed to get metrics for industry: ${industry}, category: ${categoryLabel}, framework: ${framework}`,
-        { industry, categoryLabel, framework, originalError: error }
+        `Failed to get metrics for industry: ${industry}, category: ${category}, framework: ${framework}`,
+        { industry, category, framework, originalError: error }
       );
     }
   }
@@ -89,18 +88,18 @@ export class KnowledgeGraphService {
   /**
    * CQ4: 获取特定分类下的指标URIs（高性能版本）
    */
-  async getMetricUrisByIndustryAndCategory(industry: string, categoryLabel: string, framework: string): Promise<MetricUriResult> {
+  async getMetricUrisByIndustryAndCategory(industry: string, category: string, framework: string): Promise<MetricUriResult> {
     this.validateIndustry(industry);
     this.validateFramework(framework);
-    this.validateCategoryLabel(categoryLabel);
+    this.validateCategoryLabel(category);
     
     try {
-      const metricUris = await this.kgRepository.getMetricUrisByIndustryAndCategory(industry, categoryLabel, framework);
+      const metricUris = await this.kgRepository.getMetricUrisByIndustryAndCategory(industry, category, framework);
       return { result: metricUris };
     } catch (error) {
       throw new GraphDBQueryError(
-        `Failed to get metric URIs for industry: ${industry}, category: ${categoryLabel}, framework: ${framework}`,
-        { industry, categoryLabel, framework, originalError: error }
+        `Failed to get metric URIs for industry: ${industry}, category: ${category}, framework: ${framework}`,
+        { industry, category, framework, originalError: error }
       );
     }
   }
@@ -108,18 +107,18 @@ export class KnowledgeGraphService {
   /**
    * 获取特定分类下使用 model calculation 方法的指标
    */
-  async getModelCalculationMetrics(industry: string, categoryLabel: string, framework: string): Promise<MetricResult> {
+  async getModelCalculationMetrics(industry: string, category: string, framework: string): Promise<MetricResult> {
     this.validateIndustry(industry);
     this.validateFramework(framework);
-    this.validateCategoryLabel(categoryLabel);
+    this.validateCategoryLabel(category);
     
     try {
-      const metrics = await this.kgRepository.getModelCalculationMetricsByCategory(industry, categoryLabel, framework);
+      const metrics = await this.kgRepository.getModelCalculationMetricsByCategory(industry, category, framework);
       return { result: metrics };
     } catch (error) {
       throw new GraphDBQueryError(
-        `Failed to get model calculation metrics for industry: ${industry}, category: ${categoryLabel}, framework: ${framework}`,
-        { industry, categoryLabel, framework, originalError: error }
+        `Failed to get model calculation metrics for industry: ${industry}, category: ${category}, framework: ${framework}`,
+        { industry, category, framework, originalError: error }
       );
     }
   }
@@ -651,54 +650,6 @@ export class KnowledgeGraphService {
       throw new GraphDBQueryError(
         `Failed to create model: ${error instanceof Error ? error.message : 'Unknown error'}`,
         { name, calculationType, inputMetrics, implementationName, originalError: error }
-      );
-    }
-  }
-
-  /**
-   * 更新 Metric 的计算方法，链接到 Model
-   */
-  async updateMetricCalculationMethod(
-    metricLabel: string,
-    modelName: string
-  ): Promise<{
-    metric_uri: string;
-    metric_label: string;
-    calculation_method: string;
-    model: { uri: string; label: string };
-    updated_at: string;
-  }> {
-    // 验证输入
-    if (!metricLabel || typeof metricLabel !== 'string' || metricLabel.trim().length === 0) {
-      throw new ValidationError('Metric label is required');
-    }
-    if (!modelName || typeof modelName !== 'string' || modelName.trim().length === 0) {
-      throw new ValidationError('Model name is required');
-    }
-
-    try {
-      const result = await this.kgRepository.updateMetricCalculationMethod(metricLabel, modelName);
-      
-      return {
-        metric_uri: result.metricUri,
-        metric_label: result.metricLabel,
-        calculation_method: 'calculation_model',
-        model: result.model,
-        updated_at: new Date().toISOString()
-      };
-    } catch (error) {
-      if (error instanceof GraphDBQueryError) {
-        const err = error as any;
-        if (err.code === 'METRIC_NOT_FOUND') {
-          throw new ValidationError(`Metric not found: ${metricLabel}`);
-        }
-        if (err.code === 'MODEL_NOT_FOUND') {
-          throw new ValidationError(`Model not found: ${modelName}`);
-        }
-      }
-      throw new GraphDBQueryError(
-        `Failed to update metric calculation method: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        { metricLabel, modelName, originalError: error }
       );
     }
   }

@@ -10,14 +10,16 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ): void => {
-  // 记录错误日志
-  console.error('Error occurred:', {
-    message: error.message,
-    stack: error.stack,
-    url: req.url,
-    method: req.method,
-    timestamp: new Date().toISOString()
-  });
+  // 记录错误日志 (skip in test environment to reduce noise)
+  if (process.env.NODE_ENV !== 'test') {
+    console.error('Error occurred:', {
+      message: error.message,
+      stack: error.stack,
+      url: req.url,
+      method: req.method,
+      timestamp: new Date().toISOString()
+    });
+  }
 
   // 如果是自定义应用错误
   if (error instanceof AppError) {
