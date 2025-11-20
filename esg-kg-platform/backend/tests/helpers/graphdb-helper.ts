@@ -415,17 +415,61 @@ export class GraphDBTestHelper {
     return result.results.bindings.map((b: any) => b.framework.value);
   }
 
-  async createTestMetric(label: string): Promise<string> {
+  async createTestMetric(
+    label: string, 
+    options?: {
+      code?: string;
+      description?: string;
+      unit?: string;
+      dataType?: string;
+      calculationMethod?: 'direct_measurement' | 'calculation_model';
+      industry?: string;
+      category?: string;
+      framework?: string;
+      disclosureLevel?: number;
+    }
+  ): Promise<string> {
     const normalizedLabel = label.toLowerCase().replace(/\s+/g, '');
     const uri = `http://example.org/esg#${normalizedLabel}`;
+    
+    let insertData = `<${uri}> a esg:Metric ;
+                 rdfs:label "${this.escapeSparql(label)}" ;
+                 esg:hasCalculationMethod "${options?.calculationMethod || 'direct_measurement'}" ;
+                 esg:hasUnit "${options?.unit || 'Number'}" ;
+                 esg:hasType "InputMetric" ;
+                 esg:hasMetricType "${options?.dataType || 'Quantitative'}" .`;
+    
+    if (options?.code) {
+      insertData += `\n<${uri}> esg:hasCode "${this.escapeSparql(options.code)}" .`;
+    }
+    
+    if (options?.description) {
+      insertData += `\n<${uri}> esg:hasDescription "${this.escapeSparql(options.description)}" .`;
+    }
+    
+    // 使用正确的关系：category consistsOf metric（而不是 metric belongsToCategory）
+    if (options?.category) {
+      insertData += `\n<${options.category}> esg:consistsOf <${uri}> .`;
+    }
+    
+    // framework includes category
+    if (options?.framework && options?.category) {
+      insertData += `\n<${options.framework}> esg:includes <${options.category}> .`;
+    }
+    
+    // industry reportsUsing framework
+    if (options?.industry && options?.framework) {
+      insertData += `\n<${options.industry}> esg:reportsUsing <${options.framework}> .`;
+    }
+    
+    if (options?.disclosureLevel) {
+      insertData += `\n<${uri}> esg:hasDisclosureLevel ${options.disclosureLevel} .`;
+    }
     
     const query = `
       ${this.prefix}
       INSERT DATA {
-        <${uri}> a esg:Metric ;
-                 rdfs:label "${this.escapeSparql(label)}" ;
-                 esg:hasCalculationMethod "direct_measurement" ;
-                 esg:hasUnit "Number" .
+        ${insertData}
       }
     `;
     
@@ -463,11 +507,317 @@ export class GraphDBTestHelper {
     return result.boolean;
   }
 
+  /**
+   * 添加 Metric obtainedFrom DatasetVariable 关系
+   */
+  async linkMetricToVariable(metricUri: string, variableUri: string): Promise<void> {
+    const query = `
+      ${this.prefix}
+      INSERT DATA {
+        <${metricUri}> esg:obtainedFrom <${variableUri}> .
+      }
+    `;
+    await this.graphDB.executeSparqlQuery(query);
+  }
+
+  async getMetricCount(): Promise<number> {
+    const query = `
+      ${this.prefix}
+      SELECT (COUNT(DISTINCT ?metric) AS ?count)
+      WHERE {
+        ?metric a esg:Metric .
+      }
+    `;
+    const result = await this.graphDB.executeSparqlQuery(query);
+    return parseInt(result.results.bindings[0]?.count?.value || '0', 10);
+  }
+
+  async getMetricDetail(uri: string): Promise<any> {
+    const query = `
+      ${this.prefix}
+      SELECT ?label ?hasType ?hasMetricType ?hasUnit ?hasCalculationMethod ?description
+      WHERE {
+        <${uri}> a esg:Metric ;
+                 rdfs:label ?label ;
+                 esg:hasCalculationMethod ?hasCalculationMethod .
+        OPTIONAL { <${uri}> esg:hasType ?hasType . }
+        OPTIONAL { <${uri}> esg:hasMetricType ?hasMetricType . }
+        OPTIONAL { <${uri}> esg:hasUnit ?hasUnit . }
+        OPTIONAL { <${uri}> esg:hasDescription ?description . }
+      }
+    `;
+    const result = await this.graphDB.executeSparqlQuery(query);
+    
+    if (result.results.bindings.length === 0) {
+      return null;
+    }
+    
+    const binding = result.results.bindings[0];
+    return {
+      label: binding.label?.value,
+      hasType: binding.hasType?.value,
+      hasMetricType: binding.hasMetricType?.value,
+      hasUnit: binding.hasUnit?.value,
+      hasCalculationMethod: binding.hasCalculationMethod?.value,
+      description: binding.description?.value
+    };
+  }
+
+  async getMetricModels(metricUri: string): Promise<string[]> {
+    const query = `
+      ${this.prefix}
+      SELECT ?model
+      WHERE {
+        ?model esg:requiresInputFrom <${metricUri}> .
+      }
+    `;
+    const result = await this.graphDB.executeSparqlQuery(query);
+    return result.results.bindings.map((b: any) => b.model.value);
+  }
+
+  async createTestModel(label: string, inputMetrics: string[] = []): Promise<string> {
+    const normalizedLabel = label.toLowerCase().replace(/\s+/g, '');
+    const uri = `http://example.org/esg#${normalizedLabel}`;
+    
+    let insertData = `<${uri}> a esg:Model ; rdfs:label "${this.escapeSparql(label)}" .`;
+    
+    inputMetrics.forEach(metricUri => {
+      insertData += `\n<${uri}> esg:requiresInputFrom <${metricUri}> .`;
+    });
+
+    const query = `
+      ${this.prefix}
+      INSERT DATA {
+        ${insertData}
+      }
+    `;
+    
+    await this.graphDB.executeSparqlQuery(query);
+    return uri;
+  }
+
+  async cleanModels(): Promise<void> {
+    const query = `
+      ${this.prefix}
+      DELETE {
+        ?model ?p ?o .
+        ?s ?p2 ?model .
+      }
+      WHERE {
+        ?model a esg:Model .
+        {
+          ?model ?p ?o .
+        }
+        UNION
+        {
+          ?s ?p2 ?model .
+        }
+      }
+    `;
+    await this.graphDB.executeSparqlQuery(query);
+  }
+
+  async createTestDatasource(label: string): Promise<string> {
+    const normalizedLabel = label.toLowerCase().replace(/\s+/g, '');
+    const uri = `http://example.org/esg#${normalizedLabel}`;
+    
+    const query = `
+      ${this.prefix}
+      INSERT DATA {
+        <${uri}> a esg:DataSource ;
+                 rdfs:label "${this.escapeSparql(label)}" ;
+                 esg:hasDisclosureType "Corporate Disclosure" .
+      }
+    `;
+    
+    await this.graphDB.executeSparqlQuery(query);
+    return uri;
+  }
+
+  async cleanDataSources(): Promise<void> {
+    const query = `
+      ${this.prefix}
+      DELETE {
+        ?ds ?p ?o .
+        ?s ?p2 ?ds .
+      }
+      WHERE {
+        ?ds a esg:DataSource .
+        {
+          ?ds ?p ?o .
+        }
+        UNION
+        {
+          ?s ?p2 ?ds .
+        }
+      }
+    `;
+    await this.graphDB.executeSparqlQuery(query);
+  }
+
+  async addDatasourceToMetric(metricUri: string, datasourceUri: string): Promise<void> {
+    const query = `
+      ${this.prefix}
+      INSERT DATA {
+        <${metricUri}> esg:hasDataSource <${datasourceUri}> .
+      }
+    `;
+    await this.graphDB.executeSparqlQuery(query);
+  }
+
+  async getMetricDatasources(metricUri: string): Promise<string[]> {
+    const query = `
+      ${this.prefix}
+      SELECT ?datasource
+      WHERE {
+        <${metricUri}> esg:hasDataSource ?datasource .
+      }
+    `;
+    const result = await this.graphDB.executeSparqlQuery(query);
+    return result.results.bindings.map((b: any) => b.datasource.value);
+  }
+
+  // ==================== Dataset Variables ====================
+
+  async createTestDatasetVariable(
+    label: string,
+    options?: {
+      alignmentReason?: string;
+      confidenceScore?: number;
+      isUnitCompatible?: string;
+      sources?: string[];
+    }
+  ): Promise<string> {
+    const normalizedLabel = label.toLowerCase().replace(/\s+/g, '_');
+    const timestamp = Date.now();
+    const uri = `http://example.org/esg#${normalizedLabel}_${timestamp}`;
+    
+    let insertData = `<${uri}> a esg:DatasetVariable ; rdfs:label "${this.escapeSparql(label)}" .`;
+    
+    if (options?.alignmentReason) {
+      insertData += `\n<${uri}> esg:alignmentReason "${this.escapeSparql(options.alignmentReason)}" .`;
+    }
+    
+    if (options?.confidenceScore !== undefined) {
+      insertData += `\n<${uri}> esg:hasConfidenceScore ${options.confidenceScore} .`;
+    }
+    
+    if (options?.isUnitCompatible) {
+      insertData += `\n<${uri}> esg:isUnitCompatible "${this.escapeSparql(options.isUnitCompatible)}" .`;
+    }
+
+    if (options?.sources && options.sources.length > 0) {
+      options.sources.forEach(source => {
+        insertData += `\n<${uri}> esg:sourceFrom <${source}> .`;
+      });
+    }
+
+    const query = `
+      ${this.prefix}
+      INSERT DATA {
+        ${insertData}
+      }
+    `;
+    
+    await this.graphDB.executeSparqlQuery(query);
+    return uri;
+  }
+
+  async cleanDatasetVariables(): Promise<void> {
+    const query = `
+      ${this.prefix}
+      DELETE {
+        ?var ?p ?o .
+        ?s ?p2 ?var .
+      }
+      WHERE {
+        ?var a esg:DatasetVariable .
+        {
+          ?var ?p ?o .
+        }
+        UNION
+        {
+          ?s ?p2 ?var .
+        }
+      }
+    `;
+    await this.graphDB.executeSparqlQuery(query);
+  }
+
+  async datasetVariableExists(uri: string): Promise<boolean> {
+    const query = `
+      ${this.prefix}
+      ASK { <${uri}> a esg:DatasetVariable . }
+    `;
+    const result = await this.graphDB.executeSparqlQuery(query);
+    return result.boolean;
+  }
+
+  async getDatasetVariableDetail(uri: string): Promise<any> {
+    const query = `
+      ${this.prefix}
+      SELECT ?label ?alignmentReason ?confidenceScore ?isUnitCompatible ?source
+      WHERE {
+        <${uri}> a esg:DatasetVariable ;
+                 rdfs:label ?label .
+        OPTIONAL { <${uri}> esg:alignmentReason ?alignmentReason . }
+        OPTIONAL { <${uri}> esg:hasConfidenceScore ?confidenceScore . }
+        OPTIONAL { <${uri}> esg:isUnitCompatible ?isUnitCompatible . }
+        OPTIONAL { <${uri}> esg:sourceFrom ?source . }
+      }
+    `;
+    const result = await this.graphDB.executeSparqlQuery(query);
+    
+    if (result.results.bindings.length === 0) {
+      return null;
+    }
+    
+    const bindings = result.results.bindings;
+    return {
+      label: bindings[0].label.value,
+      alignmentReason: bindings[0].alignmentReason?.value,
+      confidenceScore: bindings[0].confidenceScore ? parseInt(bindings[0].confidenceScore.value) : undefined,
+      isUnitCompatible: bindings[0].isUnitCompatible?.value,
+      sources: bindings
+        .filter((b: any) => b.source)
+        .map((b: any) => b.source.value)
+    };
+  }
+
+  async addDatasourceToVariable(variableUri: string, datasourceUri: string): Promise<void> {
+    const query = `
+      ${this.prefix}
+      INSERT DATA {
+        <${variableUri}> esg:sourceFrom <${datasourceUri}> .
+      }
+    `;
+    await this.graphDB.executeSparqlQuery(query);
+  }
+
+  async getVariableDatasources(variableUri: string): Promise<string[]> {
+    const query = `
+      ${this.prefix}
+      SELECT ?datasource
+      WHERE {
+        <${variableUri}> esg:sourceFrom ?datasource .
+      }
+    `;
+    const result = await this.graphDB.executeSparqlQuery(query);
+    return result.results.bindings.map((b: any) => b.datasource.value);
+  }
+
   // ==================== Clean All Data ====================
 
   async cleanAllData(): Promise<void> {
     const query = `DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }`;
     await this.graphDB.executeSparqlQuery(query);
+  }
+
+  /**
+   * 执行 SPARQL 查询（公共方法，供测试使用）
+   */
+  async executeSparql(query: string): Promise<any> {
+    return await this.graphDB.executeSparqlQuery(query);
   }
 
   private escapeSparql(str: string): string {

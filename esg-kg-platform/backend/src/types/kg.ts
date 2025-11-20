@@ -27,6 +27,7 @@ export interface PaginationInfo {
   page?: number;
   size?: number;
   total?: number;
+  totalPages?: number;
 }
 
 /** 通用失败响应结构 - 仅保留用于错误处理 */
@@ -174,7 +175,7 @@ export interface CategoryDetailDTO extends CategoryDTO {
 export interface KGQueryRequest {
   industry?: string;
   framework?: string;
-  category_label?: string;
+  category?: string;
   metric_label?: string;
   model_label?: string;
   implementation_label?: string;
@@ -289,6 +290,99 @@ export interface RemoveMetricFromCategoryRequest {
   metricId: string;                     // 要删除的指标 ID
 }
 
+/** 指标列表查询请求 */
+export interface GetMetricsRequest {
+  page?: number;                        // 页码（从1开始）
+  size?: number;                        // 每页数量
+  search?: string;                      // 搜索关键词（label模糊匹配）
+  industry?: string;                    // 按行业筛选（可选）
+  category?: string;                    // 按分类筛选（可选）
+  framework?: string;                   // 按报告框架筛选（可选）
+  calculationMethod?: 'direct_measurement' | 'calculation_model';  // 按计算方法筛选（可选）
+  sort?: 'label' | 'createdAt';         // 排序字段
+  order?: 'asc' | 'desc';               // 排序顺序
+}
+
+/** 创建指标请求 */
+export interface CreateMetricRequest {
+  label: string;                        // 指标名称（必填）
+  code?: string;                        // 指标代码（可选，唯一标识）
+  description?: string;                 // 指标描述（可选）
+  unit?: string;                        // 单位（可选）
+  dataType?: MetricType;                // 数据类型（可选）
+  calculationMethod: CalculationMethod; // 计算方法（必填）
+  hasType?: MetricRole;                 // 指标类型（可选）
+  industry?: string;                    // 所属行业 URI（可选）
+  category?: string;                    // 所属分类 URI（可选）
+  framework?: string;                   // 所属框架 URI（可选）
+  disclosureLevel?: number;             // 披露层次（可选，1-3）
+  additionalProperties?: Record<string, any>; // 其他属性（可选）
+}
+
+/** 更新指标请求（完整更新） */
+export interface UpdateMetricRequest {
+  label: string;                        // 指标名称（必填）
+  code?: string;                        // 指标代码（可选）
+  description?: string;                 // 指标描述（可选）
+  unit?: string;                        // 单位（可选）
+  dataType?: MetricType;                // 数据类型（可选）
+  calculationMethod: CalculationMethod; // 计算方法（必填）
+  hasType?: MetricRole;                 // 指标类型（可选）
+  industry?: string;                    // 所属行业 URI（可选）
+  category?: string;                    // 所属分类 URI（可选）
+  framework?: string;                   // 所属框架 URI（可选）
+  disclosureLevel?: number;             // 披露层次（可选，1-3）
+  additionalProperties?: Record<string, any>; // 其他属性（可选）
+}
+
+/** 部分更新指标请求 */
+export interface PatchMetricRequest {
+  label?: string;                       // 指标名称（可选）
+  code?: string;                        // 指标代码（可选）
+  description?: string;                 // 指标描述（可选）
+  unit?: string;                        // 单位（可选）
+  dataType?: MetricType;                // 数据类型（可选）
+  calculationMethod?: CalculationMethod;// 计算方法（可选）
+  hasType?: MetricRole;                 // 指标类型（可选）
+  industry?: string;                    // 所属行业 URI（可选）
+  category?: string;                    // 所属分类 URI（可选）
+  framework?: string;                   // 所属框架 URI（可选）
+  disclosureLevel?: number;             // 披露层次（可选，1-3）
+  additionalProperties?: Record<string, any>; // 其他属性（可选）
+}
+
+/** 删除指标请求 */
+export interface DeleteMetricRequest {
+  cascade?: boolean;                    // 是否级联删除相关数据（默认 false）
+  force?: boolean;                      // 强制删除（忽略依赖检查，默认 false）
+}
+
+/** 添加数据源关联请求 */
+export interface AddMetricDatasourceRequest {
+  datasourceUri: string;                // 数据源 URI（必填）
+  datasetVariableUri?: string;          // 数据集变量 URI（可选）
+  disclosureLevel?: number;             // 披露层次（可选，1-3）
+  priority?: number;                    // 优先级（可选）
+}
+
+/** 添加输入指标请求 */
+export interface AddMetricInputRequest {
+  inputMetricUri: string;               // 输入指标 URI（必填）
+  order?: number;                       // 输入顺序（可选）
+}
+
+/** 批量创建指标请求 */
+export interface BatchCreateMetricsRequest {
+  metrics: CreateMetricRequest[];       // 指标数组
+}
+
+/** 批量删除指标请求 */
+export interface BatchDeleteMetricsRequest {
+  metricIds: string[];                  // 指标 ID 数组
+  cascade?: boolean;                    // 是否级联删除（可选）
+  force?: boolean;                      // 强制删除（可选）
+}
+
 /** 模型执行请求 */
 export interface ModelExecutionRequest {
   perm_id: string;
@@ -320,9 +414,110 @@ export interface CreateModelRequest {
   mathematical_expression?: string;     // 数学表达式（可选）
 }
 
-/** 更新指标计算方法请求 */
-export interface UpdateMetricCalculationMethodRequest {
-  model: string;                        // 模型的 name 或 URI
+
+
+/** 实现列表查询请求 */
+export interface GetImplementationsRequest {
+  page?: number;                        // 页码（从1开始）
+  size?: number;                        // 每页数量
+  search?: string;                      // 搜索关键词（label模糊匹配）
+  language?: string;                    // 按编程语言筛选（可选）
+  filePath?: string;                    // 按文件路径筛选（可选）
+  calculationType?: string;             // 按计算类型筛选（通过关联的模型）（可选）
+  sort?: 'label' | 'createdAt';         // 排序字段
+  order?: 'asc' | 'desc';               // 排序顺序
+}
+
+/** 更新实现请求 */
+export interface UpdateImplementationRequest {
+  label?: string;                       // 实现名称（可选）
+  language?: string;                    // 编程语言（可选）
+  file_path?: string;                   // 文件路径（可选）
+  function_name?: string;               // 函数名称（可选）
+  description?: string;                 // 描述（可选）
+  input_parameters?: string;            // 输入参数说明（可选）
+  return_type?: string;                 // 返回类型（可选）
+  validation?: string;                  // 验证规则（可选）
+}
+
+/** 删除实现请求 */
+export interface DeleteImplementationRequest {
+  force?: boolean;                      // 强制删除（包括有关联模型的实现）
+}
+
+/** 数据集变量列表查询请求 */
+export interface GetDatasetVariablesRequest {
+  page?: number;                        // 页码（从1开始）
+  size?: number;                        // 每页数量
+  search?: string;                      // 搜索关键词（label模糊匹配）
+  datasource?: string;                  // 按数据源筛选（可选）
+  metric?: string;                      // 按指标筛选（可选）
+  minConfidenceScore?: number;          // 最小置信度分数筛选（可选，0-100）
+  isUnitCompatible?: string;            // 按单位兼容性筛选（可选）
+  sort?: 'label' | 'confidenceScore' | 'createdAt';  // 排序字段
+  order?: 'asc' | 'desc';               // 排序顺序
+}
+
+/** 创建数据集变量请求 */
+export interface CreateDatasetVariableRequest {
+  label: string;                        // 变量名称（必填）
+  alignmentReason?: string;             // 对齐原因（可选）
+  confidenceScore?: number;             // 置信度分数（可选，0-100）
+  isUnitCompatible?: string;            // 单位兼容性（可选）
+  sources?: string[];                   // 关联的数据源 URIs（可选）
+}
+
+/** 更新数据集变量请求（部分更新） */
+export interface UpdateDatasetVariableRequest {
+  label?: string;                       // 变量名称（可选）
+  alignmentReason?: string;             // 对齐原因（可选）
+  confidenceScore?: number;             // 置信度分数（可选，0-100）
+  isUnitCompatible?: string;            // 单位兼容性（可选）
+  sources?: string[];                   // 关联的数据源 URIs（可选，会替换现有的）
+}
+
+/** 删除数据集变量请求 */
+export interface DeleteDatasetVariableRequest {
+  force?: boolean;                      // 强制删除（忽略依赖检查，默认 false）
+}
+
+/** 添加数据源到数据集变量请求 */
+export interface AddDatasourceToVariableRequest {
+  datasourceUri: string;                // 数据源 URI（必填）
+}
+
+/** 数据源列表查询请求 */
+export interface GetDatasourcesRequest {
+  page?: number;                        // 页码（从1开始）
+  size?: number;                        // 每页数量
+  search?: string;                      // 搜索关键词（label或fileName模糊匹配）
+  sort?: 'label' | 'fileName' | 'recordCount' | 'createdAt';  // 排序字段
+  order?: 'asc' | 'desc';               // 排序顺序
+}
+
+/** 创建数据源请求 */
+export interface CreateDatasourceRequest {
+  label: string;                        // 数据源名称（必填）
+  fileName?: string;                    // 文件名（可选）
+  description?: string;                 // 描述（可选）
+  coverage?: string;                    // 覆盖范围（可选）
+  recordCount?: number;                 // 记录数量（可选）
+  disclosureType?: string;              // 披露类型（可选）
+}
+
+/** 更新数据源请求（部分更新） */
+export interface UpdateDatasourceRequest {
+  label?: string;                       // 数据源名称（可选）
+  fileName?: string;                    // 文件名（可选）
+  description?: string;                 // 描述（可选）
+  coverage?: string;                    // 覆盖范围（可选）
+  recordCount?: number;                 // 记录数量（可选）
+  disclosureType?: string;              // 披露类型（可选）
+}
+
+/** 删除数据源请求 */
+export interface DeleteDatasourceRequest {
+  force?: boolean;                      // 强制删除（忽略依赖检查，默认 false）
 }
 
 // =====================================================
@@ -488,20 +683,214 @@ export interface MetricMetadataResponse {
   additionalAttributes?: Record<string, any>;
 }
 
+/** 指标详情响应（包含所有属性） */
+export interface MetricDetailResponse {
+  result: MetricDTO & {
+    attributes?: Record<string, any>;
+    hierarchy?: HierarchyDTO;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+}
+
+/** 指标列表响应 */
+export interface MetricsResponse extends PaginationInfo {
+  result: MetricDTO[];
+}
+
+/** 创建指标响应 */
+export interface CreateMetricResponse {
+  uri: string;
+  label: string;
+  code?: string;
+  calculationMethod: CalculationMethod;
+  created_at: string;
+}
+
+/** 更新指标响应 */
+export interface UpdateMetricResponse {
+  uri: string;
+  label: string;
+  calculationMethod: CalculationMethod;
+  updated_at: string;
+}
+
+/** 删除指标响应 */
+export interface DeleteMetricResponse {
+  uri: string;
+  deleted: boolean;
+  deleted_at: string;
+}
+
+/** 添加数据源关联响应 */
+export interface AddMetricDatasourceResponse {
+  metric_uri: string;
+  datasource_uri: string;
+  added_at: string;
+}
+
+/** 删除数据源关联响应 */
+export interface RemoveMetricDatasourceResponse {
+  metric_uri: string;
+  datasource_uri: string;
+  removed_at: string;
+}
+
+/** 添加输入指标响应 */
+export interface AddMetricInputResponse {
+  metric_uri: string;
+  input_metric_uri: string;
+  added_at: string;
+}
+
+/** 删除输入指标响应 */
+export interface RemoveMetricInputResponse {
+  metric_uri: string;
+  input_metric_uri: string;
+  removed_at: string;
+}
+
+/** 批量创建指标响应 */
+export interface BatchCreateMetricsResponse {
+  created: Array<{
+    uri: string;
+    label: string;
+  }>;
+  failed: Array<{
+    label: string;
+    error: string;
+  }>;
+  total_created: number;
+  total_failed: number;
+}
+
+/** 批量删除指标响应 */
+export interface BatchDeleteMetricsResponse {
+  deleted: string[];                    // 成功删除的指标 URI 列表
+  failed: Array<{
+    uri: string;
+    error: string;
+  }>;
+  total_deleted: number;
+  total_failed: number;
+}
+
+/** 最佳数据源响应 */
+export interface BestDataSourceResponse {
+  metricId: string;
+  dataSource: {
+    dataSourceID: string;
+    disclosureType: string;
+    fileName?: string;
+    description?: string;
+  } | null;
+}
+
+/** 所有数据源列表响应 (GET /api/kg/metrics/:id/datasources) */
+export interface MetricDataSourcesResponse {
+  metricId: string;
+  metricLabel: string;
+  calculationMethod: 'direct_measurement' | 'calculation_model';
+  dataSources: Array<{
+    dataSourceID: string;
+    label?: string;
+    fileName?: string;
+    disclosureType: string;
+    recordCount?: number;
+    description?: string;
+    coverage?: string;
+    // 关联的数据集变量信息
+    variables?: Array<{
+      iri: string;
+      label?: string;
+      alignmentReason?: string;
+      confidenceScore?: number;
+      isUnitCompatible?: string;
+    }>;
+  }>;
+  total: number;
+}
+
+/** 使用该指标作为输入的模型列表响应 (GET /api/kg/metrics/:id/models) */
+export interface MetricModelsResponse {
+  metricId: string;
+  metricLabel: string;
+  models: Array<{
+    iri: string;
+    label?: string;
+    calculationType?: string;
+    formula?: string;
+    mathematicalExpression?: string;
+    // 该模型产出的指标
+    outputMetric?: {
+      iri: string;
+      label?: string;
+    };
+    // 该模型的实现
+    implementation?: {
+      iri: string;
+      label?: string;
+      language?: string;
+    };
+  }>;
+  total: number;
+}
+
+/** 指标输入列表响应 (GET /api/kg/metrics/:id/inputs) */
+export interface MetricInputsResponse {
+  metricId: string;
+  metricLabel: string;
+  calculationMethod: 'direct_measurement' | 'calculation_model';
+  model?: {
+    iri: string;
+    label?: string;
+    calculationType?: string;
+  };
+  inputs: Array<{
+    iri: string;
+    label?: string;
+    hasCalculationMethod?: 'direct_measurement' | 'calculation_model';
+    hasUnit?: string;
+    hasMetricType?: string;
+    hasType?: string;
+    // 该输入指标是否还有输入（递归标识）
+    hasInputs?: boolean;
+  }>;
+  total: number;
+}
+
 /** 直接测量数据血缘响应 */
+export interface DirectMeasurementLineageResponse extends PaginationInfo {
+  metric: MetricDTO & { hasCalculationMethod: 'direct_measurement' };
+  lineageType: 'direct_measurement';
+  obtainedFrom: DatasetVariableDTO[];   // esg:obtainedFrom
+}
+
+/** 计算模型数据血缘响应 */
+export interface CalculationModelLineageResponse extends PaginationInfo {
+  metric: MetricDTO & { hasCalculationMethod: 'calculation_model' };
+  lineageType: 'calculation_model';
+  model: ModelDTO | null;               // esg:isCalculatedBy
+  inputs: DatasetVariableDTO[];         // 通过 model.requiresInputFrom 获取的输入数据
+}
+
+/** 指标数据血缘响应联合类型 (GET /api/kg/metrics/:id/lineage) */
+export type MetricLineageResponse = DirectMeasurementLineageResponse | CalculationModelLineageResponse;
+
+/** @deprecated Use DirectMeasurementLineageResponse instead. Will be removed in v2.0.0 */
 export interface DirectMeasurementResponse extends PaginationInfo {
   metric: MetricDTO & { hasCalculationMethod: 'direct_measurement' };
   obtainedFrom: DatasetVariableDTO[];   // esg:obtainedFrom
 }
 
-/** 计算模型数据血缘响应 */
+/** @deprecated Use CalculationModelLineageResponse instead. Will be removed in v2.0.0 */
 export interface CalculationModelResponse extends PaginationInfo {
   metric: MetricDTO & { hasCalculationMethod: 'calculation_model' };
   model: ModelDTO | null;               // esg:isCalculatedBy
   inputs: DatasetVariableDTO[];         // 通过 model.requiresInputFrom 获取的输入数据
 }
 
-/** 指标数据血缘响应联合类型 */
+/** @deprecated Use MetricLineageResponse instead. Endpoint renamed from /datasets to /lineage. Will be removed in v2.0.0 */
 export type MetricDatasetsResponse = DirectMeasurementResponse | CalculationModelResponse;
 
 /** 创建实现响应 */
@@ -529,16 +918,217 @@ export interface CreateModelResponse {
   created_at: string;
 }
 
-/** 更新指标计算方法响应 */
-export interface UpdateMetricCalculationMethodResponse {
-  metric_uri: string;
+
+
+/** 指标计算方法详情响应 (GET /api/kg/metrics/:id/calculation-method) */
+export interface MetricCalculationMethodResponse {
   metric_label: string;
-  calculation_method: string;
-  model: {
-    uri: string;
+  metric_uri: string;
+  calculation_method: 'direct_measurement' | 'calculation_model';
+  attributes?: Record<string, any>;
+  data_sources?: Array<{
+    dataSourceID: string;
+    disclosureType: string;
+    fileName?: string;
+    description?: string;
+  }>;
+  model?: {
     label: string;
+    uri: string;
+    calculationType?: string;
+    formula?: string;
+    mathematicalExpression?: string;
+    description?: string;
   };
+  implementation?: {
+    label: string;
+    uri: string;
+    language?: string;
+    filePath?: string;
+    functionName?: string;
+    description?: string;
+  };
+}
+
+/** 实现列表响应 */
+export interface ImplementationsResponse extends PaginationInfo {
+  result: ImplementationDTO[];
+}
+
+/** 实现详情响应 */
+export interface ImplementationDetailResponse {
+  result: ImplementationDTO & {
+    description?: string;
+    inputParameters?: string;
+    relatedModels?: Array<{
+      uri: string;
+      label: string;
+      calculationType?: string;
+    }>;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+}
+
+/** 更新实现响应 */
+export interface UpdateImplementationResponse {
+  uri: string;
+  label: string;
+  language?: string;
+  file_path?: string;
   updated_at: string;
+}
+
+/** 删除实现响应 */
+export interface DeleteImplementationResponse {
+  uri: string;
+  deleted: boolean;
+  deleted_at: string;
+}
+
+/** 数据集变量列表响应 */
+export interface DatasetVariablesResponse extends PaginationInfo {
+  result: DatasetVariableDTO[];
+}
+
+/** 数据集变量详情响应 */
+export interface DatasetVariableDetailResponse {
+  result: DatasetVariableDTO & {
+    metrics?: Array<Pick<Metric, 'iri' | 'label' | 'hasCalculationMethod'>>;  // 使用此变量的指标
+    createdAt?: string;
+    updatedAt?: string;
+  };
+}
+
+/** 创建数据集变量响应 */
+export interface CreateDatasetVariableResponse {
+  uri: string;
+  label: string;
+  created_at: string;
+}
+
+/** 更新数据集变量响应 */
+export interface UpdateDatasetVariableResponse {
+  uri: string;
+  label: string;
+  updated_at: string;
+}
+
+/** 删除数据集变量响应 */
+export interface DeleteDatasetVariableResponse {
+  uri: string;
+  deleted: boolean;
+  deleted_at: string;
+}
+
+/** 数据集变量数据源列表响应 */
+export interface VariableDatasourcesResponse {
+  variable_id: string;
+  variable_label: string;
+  datasources: DataSourceDTO[];
+  total: number;
+}
+
+/** 添加数据源到数据集变量响应 */
+export interface AddDatasourceToVariableResponse {
+  variable_uri: string;
+  datasource_uri: string;
+  added_at: string;
+}
+
+/** 移除数据集变量数据源关联响应 */
+export interface RemoveVariableDatasourceResponse {
+  variable_uri: string;
+  datasource_uri: string;
+  removed_at: string;
+}
+
+/** 数据集变量质量信息响应 */
+export interface DatasetVariableQualityResponse {
+  variable_id: string;
+  variable_label: string;
+  confidenceScore?: number;
+  isUnitCompatible?: string;
+  alignmentReason?: string;
+}
+
+/** 数据集变量的指标列表响应 */
+export interface VariableMetricsResponse {
+  variable_id: string;
+  variable_label: string;
+  metrics: Array<{
+    iri: string;
+    label: string;
+    hasCalculationMethod: 'direct_measurement' | 'calculation_model';
+    hasUnit?: string;
+    hasMetricType?: string;
+  }>;
+  total: number;
+}
+
+/** 数据源的变量列表响应 */
+export interface DatasourceVariablesResponse {
+  datasource_id: string;
+  datasource_label: string;
+  variables: Array<{
+    iri: string;
+    label: string;
+    confidenceScore?: number;
+    alignmentReason?: string;
+  }>;
+  total: number;
+}
+
+/** 数据源的指标列表响应（间接关联）*/
+export interface DatasourceMetricsResponse {
+  datasource_id: string;
+  datasource_label: string;
+  metrics: Array<{
+    iri: string;
+    label: string;
+    hasCalculationMethod: 'direct_measurement' | 'calculation_model';
+    hasUnit?: string;
+    variable: {
+      iri: string;
+      label: string;
+    };
+  }>;
+  total: number;
+}
+
+/** 数据源列表响应 */
+export interface DatasourcesResponse extends PaginationInfo {
+  result: DataSourceDTO[];
+}
+
+/** 数据源详情响应 */
+export interface DatasourceDetailResponse {
+  result: DataSourceDTO & {
+    variables?: Array<Pick<DatasetVariable, 'iri' | 'label'>>;  // 使用此数据源的数据集变量
+    createdAt?: string;
+    updatedAt?: string;
+  };
+}
+
+/** 创建数据源响应 */
+export interface CreateDatasourceResponse {
+  uri: string;
+  label: string;
+  created_at: string;
+}
+
+/** 更新数据源响应 */
+export interface UpdateDatasourceResponse {
+  uri: string;
+  label: string;
+  updated_at: string;
+}
+
+/** 删除数据源响应 */
+export interface DeleteDatasourceResponse {
+  uri: string;
+  deleted: boolean;
+  deleted_at: string;
 }
 
 // =====================================================

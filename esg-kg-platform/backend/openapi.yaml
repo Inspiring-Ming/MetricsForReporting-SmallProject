@@ -199,7 +199,7 @@ paths:
           schema:
             type: string
           example: "Technology"
-        - name: category_label
+        - name: category
           in: query
           required: true
           schema:
@@ -237,7 +237,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: category_label
+        - name: category
           in: query
           required: true
           schema:
@@ -273,7 +273,7 @@ paths:
             type: string
           example: "Semiconductors"
           description: Industry name (e.g., "Commercial Banks", "Semiconductors")
-        - name: category_label
+        - name: category
           in: query
           required: true
           schema:

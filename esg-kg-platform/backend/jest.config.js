@@ -14,4 +14,9 @@ module.exports = {
   coverageDirectory: 'coverage',
   verbose: true,
   maxWorkers: 1, // Run tests serially to avoid database conflicts
+  transform: {
+    '^.+\\.ts$': ['ts-jest', {
+      tsconfig: 'tsconfig.test.json'
+    }]
+  }
 };

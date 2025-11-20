@@ -9,11 +9,11 @@ jest.setTimeout(30000);
 
 // 全局测试配置
 beforeAll(() => {
-  console.log('\n🧪 Starting Industry API Test Suite...');
-  console.log(`📊 GraphDB URL: ${process.env.GRAPHDB_URL}`);
-  console.log(`📦 Repository: ${process.env.GRAPHDB_REPO}\n`);
+  // console.log('\n🧪 Starting Industry API Test Suite...');
+  // console.log(`📊 GraphDB URL: ${process.env.GRAPHDB_URL}`);
+  // console.log(`📦 Repository: ${process.env.GRAPHDB_REPO}\n`);
 });
 
 afterAll(() => {
-  console.log('\n✅ Test Suite Completed\n');
+  // console.log('\n✅ Test Suite Completed\n');
 });
