@@ -28,11 +28,11 @@ describe('Framework API - POST /api/kg/frameworks (Create)', () => {
         .send(newFramework)
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label', newFramework.label);
       expect(response.body).toHaveProperty('created_at');
 
-      const exists = await helper.frameworkExists(response.body.uri);
+      const exists = await helper.frameworkExists(response.body.iri);
       expect(exists).toBe(true);
     });
 
@@ -54,7 +54,7 @@ describe('Framework API - POST /api/kg/frameworks (Create)', () => {
       expect(response.body.label).toBe(newFramework.label);
       expect(response.body.sourceDocument).toBe(newFramework.sourceDocument);
 
-      const detail = await helper.getFrameworkDetail(response.body.uri);
+      const detail = await helper.getFrameworkDetail(response.body.iri);
       expect(detail.label).toBe(newFramework.label);
       expect(detail.sourceDocument).toBe(newFramework.sourceDocument);
       expect(detail.categories).toHaveLength(2);
@@ -66,10 +66,10 @@ describe('Framework API - POST /api/kg/frameworks (Create)', () => {
         .send({ label: 'New Framework' })
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label');
       expect(response.body).toHaveProperty('created_at');
-      expect(typeof response.body.uri).toBe('string');
+      expect(typeof response.body.iri).toBe('string');
       expect(typeof response.body.label).toBe('string');
       expect(typeof response.body.created_at).toBe('string');
     });
@@ -165,7 +165,7 @@ describe('Framework API - POST /api/kg/frameworks (Create)', () => {
         .send({ label: 'Reusable Name' })
         .expect(201);
 
-      const shortId = response1.body.uri.split('#')[1];
+      const shortId = response1.body.iri.split('#')[1];
       await request(app)
         .delete(`${baseUrl}/${shortId}`)
         .expect(200);
@@ -186,7 +186,7 @@ describe('Framework API - POST /api/kg/frameworks (Create)', () => {
         .send({ label: 'Framework "Test" Name' })
         .expect(201);
 
-      const detail = await helper.getFrameworkDetail(response.body.uri);
+      const detail = await helper.getFrameworkDetail(response.body.iri);
       expect(detail.label).toBe('Framework "Test" Name');
     });
 
@@ -196,7 +196,7 @@ describe('Framework API - POST /api/kg/frameworks (Create)', () => {
         .send({ label: 'Framework: Test & Sample' })
         .expect(201);
 
-      const detail = await helper.getFrameworkDetail(response.body.uri);
+      const detail = await helper.getFrameworkDetail(response.body.iri);
       expect(detail.label).toBe('Framework: Test & Sample');
     });
 
@@ -206,7 +206,7 @@ describe('Framework API - POST /api/kg/frameworks (Create)', () => {
         .send({ label: '测试框架 中文' })
         .expect(201);
 
-      const detail = await helper.getFrameworkDetail(response.body.uri);
+      const detail = await helper.getFrameworkDetail(response.body.iri);
       expect(detail.label).toBe('测试框架 中文');
     });
 
@@ -216,7 +216,7 @@ describe('Framework API - POST /api/kg/frameworks (Create)', () => {
         .send({ label: 'Framework 🎯 Test' })
         .expect(201);
 
-      const detail = await helper.getFrameworkDetail(response.body.uri);
+      const detail = await helper.getFrameworkDetail(response.body.iri);
       expect(detail.label).toBe('Framework 🎯 Test');
     });
   });
@@ -233,7 +233,7 @@ describe('Framework API - POST /api/kg/frameworks (Create)', () => {
         })
         .expect(201);
 
-      const detail = await helper.getFrameworkDetail(response.body.uri);
+      const detail = await helper.getFrameworkDetail(response.body.iri);
       expect(detail.categories).toHaveLength(1);
       expect(detail.categories[0].iri).toBe(category);
     });
@@ -251,7 +251,7 @@ describe('Framework API - POST /api/kg/frameworks (Create)', () => {
         })
         .expect(201);
 
-      const detail = await helper.getFrameworkDetail(response.body.uri);
+      const detail = await helper.getFrameworkDetail(response.body.iri);
       expect(detail.categories).toHaveLength(3);
     });
 
@@ -266,7 +266,7 @@ describe('Framework API - POST /api/kg/frameworks (Create)', () => {
         })
         .expect(201);
 
-      const categories = await helper.getFrameworkCategories(response.body.uri);
+      const categories = await helper.getFrameworkCategories(response.body.iri);
       expect(categories).toContain(category);
     });
   });

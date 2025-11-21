@@ -51,12 +51,12 @@ export class CategoryService {
   async getCategoryById(id: string): Promise<CategoryDetailResponse> {
     // 验证 URI 格式
     if (!this.isValidUri(id)) {
-      throw new ValidationError('Invalid category URI format');
+      throw new ValidationError('Invalid category IRI format');
     }
 
     // 检查 URI 是否包含 URL 编码字符（可能是双重编码）
     if (id.includes('%')) {
-      throw new ValidationError('Invalid category URI format: URI appears to be URL-encoded');
+      throw new ValidationError('Invalid category IRI format: IRI appears to be URL-encoded');
     }
 
     const category = await this.categoryRepo.getCategoryById(id);
@@ -83,17 +83,17 @@ export class CategoryService {
 
     // 验证指标 URIs 格式
     if (data.metrics) {
-      for (const uri of data.metrics) {
-        if (!this.isValidUri(uri)) {
-          throw new ValidationError(`Invalid metric URI format: ${uri}`);
+      for (const iri of data.metrics) {
+        if (!this.isValidUri(iri)) {
+          throw new ValidationError(`Invalid metric IRI format: ${iri}`);
         }
       }
     }
 
-    const uri = await this.categoryRepo.createCategory(data);
+    const iri = await this.categoryRepo.createCategory(data);
 
     return {
-      uri,
+      iri,
       label: data.label,
       created_at: new Date().toISOString()
     };
@@ -105,7 +105,7 @@ export class CategoryService {
   async updateCategory(id: string, data: UpdateCategoryRequest): Promise<UpdateCategoryResponse> {
     // 验证 URI 格式
     if (!this.isValidUri(id)) {
-      throw new ValidationError('Invalid category URI format');
+      throw new ValidationError('Invalid category IRI format');
     }
 
     // 验证至少有一个字段需要更新
@@ -128,9 +128,9 @@ export class CategoryService {
 
     // 验证指标 URIs 格式
     if (data.metrics) {
-      for (const uri of data.metrics) {
-        if (!this.isValidUri(uri)) {
-          throw new ValidationError(`Invalid metric URI format: ${uri}`);
+      for (const iri of data.metrics) {
+        if (!this.isValidUri(iri)) {
+          throw new ValidationError(`Invalid metric IRI format: ${iri}`);
         }
       }
     }
@@ -144,7 +144,7 @@ export class CategoryService {
     }
 
     return {
-      uri: id,
+      iri: id,
       label: updated.label || data.label || '',
       updated_at: new Date().toISOString()
     };
@@ -156,13 +156,13 @@ export class CategoryService {
   async deleteCategory(id: string, params: DeleteCategoryRequest = {}): Promise<DeleteCategoryResponse> {
     // 验证 URI 格式
     if (!this.isValidUri(id)) {
-      throw new ValidationError('Invalid category URI format');
+      throw new ValidationError('Invalid category IRI format');
     }
 
     await this.categoryRepo.deleteCategory(id, params.force || false);
 
     return {
-      uri: id,
+      iri: id,
       deleted: true,
       deleted_at: new Date().toISOString()
     };
@@ -174,7 +174,7 @@ export class CategoryService {
   async getCategoryMetrics(id: string): Promise<CategoryMetricsResponse> {
     // 验证 URI 格式
     if (!this.isValidUri(id)) {
-      throw new ValidationError('Invalid category URI format');
+      throw new ValidationError('Invalid category IRI format');
     }
 
     // 验证分类是否存在
@@ -196,7 +196,7 @@ export class CategoryService {
   async addMetricsToCategory(id: string, data: AddMetricsToCategoryRequest): Promise<AddMetricsToCategoryResponse> {
     // 验证 URI 格式
     if (!this.isValidUri(id)) {
-      throw new ValidationError('Invalid category URI format');
+      throw new ValidationError('Invalid category IRI format');
     }
 
     // 验证指标 URIs
@@ -204,16 +204,16 @@ export class CategoryService {
       throw new ValidationError('At least one metric URI is required');
     }
 
-    for (const uri of data.metrics) {
-      if (!this.isValidUri(uri)) {
-        throw new ValidationError(`Invalid metric URI format: ${uri}`);
+    for (const iri of data.metrics) {
+      if (!this.isValidUri(iri)) {
+        throw new ValidationError(`Invalid metric IRI format: ${iri}`);
       }
     }
 
     const metrics = await this.categoryRepo.addMetricsToCategory(id, data.metrics);
 
     return {
-      category_uri: id,
+      category_iri: id,
       added_metrics: metrics,
       added_at: new Date().toISOString()
     };
@@ -225,17 +225,17 @@ export class CategoryService {
   async removeMetricFromCategory(id: string, metricUri: string): Promise<RemoveMetricFromCategoryResponse> {
     // 验证 URI 格式
     if (!this.isValidUri(id)) {
-      throw new ValidationError('Invalid category URI format');
+      throw new ValidationError('Invalid category IRI format');
     }
     if (!this.isValidUri(metricUri)) {
-      throw new ValidationError('Invalid metric URI format');
+      throw new ValidationError('Invalid metric IRI format');
     }
 
     await this.categoryRepo.removeMetricFromCategory(id, metricUri);
 
     return {
-      category_uri: id,
-      removed_metric_uri: metricUri,
+      category_iri: id,
+      removed_metric_iri: metricUri,
       removed_at: new Date().toISOString()
     };
   }
@@ -245,11 +245,11 @@ export class CategoryService {
   /**
    * 验证 URI 格式
    */
-  private isValidUri(uri: string): boolean {
-    if (!uri || uri.trim().length === 0) {
+  private isValidUri(iri: string): boolean {
+    if (!iri || iri.trim().length === 0) {
       return false;
     }
     // 简单验证：必须包含协议或是相对 URI
-    return uri.startsWith('http://') || uri.startsWith('https://') || uri.startsWith('urn:');
+    return iri.startsWith('http://') || iri.startsWith('https://') || iri.startsWith('urn:');
   }
 }

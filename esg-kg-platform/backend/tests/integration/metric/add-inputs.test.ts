@@ -162,11 +162,11 @@ describe.skip('Metric API - POST /api/kg/metrics/:id/inputs (Add Input) - API NO
       const response = await request(app)
         .post(`${baseUrl}/${encodeURIComponent(metricUri)}/inputs`)
         .send({
-          inputMetricUri: 'invalid uri with spaces'
+          inputMetricUri: 'invalid iri with spaces'
         })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
 
     it('should reject non-existent input metric', async () => {
@@ -304,13 +304,13 @@ describe.skip('Metric API - POST /api/kg/metrics/:id/inputs (Add Input) - API NO
       const inputMetricUri = await helper.createTestMetric('Input Metric');
 
       const response = await request(app)
-        .post(`${baseUrl}/${encodeURIComponent('invalid metric uri')}/inputs`)
+        .post(`${baseUrl}/${encodeURIComponent('invalid metric iri')}/inputs`)
         .send({
           inputMetricUri
         })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
   });
 

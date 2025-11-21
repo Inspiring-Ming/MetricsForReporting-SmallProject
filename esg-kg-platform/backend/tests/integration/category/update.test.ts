@@ -28,7 +28,7 @@ describe('Category API - PATCH /api/kg/categories/:id (Update)', () => {
         .expect(200);
 
       expect(response.body.label).toBe('Updated Category');
-      expect(response.body.uri).toBe(categoryUri);
+      expect(response.body.iri).toBe(categoryUri);
       expect(response.body).toHaveProperty('updated_at');
 
       const detail = await helper.getCategoryDetail(categoryUri);
@@ -157,10 +157,10 @@ describe('Category API - PATCH /api/kg/categories/:id (Update)', () => {
     it('should reject update with invalid metric URI', async () => {
       const response = await request(app)
         .patch(`${baseUrl}/${encodeURIComponent(categoryUri)}`)
-        .send({ metrics: ['invalid-uri'] })
+        .send({ metrics: ['invalid-iri'] })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid metric uri/i);
+      expect(response.body.error.message).toMatch(/invalid metric iri/i);
     });
 
     it('should reject update with non-existent metric', async () => {
@@ -169,7 +169,7 @@ describe('Category API - PATCH /api/kg/categories/:id (Update)', () => {
         .send({ metrics: ['http://example.org/esg#NonExistentMetric'] })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid metric uri/i);
+      expect(response.body.error.message).toMatch(/invalid metric iri/i);
     });
 
     it('should reject update with no fields', async () => {
@@ -207,7 +207,7 @@ describe('Category API - PATCH /api/kg/categories/:id (Update)', () => {
   describe('Error Cases', () => {
     it('should return 404 for non-existent category', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistent';
-      
+
       const response = await request(app)
         .patch(`${baseUrl}/${encodeURIComponent(nonExistentUri)}`)
         .send({ label: 'New Label' })
@@ -218,11 +218,11 @@ describe('Category API - PATCH /api/kg/categories/:id (Update)', () => {
 
     it('should return 400 for invalid category URI', async () => {
       const response = await request(app)
-        .patch(`${baseUrl}/invalid-uri`)
+        .patch(`${baseUrl}/invalid-iri`)
         .send({ label: 'New Label' })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
   });
 
@@ -231,7 +231,7 @@ describe('Category API - PATCH /api/kg/categories/:id (Update)', () => {
       const oldMetric = await helper.createTestMetric('Old Metric');
       const newMetric1 = await helper.createTestMetric('New Metric 1');
       const newMetric2 = await helper.createTestMetric('New Metric 2');
-      
+
       await helper.addMetricsToCategory(categoryUri, [oldMetric]);
 
       await request(app)
@@ -248,7 +248,7 @@ describe('Category API - PATCH /api/kg/categories/:id (Update)', () => {
 
     it('should handle updating with many metrics', async () => {
       const metrics = await Promise.all(
-        Array.from({ length: 15 }, (_, i) => 
+        Array.from({ length: 15 }, (_, i) =>
           helper.createTestMetric(`Metric ${i + 1}`)
         )
       );

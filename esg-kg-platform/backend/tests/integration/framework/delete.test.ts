@@ -21,8 +21,8 @@ describe('Framework API - DELETE /api/kg/frameworks/:id', () => {
 
   describe('Normal Deletion', () => {
     it('should delete a framework without associations', async () => {
-      const uri = await helper.createTestFramework('To Be Deleted');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('To Be Deleted');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .delete(`${baseUrl}/${shortId}`)
@@ -30,11 +30,11 @@ describe('Framework API - DELETE /api/kg/frameworks/:id', () => {
 
       expect(response.body).toMatchObject({
         deleted: true,
-        uri: expect.any(String),
+        iri: expect.any(String),
         deleted_at: expect.any(String)
       });
 
-      const exists = await helper.frameworkExists(uri);
+      const exists = await helper.frameworkExists(iri);
       expect(exists).toBe(false);
     });
 
@@ -47,14 +47,14 @@ describe('Framework API - DELETE /api/kg/frameworks/:id', () => {
     });
 
     it('should handle deletion by full URI format', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
-      const encodedUri = encodeURIComponent(uri);
+      const iri = await helper.createTestFramework('Test Framework');
+      const encodedUri = encodeURIComponent(iri);
 
       await request(app)
         .delete(`${baseUrl}/${encodedUri}`)
         .expect(200);
 
-      const exists = await helper.frameworkExists(uri);
+      const exists = await helper.frameworkExists(iri);
       expect(exists).toBe(false);
     });
   });
@@ -174,37 +174,37 @@ describe('Framework API - DELETE /api/kg/frameworks/:id', () => {
 
   describe('URI Format Support', () => {
     it('should delete by short ID', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      const shortId = iri.split('#')[1];
 
       await request(app)
         .delete(`${baseUrl}/${shortId}`)
         .expect(200);
 
-      const exists = await helper.frameworkExists(uri);
+      const exists = await helper.frameworkExists(iri);
       expect(exists).toBe(false);
     });
 
     it('should delete by full URI', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
+      const iri = await helper.createTestFramework('Test Framework');
 
       await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .delete(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
-      const exists = await helper.frameworkExists(uri);
+      const exists = await helper.frameworkExists(iri);
       expect(exists).toBe(false);
     });
 
     it('should delete by namespace format', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      const shortId = iri.split('#')[1];
 
       await request(app)
         .delete(`${baseUrl}/esg:${shortId}`)
         .expect(200);
 
-      const exists = await helper.frameworkExists(uri);
+      const exists = await helper.frameworkExists(iri);
       expect(exists).toBe(false);
     });
   });

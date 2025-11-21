@@ -17,32 +17,32 @@ describe('Industry API - GET /api/kg/industries/:id (Detail)', () => {
 
   describe('Normal Query', () => {
     it('should get industry detail by full URI', async () => {
-      const uri = await helper.createTestIndustry('Test Industry', 'Test Description');
+      const iri = await helper.createTestIndustry('Test Industry', 'Test Description');
 
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
-      expect(response.body.result).toHaveProperty('iri', uri);
+      expect(response.body.result).toHaveProperty('iri', iri);
       expect(response.body.result).toHaveProperty('label', 'Test Industry');
       expect(response.body.result).toHaveProperty('description', 'Test Description');
     });
 
     it('should get industry detail by short ID', async () => {
-      const uri = await helper.createTestIndustry('Test Industry');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .get(`${baseUrl}/${shortId}`)
         .expect(200);
 
-      expect(response.body.result).toHaveProperty('iri', uri);
+      expect(response.body.result).toHaveProperty('iri', iri);
       expect(response.body.result).toHaveProperty('label', 'Test Industry');
     });
 
     it('should get industry detail by namespace format', async () => {
-      const uri = await helper.createTestIndustry('Test Industry');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry');
+      const shortId = iri.split('#')[1];
       const namespaceId = `esg:${shortId}`;
 
       const response = await request(app)
@@ -53,10 +53,10 @@ describe('Industry API - GET /api/kg/industries/:id (Detail)', () => {
     });
 
     it('should return complete information structure', async () => {
-      const uri = await helper.createTestIndustry('Complete Industry', 'Full description');
+      const iri = await helper.createTestIndustry('Complete Industry', 'Full description');
 
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       expect(response.body).toHaveProperty('result');
@@ -68,10 +68,10 @@ describe('Industry API - GET /api/kg/industries/:id (Detail)', () => {
 
   describe('ReportsUsing Associations', () => {
     it('should return empty reportsUsing when no frameworks associated', async () => {
-      const uri = await helper.createTestIndustry('Industry Without Frameworks');
+      const iri = await helper.createTestIndustry('Industry Without Frameworks');
 
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       expect(response.body.result.reportsUsing).toBeUndefined();
@@ -79,10 +79,10 @@ describe('Industry API - GET /api/kg/industries/:id (Detail)', () => {
 
     it('should return single associated framework', async () => {
       const framework = await helper.createTestFramework('Test Framework');
-      const uri = await helper.createTestIndustry('Test Industry', 'Desc', [framework]);
+      const iri = await helper.createTestIndustry('Test Industry', 'Desc', [framework]);
 
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       expect(response.body.result.reportsUsing).toHaveLength(1);
@@ -95,10 +95,10 @@ describe('Industry API - GET /api/kg/industries/:id (Detail)', () => {
       const fw2 = await helper.createTestFramework('Framework 2');
       const fw3 = await helper.createTestFramework('Framework 3');
 
-      const uri = await helper.createTestIndustry('Test Industry', 'Desc', [fw1, fw2, fw3]);
+      const iri = await helper.createTestIndustry('Test Industry', 'Desc', [fw1, fw2, fw3]);
 
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       expect(response.body.result.reportsUsing).toHaveLength(3);

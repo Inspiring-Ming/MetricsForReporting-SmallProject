@@ -14,6 +14,7 @@ import { createMetricRoutes as createKGMetricRoutes } from './kg_routers/metricR
 import { createImplementationRoutes } from './kg_routers/implementationRoutes';
 import { createDatasetVariableRoutes } from './kg_routers/datasetVariableRoutes';
 import { createDatasourceRoutes } from './kg_routers/datasourceRoutes';
+import { createModelRoutes } from './kg_routers/modelRoutes';
 
 /**
  * 主路由配置 - 整合所有子路由
@@ -36,6 +37,7 @@ export const createApiRoutes = (): Router => {
   router.use('/kg/implementations', createImplementationRoutes());
   router.use('/kg/dataset-variables', createDatasetVariableRoutes());
   router.use('/kg/datasources', createDatasourceRoutes());
+  router.use('/kg/models', createModelRoutes());
   router.use('/kg', createKnowledgeGraphRoutes());
   
   router.use('/computation', createMetricComputationRoutes());

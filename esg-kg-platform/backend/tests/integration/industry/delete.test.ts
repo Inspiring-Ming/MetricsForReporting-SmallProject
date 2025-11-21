@@ -17,8 +17,8 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
 
   describe('Normal Deletion', () => {
     it('should delete an industry without frameworks', async () => {
-      const uri = await helper.createTestIndustry('To Be Deleted', 'Description');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('To Be Deleted', 'Description');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .delete(`${baseUrl}/${shortId}`)
@@ -26,12 +26,12 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
 
       expect(response.body).toMatchObject({
         deleted: true,
-        uri: expect.any(String),
+        iri: expect.any(String),
         deleted_at: expect.any(String)
       });
 
       // Verify deletion
-      const exists = await helper.industryExists(uri);
+      const exists = await helper.industryExists(iri);
       expect(exists).toBe(false);
     });
 
@@ -44,14 +44,14 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
     });
 
     it('should handle deletion by full URI format', async () => {
-      const uri = await helper.createTestIndustry('Test Industry');
-      const encodedUri = encodeURIComponent(uri);
+      const iri = await helper.createTestIndustry('Test Industry');
+      const encodedUri = encodeURIComponent(iri);
 
       await request(app)
         .delete(`${baseUrl}/${encodedUri}`)
         .expect(200);
 
-      const exists = await helper.industryExists(uri);
+      const exists = await helper.industryExists(iri);
       expect(exists).toBe(false);
     });
   });
@@ -59,8 +59,8 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
   describe('Conflict Detection', () => {
     it('should return 409 when deleting industry with frameworks (without force)', async () => {
       const fw = await helper.createTestFramework('Test Framework');
-      const uri = await helper.createTestIndustry('Protected Industry', 'Desc', [fw]);
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Protected Industry', 'Desc', [fw]);
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .delete(`${baseUrl}/${shortId}`)
@@ -73,15 +73,15 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
       });
 
       // Verify not deleted
-      const exists = await helper.industryExists(uri);
+      const exists = await helper.industryExists(iri);
       expect(exists).toBe(true);
     });
 
     it('should list associated frameworks in conflict error', async () => {
       const fw1 = await helper.createTestFramework('Framework 1');
       const fw2 = await helper.createTestFramework('Framework 2');
-      const uri = await helper.createTestIndustry('Protected Industry', 'Desc', [fw1, fw2]);
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Protected Industry', 'Desc', [fw1, fw2]);
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .delete(`${baseUrl}/${shortId}`)
@@ -96,8 +96,8 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
   describe('Force Delete', () => {
     it('should delete industry with frameworks when force=true', async () => {
       const fw = await helper.createTestFramework('Test Framework');
-      const uri = await helper.createTestIndustry('Force Delete Industry', 'Desc', [fw]);
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Force Delete Industry', 'Desc', [fw]);
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .delete(`${baseUrl}/${shortId}?force=true`)
@@ -106,36 +106,36 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
       expect(response.body.deleted).toBe(true);
 
       // Verify deletion
-      const exists = await helper.industryExists(uri);
+      const exists = await helper.industryExists(iri);
       expect(exists).toBe(false);
     });
 
     it('should cascade delete all triples when force=true', async () => {
       const fw1 = await helper.createTestFramework('Framework 1');
       const fw2 = await helper.createTestFramework('Framework 2');
-      const uri = await helper.createTestIndustry('Cascade Delete', 'Description', [fw1, fw2]);
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Cascade Delete', 'Description', [fw1, fw2]);
+      const shortId = iri.split('#')[1];
 
       await request(app)
         .delete(`${baseUrl}/${shortId}?force=true`)
         .expect(200);
 
       // Verify no triples remain
-      const detail = await helper.getIndustryDetail(uri);
+      const detail = await helper.getIndustryDetail(iri);
       expect(detail).toBeNull();
     });
 
     it('should accept force=false and still check conflicts', async () => {
       const fw = await helper.createTestFramework('Test Framework');
-      const uri = await helper.createTestIndustry('Test Industry', 'Desc', [fw]);
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry', 'Desc', [fw]);
+      const shortId = iri.split('#')[1];
 
       await request(app)
         .delete(`${baseUrl}/${shortId}?force=false`)
         .expect(409);
 
       // Verify not deleted
-      const exists = await helper.industryExists(uri);
+      const exists = await helper.industryExists(iri);
       expect(exists).toBe(true);
     });
   });
@@ -144,12 +144,12 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
     it('should verify triple count decreases after deletion', async () => {
       await helper.createTestIndustry('Industry 1');
       await helper.createTestIndustry('Industry 2');
-      const uri3 = await helper.createTestIndustry('Industry 3');
+      const iri3 = await helper.createTestIndustry('Industry 3');
 
       const countBefore = await helper.getIndustryCount();
       expect(countBefore).toBe(3);
 
-      const shortId = uri3.split('#')[1];
+      const shortId = iri3.split('#')[1];
       await request(app)
         .delete(`${baseUrl}/${shortId}`)
         .expect(200);
@@ -159,29 +159,29 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
     });
 
     it('should verify all triples removed after deletion', async () => {
-      const uri = await helper.createTestIndustry('Test Industry', 'Test Description');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry', 'Test Description');
+      const shortId = iri.split('#')[1];
 
       await request(app)
         .delete(`${baseUrl}/${shortId}`)
         .expect(200);
 
       // Verify no traces in database
-      const detail = await helper.getIndustryDetail(uri);
+      const detail = await helper.getIndustryDetail(iri);
       expect(detail).toBeNull();
     });
 
     it('should not affect other industries when deleting one', async () => {
-      const uri1 = await helper.createTestIndustry('Industry 1', 'Desc 1');
-      const uri2 = await helper.createTestIndustry('Industry 2', 'Desc 2');
+      const iri1 = await helper.createTestIndustry('Industry 1', 'Desc 1');
+      const iri2 = await helper.createTestIndustry('Industry 2', 'Desc 2');
 
-      const shortId1 = uri1.split('#')[1];
+      const shortId1 = iri1.split('#')[1];
       await request(app)
         .delete(`${baseUrl}/${shortId1}`)
         .expect(200);
 
       // Verify second industry still exists
-      const detail2 = await helper.getIndustryDetail(uri2);
+      const detail2 = await helper.getIndustryDetail(iri2);
       expect(detail2).not.toBeNull();
       expect(detail2.label).toBe('Industry 2');
     });
@@ -189,8 +189,8 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
 
   describe('Edge Cases', () => {
     it('should return 404 when deleting already deleted industry', async () => {
-      const uri = await helper.createTestIndustry('Test Industry');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry');
+      const shortId = iri.split('#')[1];
 
       // First deletion
       await request(app)
@@ -206,21 +206,21 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
     });
 
     it('should handle delete with invalid force parameter format', async () => {
-      const uri = await helper.createTestIndustry('Test Industry');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry');
+      const shortId = iri.split('#')[1];
 
       // Should treat invalid format as false
       await request(app)
         .delete(`${baseUrl}/${shortId}?force=invalid`)
         .expect(200);
 
-      const exists = await helper.industryExists(uri);
+      const exists = await helper.industryExists(iri);
       expect(exists).toBe(false);
     });
 
     it('should handle concurrent delete attempts gracefully', async () => {
-      const uri = await helper.createTestIndustry('Test Industry');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry');
+      const shortId = iri.split('#')[1];
 
       // Send two delete requests simultaneously
       const [response1, response2] = await Promise.all([
@@ -240,8 +240,8 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
   describe('Integration with Frameworks', () => {
     it('should allow deletion after removing all framework associations', async () => {
       const fw = await helper.createTestFramework('Test Framework');
-      const uri = await helper.createTestIndustry('Test Industry', 'Desc', [fw]);
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry', 'Desc', [fw]);
+      const shortId = iri.split('#')[1];
 
       // Remove frameworks first
       await request(app)
@@ -254,7 +254,7 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
         .delete(`${baseUrl}/${shortId}`)
         .expect(200);
 
-      const exists = await helper.industryExists(uri);
+      const exists = await helper.industryExists(iri);
       expect(exists).toBe(false);
     });
 
@@ -262,8 +262,8 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
       const fw1 = await helper.createTestFramework('Framework 1');
       const fw2 = await helper.createTestFramework('Framework 2');
       const fw3 = await helper.createTestFramework('Framework 3');
-      const uri = await helper.createTestIndustry('Protected', 'Desc', [fw1, fw2, fw3]);
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Protected', 'Desc', [fw1, fw2, fw3]);
+      const shortId = iri.split('#')[1];
 
       // Should fail without force
       await request(app)
@@ -275,7 +275,7 @@ describe('Industry API - DELETE /api/kg/industries/:id', () => {
         .delete(`${baseUrl}/${shortId}?force=true`)
         .expect(200);
 
-      const exists = await helper.industryExists(uri);
+      const exists = await helper.industryExists(iri);
       expect(exists).toBe(false);
     });
   });

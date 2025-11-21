@@ -19,8 +19,8 @@ describe('Framework API - PATCH /api/kg/frameworks/:id (Update)', () => {
 
   describe('Single Field Update', () => {
     it('should update label only', async () => {
-      const uri = await helper.createTestFramework('Original Name');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Original Name');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -30,13 +30,13 @@ describe('Framework API - PATCH /api/kg/frameworks/:id (Update)', () => {
       expect(response.body).toHaveProperty('label', 'Updated Name');
       expect(response.body).toHaveProperty('updated_at');
 
-      const detail = await helper.getFrameworkDetail(uri);
+      const detail = await helper.getFrameworkDetail(iri);
       expect(detail.label).toBe('Updated Name');
     });
 
     it('should update sourceDocument only', async () => {
-      const uri = await helper.createTestFramework('Framework Name');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Framework Name');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -45,7 +45,7 @@ describe('Framework API - PATCH /api/kg/frameworks/:id (Update)', () => {
 
       expect(response.body.sourceDocument).toBe('https://updated.com/doc.pdf');
 
-      const detail = await helper.getFrameworkDetail(uri);
+      const detail = await helper.getFrameworkDetail(iri);
       expect(detail.label).toBe('Framework Name');
       expect(detail.sourceDocument).toBe('https://updated.com/doc.pdf');
     });
@@ -53,16 +53,16 @@ describe('Framework API - PATCH /api/kg/frameworks/:id (Update)', () => {
     it('should update categories only', async () => {
       const cat1 = await helper.createTestCategory('Category 1');
       const cat2 = await helper.createTestCategory('Category 2');
-      const uri = await helper.createTestFramework('Test Framework');
-      await helper.addCategoriesToFramework(uri, [cat1]);
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      await helper.addCategoriesToFramework(iri, [cat1]);
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
         .send({ categories: [cat2] })
         .expect(200);
 
-      const detail = await helper.getFrameworkDetail(uri);
+      const detail = await helper.getFrameworkDetail(iri);
       expect(detail.categories).toHaveLength(1);
       expect(detail.categories[0].iri).toBe(cat2);
     });
@@ -70,8 +70,8 @@ describe('Framework API - PATCH /api/kg/frameworks/:id (Update)', () => {
 
   describe('Multiple Fields Update', () => {
     it('should update label and sourceDocument together', async () => {
-      const uri = await helper.createTestFramework('Old Name');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Old Name');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -88,9 +88,9 @@ describe('Framework API - PATCH /api/kg/frameworks/:id (Update)', () => {
     it('should update all fields at once', async () => {
       const cat1 = await helper.createTestCategory('Category 1');
       const cat2 = await helper.createTestCategory('Category 2');
-      const uri = await helper.createTestFramework('Old Name');
-      await helper.addCategoriesToFramework(uri, [cat1]);
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Old Name');
+      await helper.addCategoriesToFramework(iri, [cat1]);
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -104,7 +104,7 @@ describe('Framework API - PATCH /api/kg/frameworks/:id (Update)', () => {
       expect(response.body.label).toBe('New Name');
       expect(response.body.sourceDocument).toBe('https://new.com/doc.pdf');
 
-      const detail = await helper.getFrameworkDetail(uri);
+      const detail = await helper.getFrameworkDetail(iri);
       expect(detail.categories).toHaveLength(1);
       expect(detail.categories[0].iri).toBe(cat2);
     });
@@ -112,38 +112,38 @@ describe('Framework API - PATCH /api/kg/frameworks/:id (Update)', () => {
 
   describe('Clear Field', () => {
     it('should clear sourceDocument', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
         .send({ sourceDocument: '' })
         .expect(200);
 
-      const detail = await helper.getFrameworkDetail(uri);
+      const detail = await helper.getFrameworkDetail(iri);
       expect(detail.sourceDocument).toBeUndefined();
     });
 
     it('should clear categories', async () => {
       const category = await helper.createTestCategory('Test Category');
-      const uri = await helper.createTestFramework('Test Framework');
-      await helper.addCategoriesToFramework(uri, [category]);
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      await helper.addCategoriesToFramework(iri, [category]);
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
         .send({ categories: [] })
         .expect(200);
 
-      const detail = await helper.getFrameworkDetail(uri);
+      const detail = await helper.getFrameworkDetail(iri);
       expect(detail.categories).toHaveLength(0);
     });
   });
 
   describe('Validation', () => {
     it('should reject empty label', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -154,8 +154,8 @@ describe('Framework API - PATCH /api/kg/frameworks/:id (Update)', () => {
     });
 
     it('should reject label exceeding 200 characters', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      const shortId = iri.split('#')[1];
       const longLabel = 'A'.repeat(201);
 
       const response = await request(app)
@@ -167,8 +167,8 @@ describe('Framework API - PATCH /api/kg/frameworks/:id (Update)', () => {
     });
 
     it('should reject invalid category URI', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -180,8 +180,8 @@ describe('Framework API - PATCH /api/kg/frameworks/:id (Update)', () => {
 
     it('should reject duplicate label', async () => {
       await helper.createTestFramework('Existing Framework');
-      const uri = await helper.createTestFramework('Test Framework');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -192,8 +192,8 @@ describe('Framework API - PATCH /api/kg/frameworks/:id (Update)', () => {
     });
 
     it('should reject update without any fields', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -215,8 +215,8 @@ describe('Framework API - PATCH /api/kg/frameworks/:id (Update)', () => {
     });
 
     it('should return updated_at timestamp', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -230,40 +230,40 @@ describe('Framework API - PATCH /api/kg/frameworks/:id (Update)', () => {
 
   describe('URI Format Support', () => {
     it('should update by short ID', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      const shortId = iri.split('#')[1];
 
       await request(app)
         .patch(`${baseUrl}/${shortId}`)
         .send({ label: 'Updated' })
         .expect(200);
 
-      const detail = await helper.getFrameworkDetail(uri);
+      const detail = await helper.getFrameworkDetail(iri);
       expect(detail.label).toBe('Updated');
     });
 
     it('should update by full URI', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
+      const iri = await helper.createTestFramework('Test Framework');
 
       await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ label: 'Updated' })
         .expect(200);
 
-      const detail = await helper.getFrameworkDetail(uri);
+      const detail = await helper.getFrameworkDetail(iri);
       expect(detail.label).toBe('Updated');
     });
 
     it('should update by namespace format', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      const shortId = iri.split('#')[1];
 
       await request(app)
         .patch(`${baseUrl}/esg:${shortId}`)
         .send({ label: 'Updated' })
         .expect(200);
 
-      const detail = await helper.getFrameworkDetail(uri);
+      const detail = await helper.getFrameworkDetail(iri);
       expect(detail.label).toBe('Updated');
     });
   });

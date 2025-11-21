@@ -21,24 +21,24 @@ describe('Dataset Variable API - DELETE /api/kg/dataset-variables/:id (Delete)',
 
   describe('Normal Deletion', () => {
     it('should delete dataset variable by full URI', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .delete(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('uri', uri);
+      expect(response.body).toHaveProperty('iri', iri);
       expect(response.body).toHaveProperty('deleted', true);
       expect(response.body).toHaveProperty('deleted_at');
 
       // Verify deletion in database
-      const exists = await helper.datasetVariableExists(uri);
+      const exists = await helper.datasetVariableExists(iri);
       expect(exists).toBe(false);
     });
 
     it('should delete dataset variable by short ID', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestDatasetVariable('Test Variable');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .delete(`${baseUrl}/${shortId}`)
@@ -47,13 +47,13 @@ describe('Dataset Variable API - DELETE /api/kg/dataset-variables/:id (Delete)',
       expect(response.body).toHaveProperty('deleted', true);
 
       // Verify deletion
-      const exists = await helper.datasetVariableExists(uri);
+      const exists = await helper.datasetVariableExists(iri);
       expect(exists).toBe(false);
     });
 
     it('should delete dataset variable by namespace format', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestDatasetVariable('Test Variable');
+      const shortId = iri.split('#')[1];
       const namespaceId = `esg:${shortId}`;
 
       const response = await request(app)
@@ -65,7 +65,7 @@ describe('Dataset Variable API - DELETE /api/kg/dataset-variables/:id (Delete)',
 
     it('should delete dataset variable with all properties', async () => {
       const source = await helper.createTestDatasource('Test Source');
-      const uri = await helper.createTestDatasetVariable('Complete Variable', {
+      const iri = await helper.createTestDatasetVariable('Complete Variable', {
         alignmentReason: 'Test alignment',
         confidenceScore: 95,
         isUnitCompatible: 'Yes',
@@ -73,27 +73,27 @@ describe('Dataset Variable API - DELETE /api/kg/dataset-variables/:id (Delete)',
       });
 
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .delete(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       expect(response.body).toHaveProperty('deleted', true);
 
       // Verify deletion
-      const exists = await helper.datasetVariableExists(uri);
+      const exists = await helper.datasetVariableExists(iri);
       expect(exists).toBe(false);
     });
 
     it('should return correct response structure', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .delete(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('deleted');
       expect(response.body).toHaveProperty('deleted_at');
-      expect(typeof response.body.uri).toBe('string');
+      expect(typeof response.body.iri).toBe('string');
       expect(typeof response.body.deleted).toBe('boolean');
       expect(typeof response.body.deleted_at).toBe('string');
     });
@@ -162,7 +162,7 @@ describe('Dataset Variable API - DELETE /api/kg/dataset-variables/:id (Delete)',
 
     it('should return 404 for non-existent full URI', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistentVar';
-      
+
       const response = await request(app)
         .delete(`${baseUrl}/${encodeURIComponent(nonExistentUri)}`)
         .expect(404);
@@ -177,16 +177,16 @@ describe('Dataset Variable API - DELETE /api/kg/dataset-variables/:id (Delete)',
     });
 
     it('should handle double deletion gracefully', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       // First deletion
       await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .delete(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       // Second deletion
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .delete(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(404);
 
       expect(response.body).toHaveProperty('error');
@@ -195,10 +195,10 @@ describe('Dataset Variable API - DELETE /api/kg/dataset-variables/:id (Delete)',
 
   describe('Response Validation', () => {
     it('should return valid ISO 8601 timestamp', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .delete(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       const deletedAt = new Date(response.body.deleted_at);
@@ -207,11 +207,11 @@ describe('Dataset Variable API - DELETE /api/kg/dataset-variables/:id (Delete)',
     });
 
     it('should return recent timestamp', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
       const beforeDelete = Date.now();
-      
+
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .delete(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       const afterDelete = Date.now();
@@ -222,10 +222,10 @@ describe('Dataset Variable API - DELETE /api/kg/dataset-variables/:id (Delete)',
     });
 
     it('should always return deleted: true on successful deletion', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .delete(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       expect(response.body.deleted).toBe(true);
@@ -234,20 +234,20 @@ describe('Dataset Variable API - DELETE /api/kg/dataset-variables/:id (Delete)',
 
   describe('Force Parameter', () => {
     it('should accept force=true query parameter', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(uri)}?force=true`)
+        .delete(`${baseUrl}/${encodeURIComponent(iri)}?force=true`)
         .expect(200);
 
       expect(response.body).toHaveProperty('deleted', true);
     });
 
     it('should accept force=false query parameter', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(uri)}?force=false`)
+        .delete(`${baseUrl}/${encodeURIComponent(iri)}?force=false`)
         .expect(200);
 
       expect(response.body).toHaveProperty('deleted', true);
@@ -269,11 +269,11 @@ describe('Dataset Variable API - DELETE /api/kg/dataset-variables/:id (Delete)',
     });
 
     it('should handle invalid force parameter gracefully', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       // Invalid boolean value should be treated as false
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(uri)}?force=invalid`)
+        .delete(`${baseUrl}/${encodeURIComponent(iri)}?force=invalid`)
         .expect(200);
 
       expect(response.body).toHaveProperty('deleted', true);
@@ -283,16 +283,16 @@ describe('Dataset Variable API - DELETE /api/kg/dataset-variables/:id (Delete)',
   describe('Data Sources Cleanup', () => {
     it('should remove associations to data sources', async () => {
       const source = await helper.createTestDatasource('Test Source');
-      const uri = await helper.createTestDatasetVariable('Test Variable', {
+      const iri = await helper.createTestDatasetVariable('Test Variable', {
         sources: [source]
       });
 
       await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .delete(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       // Verify variable is deleted
-      const exists = await helper.datasetVariableExists(uri);
+      const exists = await helper.datasetVariableExists(iri);
       expect(exists).toBe(false);
 
       // Data source should still exist (only association is removed)
@@ -307,16 +307,16 @@ describe('Dataset Variable API - DELETE /api/kg/dataset-variables/:id (Delete)',
     it('should remove multiple source associations', async () => {
       const source1 = await helper.createTestDatasource('Source 1');
       const source2 = await helper.createTestDatasource('Source 2');
-      const uri = await helper.createTestDatasetVariable('Test Variable', {
+      const iri = await helper.createTestDatasetVariable('Test Variable', {
         sources: [source1, source2]
       });
 
       await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .delete(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       // Verify variable is deleted
-      const exists = await helper.datasetVariableExists(uri);
+      const exists = await helper.datasetVariableExists(iri);
       expect(exists).toBe(false);
     });
   });

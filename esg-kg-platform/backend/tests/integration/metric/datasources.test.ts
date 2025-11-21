@@ -25,7 +25,7 @@ describe('Metric API - GET /api/kg/metrics/:id/datasources', () => {
       const metricUri = await helper.createTestMetric('Test Direct Metric');
       const ds1 = await helper.createTestDatasource('DataSource 1');
       const ds2 = await helper.createTestDatasource('DataSource 2');
-      
+
       await helper.addDatasourceToMetric(metricUri, ds1);
       await helper.addDatasourceToMetric(metricUri, ds2);
 
@@ -184,7 +184,7 @@ describe('Metric API - GET /api/kg/metrics/:id/datasources', () => {
   describe('Error Cases', () => {
     it('should return 404 for non-existent metric', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistentMetric';
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(nonExistentUri)}/datasources`)
         .expect(404);
@@ -196,7 +196,7 @@ describe('Metric API - GET /api/kg/metrics/:id/datasources', () => {
     it('should return 400 for invalid URI format', async () => {
       // Use a truly invalid URI format with special characters
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent('invalid uri with spaces')}/datasources`)
+        .get(`${baseUrl}/${encodeURIComponent('invalid iri with spaces')}/datasources`)
         .expect(400);
 
       expect(response.body.error).toBeDefined();
@@ -212,7 +212,7 @@ describe('Metric API - GET /api/kg/metrics/:id/datasources', () => {
 
     it('should handle invalid includeVariables parameter gracefully', async () => {
       const metricUri = await helper.createTestMetric('Invalid Param Metric');
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(metricUri)}/datasources?includeVariables=invalid`)
         .expect(200);
@@ -224,7 +224,7 @@ describe('Metric API - GET /api/kg/metrics/:id/datasources', () => {
   describe('Different ID Formats', () => {
     it('should accept full URI format', async () => {
       const metricUri = await helper.createTestMetric('URI Format Test');
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(metricUri)}/datasources`)
         .expect(200);
@@ -235,7 +235,7 @@ describe('Metric API - GET /api/kg/metrics/:id/datasources', () => {
     it('should accept encoded URI', async () => {
       const metricUri = await helper.createTestMetric('Encoded URI Test');
       const encodedUri = encodeURIComponent(metricUri);
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodedUri}/datasources`)
         .expect(200);
@@ -301,7 +301,7 @@ describe('Metric API - GET /api/kg/metrics/:id/datasources', () => {
       expect(response.body).toHaveProperty('calculationMethod');
       expect(response.body).toHaveProperty('dataSources');
       expect(response.body).toHaveProperty('total');
-      
+
       expect(typeof response.body.metricId).toBe('string');
       expect(typeof response.body.metricLabel).toBe('string');
       expect(typeof response.body.calculationMethod).toBe('string');
@@ -314,7 +314,7 @@ describe('Metric API - GET /api/kg/metrics/:id/datasources', () => {
       const ds1 = await helper.createTestDatasource('Count DS 1');
       const ds2 = await helper.createTestDatasource('Count DS 2');
       const ds3 = await helper.createTestDatasource('Count DS 3');
-      
+
       await helper.addDatasourceToMetric(metricUri, ds1);
       await helper.addDatasourceToMetric(metricUri, ds2);
       await helper.addDatasourceToMetric(metricUri, ds3);

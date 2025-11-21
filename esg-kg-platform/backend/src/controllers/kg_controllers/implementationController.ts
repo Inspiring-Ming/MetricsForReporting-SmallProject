@@ -14,7 +14,7 @@ import {
 import { asyncHandler } from '../../middlewares/errorHandler';
 
 /**
- * Implementation Controller - 处理实现相关的 HTTP 请求
+ * Implementation Controller - Handles implementation-related HTTP requests
  */
 @Route('api/kg/implementations')
 @Tags('Implementations')
@@ -26,17 +26,17 @@ export class ImplementationController {
   }
 
   /**
-   * 获取实现列表（支持分页和搜索）
+   * Get implementation list (supports pagination and search)
    * 
-   * @param page 页码（从1开始，默认1）
-   * @param size 每页数量（默认10，最大100）
-   * @param search 搜索关键词（模糊匹配 label）
-   * @param language 按编程语言筛选（可选）
-   * @param filePath 按文件路径筛选（可选）
-   * @param calculationType 按计算类型筛选（通过关联的模型）（可选）
-   * @param sort 排序字段（默认 label）
-   * @param order 排序顺序（默认 asc）
-   * @returns 实现列表及分页信息
+   * @param page Page number (starting from 1, default 1)
+   * @param size Items per page (default 10, max 100)
+   * @param search Search keyword (fuzzy match on label)
+   * @param language Filter by programming language (optional)
+   * @param filePath Filter by file path (optional)
+   * @param calculationType Filter by calculation type (via associated models) (optional)
+   * @param sort Sort field (default label)
+   * @param order Sort order (default asc)
+   * @returns Implementation list and pagination information
    */
   @Get('/')
   @SuccessResponse('200', 'Success')
@@ -73,11 +73,11 @@ export class ImplementationController {
   });
 
   /**
-   * 获取实现详情
+   * Get implementation details
    * 
-   * @param id 实现 ID（可以是 URI、命名空间格式或简短 ID）
-   * @returns 实现详情，包括关联的模型列表
-   * @example id "Implementation_Python_PercentageRatio" or "esg:Implementation_Python_PercentageRatio"
+   * @param id Implementation ID (can be URI, namespace format or short ID)
+   * @returns Implementation details, including list of associated models
+   * @example id "Implementation_Python_PercentageRatio"
    */
   @Get('{id}')
   @SuccessResponse('200', 'Success')
@@ -98,10 +98,10 @@ export class ImplementationController {
   });
 
   /**
-   * 创建新实现
+   * Create a new implementation
    * 
-   * @param requestBody 创建实现的请求数据
-   * @returns 创建的实现信息
+   * @param requestBody Request data for creating an implementation
+   * @returns Created implementation information
    */
   @Post('/')
   @SuccessResponse('201', 'Created')
@@ -119,11 +119,11 @@ export class ImplementationController {
   });
 
   /**
-   * 部分更新实现
+   * Partial update of implementation
    * 
-   * @param id 实现 ID
-   * @param requestBody 更新实现的请求数据
-   * @returns 更新后的实现信息
+   * @param id Implementation ID
+   * @param requestBody Request data for updating the implementation
+   * @returns Updated implementation information
    */
   @Patch('{id}')
   @SuccessResponse('200', 'Success')
@@ -146,11 +146,11 @@ export class ImplementationController {
   });
 
   /**
-   * 删除实现
+   * Delete an implementation
    * 
-   * @param id 实现 ID
-   * @param force 是否强制删除（忽略模型引用关联检查）
-   * @returns 删除结果
+   * @param id Implementation ID
+   * @param force Whether to force delete (ignore model reference association checks)
+   * @returns Delete result
    */
   @Delete('{id}')
   @SuccessResponse('200', 'Success')

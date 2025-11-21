@@ -1,5 +1,5 @@
 import { GraphDBRepository } from './graphDBRepository';
-import { 
+import {
   DataSourceDTO,
   GetDatasourcesRequest
 } from '../types/kg';
@@ -46,19 +46,19 @@ export class DatasourceRepository {
    * 获取数据源列表（支持分页、搜索和排序）
    */
   async getDatasources(params: GetDatasourcesRequest): Promise<{ datasources: DataSourceDTO[], total: number }> {
-    const { 
-      page = 1, 
-      size = 20, 
-      search, 
-      sort = 'label', 
-      order = 'asc' 
+    const {
+      page = 1,
+      size = 20,
+      search,
+      sort = 'label',
+      order = 'asc'
     } = params;
-    
+
     const offset = (page - 1) * size;
 
     // 构建搜索过滤条件
     const filters: string[] = [];
-    
+
     if (search) {
       filters.push(`FILTER(
         CONTAINS(LCASE(?label), LCASE("${this.escapeSparql(search)}")) ||
@@ -210,7 +210,7 @@ export class DatasourceRepository {
   /**
    * 创建数据源
    */
-  async createDatasource(data: { label: string; fileName?: string; description?: string; coverage?: string; recordCount?: number; disclosureType?: string }): Promise<{ uri: string; label: string; created_at: string }> {
+  async createDatasource(data: { label: string; fileName?: string; description?: string; coverage?: string; recordCount?: number; disclosureType?: string }): Promise<{ iri: string; label: string; created_at: string }> {
     // 验证必填字段
     if (!data.label || data.label.trim() === '') {
       throw new ValidationError('Label is required');
@@ -271,7 +271,7 @@ export class DatasourceRepository {
       await this.graphDB.executeSparqlQuery(insertQuery);
 
       return {
-        uri: datasourceUri,
+        iri: datasourceUri,
         label: data.label,
         created_at: createdAt
       };
@@ -283,7 +283,7 @@ export class DatasourceRepository {
   /**
    * 更新数据源
    */
-  async updateDatasource(id: string, data: { label?: string; fileName?: string; description?: string; coverage?: string; recordCount?: number; disclosureType?: string }): Promise<{ uri: string; label: string; updated_at: string }> {
+  async updateDatasource(id: string, data: { label?: string; fileName?: string; description?: string; coverage?: string; recordCount?: number; disclosureType?: string }): Promise<{ iri: string; label: string; updated_at: string }> {
     const datasourceUri = this.resolveDatasourceUri(id);
 
     // 验证数据源是否存在
@@ -291,7 +291,7 @@ export class DatasourceRepository {
       ${this.prefix}
       ASK { <${datasourceUri}> a esg:DataSource . }
     `;
-    
+
     try {
       const existsResult = await this.graphDB.executeSparqlQuery(existsQuery);
       if (!existsResult.boolean) {
@@ -324,19 +324,25 @@ export class DatasourceRepository {
 
     if (data.fileName !== undefined) {
       deleteTriples += `    <${datasourceUri}> esg:hasFileName ?oldFileName .\n`;
-      insertTriples += `    <${datasourceUri}> esg:hasFileName "${this.escapeSparql(data.fileName)}" .\n`;
+      if (data.fileName !== '') {
+        insertTriples += `    <${datasourceUri}> esg:hasFileName "${this.escapeSparql(data.fileName)}" .\n`;
+      }
       whereTriples += `    OPTIONAL { <${datasourceUri}> esg:hasFileName ?oldFileName . }\n`;
     }
 
     if (data.description !== undefined) {
       deleteTriples += `    <${datasourceUri}> esg:hasDescription ?oldDescription .\n`;
-      insertTriples += `    <${datasourceUri}> esg:hasDescription "${this.escapeSparql(data.description)}" .\n`;
+      if (data.description !== '') {
+        insertTriples += `    <${datasourceUri}> esg:hasDescription "${this.escapeSparql(data.description)}" .\n`;
+      }
       whereTriples += `    OPTIONAL { <${datasourceUri}> esg:hasDescription ?oldDescription . }\n`;
     }
 
     if (data.coverage !== undefined) {
       deleteTriples += `    <${datasourceUri}> esg:hasCoverage ?oldCoverage .\n`;
-      insertTriples += `    <${datasourceUri}> esg:hasCoverage "${this.escapeSparql(data.coverage)}" .\n`;
+      if (data.coverage !== '') {
+        insertTriples += `    <${datasourceUri}> esg:hasCoverage "${this.escapeSparql(data.coverage)}" .\n`;
+      }
       whereTriples += `    OPTIONAL { <${datasourceUri}> esg:hasCoverage ?oldCoverage . }\n`;
     }
 
@@ -348,7 +354,9 @@ export class DatasourceRepository {
 
     if (data.disclosureType !== undefined) {
       deleteTriples += `    <${datasourceUri}> esg:hasDisclosureType ?oldDisclosure .\n`;
-      insertTriples += `    <${datasourceUri}> esg:hasDisclosureType "${this.escapeSparql(data.disclosureType)}" .\n`;
+      if (data.disclosureType !== '') {
+        insertTriples += `    <${datasourceUri}> esg:hasDisclosureType "${this.escapeSparql(data.disclosureType)}" .\n`;
+      }
       whereTriples += `    OPTIONAL { <${datasourceUri}> esg:hasDisclosureType ?oldDisclosure . }\n`;
     }
 
@@ -362,7 +370,7 @@ export class DatasourceRepository {
       const label = labelResult.results.bindings[0]?.label?.value || '';
 
       return {
-        uri: datasourceUri,
+        iri: datasourceUri,
         label: label,
         updated_at: updatedAt
       };
@@ -370,15 +378,15 @@ export class DatasourceRepository {
 
     // 构建更新查询
     let updateQuery = `${this.prefix}\n`;
-    
+
     if (deleteTriples) {
       updateQuery += `DELETE {\n${deleteTriples}}\n`;
     }
-    
+
     if (insertTriples) {
       updateQuery += `INSERT {\n${insertTriples}}\n`;
     }
-    
+
     updateQuery += `WHERE {\n${whereTriples}}`;
 
     try {
@@ -393,7 +401,7 @@ export class DatasourceRepository {
       const label = labelResult.results.bindings[0]?.label?.value || data.label || '';
 
       return {
-        uri: datasourceUri,
+        iri: datasourceUri,
         label: label,
         updated_at: updatedAt
       };
@@ -405,7 +413,7 @@ export class DatasourceRepository {
   /**
    * 删除数据源
    */
-  async deleteDatasource(id: string, force: boolean = false): Promise<{ uri: string; deleted: boolean; deleted_at: string }> {
+  async deleteDatasource(id: string, force: boolean = false): Promise<{ iri: string; deleted: boolean; deleted_at: string }> {
     const datasourceUri = this.resolveDatasourceUri(id);
 
     // 验证数据源是否存在
@@ -413,7 +421,7 @@ export class DatasourceRepository {
       ${this.prefix}
       ASK { <${datasourceUri}> a esg:DataSource . }
     `;
-    
+
     try {
       const existsResult = await this.graphDB.executeSparqlQuery(existsQuery);
       if (!existsResult.boolean) {
@@ -434,7 +442,7 @@ export class DatasourceRepository {
           ?variable esg:sourceFrom <${datasourceUri}> .
         }
       `;
-      
+
       try {
         const dependencyResult = await this.graphDB.executeSparqlQuery(dependencyQuery);
         if (dependencyResult.boolean) {
@@ -475,7 +483,7 @@ export class DatasourceRepository {
       await this.graphDB.executeSparqlQuery(deleteQuery);
 
       return {
-        uri: datasourceUri,
+        iri: datasourceUri,
         deleted: true,
         deleted_at: deletedAt
       };
@@ -533,8 +541,8 @@ export class DatasourceRepository {
         .map((b: any) => ({
           iri: b.variableUri.value,
           label: b.variableLabel.value,
-          confidenceScore: b.confidenceScore 
-            ? parseInt(b.confidenceScore.value, 10) 
+          confidenceScore: b.confidenceScore
+            ? parseInt(b.confidenceScore.value, 10)
             : undefined,
           alignmentReason: b.alignmentReason?.value
         }));

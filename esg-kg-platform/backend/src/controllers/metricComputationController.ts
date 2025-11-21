@@ -5,7 +5,7 @@ import { ValidationError } from '../types/errors';
 import { asyncHandler } from '../middlewares/errorHandler';
 
 /**
- * 指标计算信息控制器（不执行实际计算，只提供计算方法信息）
+ * Metric Computation Information Controller (does not perform actual calculations, only provides calculation method information)
  * 
  * @deprecated This entire API group is deprecated and will be removed in v2.0.0 (June 2026).
  *             All endpoints have been migrated to /api/kg/metrics/:id/calculation-method.
@@ -17,20 +17,20 @@ import { asyncHandler } from '../middlewares/errorHandler';
 export class MetricComputationController {
   private computationService: MetricComputationService;
 
-  constructor(computationService: MetricComputationService) {
-    this.computationService = computationService;
+  constructor(computationService?: MetricComputationService) {
+    this.computationService = computationService || new MetricComputationService();
   }
 
   /**
-   * CQ5: 获取指标计算方法信息
+   * CQ5: Get metric calculation method information
    * GET /api/computation/method?metric_label={metric_label}
    * 
    * @deprecated This endpoint is deprecated and will be removed in v2.0.0 (June 2026).
    *             Use GET /api/kg/metrics/:id/calculation-method instead.
    *             Migration: Replace ?metric_label=X with /:id in the URL path.
    * 
-   * @param metric_label 指标标签
-   * @returns 指标计算方法信息
+   * @param metric_label Metric label
+   * @returns Metric calculation method information
    */
   @Get('method')
   @SuccessResponse('200', 'Success')
@@ -61,15 +61,15 @@ export class MetricComputationController {
   });
 
   /**
-   * 获取实现文件信息
+   * Get implementation file information
    * GET /api/computation/implementation?implementation_label={implementation_label}
    * 
    * @deprecated This endpoint is deprecated and will be removed in v2.0.0 (June 2026).
    *             Implementation details are now available through GET /api/kg/metrics/:id/calculation-method.
    *             The new endpoint returns implementation info as part of the calculation method response.
    * 
-   * @param implementation_label 实现标签
-   * @returns 实现文件信息
+   * @param implementation_label Implementation label
+   * @returns Implementation file information
    */
   @Get('implementation')
   @SuccessResponse('200', 'Success')
@@ -99,15 +99,15 @@ export class MetricComputationController {
   });
 
   /**
-   * 按计算类型获取所有实现信息
+   * Get all implementation information by calculation type
    * GET /api/computation/implementations?calculation_type={calculation_type}
    * 
    * @deprecated This endpoint is deprecated and will be removed in v2.0.0 (June 2026).
    *             Use GET /api/kg/metrics with filtering to find metrics by calculation type,
    *             then use GET /api/kg/metrics/:id/calculation-method to get implementation details.
    * 
-   * @param calculation_type 计算类型
-   * @returns 实现信息列表
+   * @param calculation_type Calculation type
+   * @returns List of implementation information
    */
   @Get('implementations')
   @SuccessResponse('200', 'Success')
@@ -140,14 +140,14 @@ export class MetricComputationController {
   });
 
   /**
-   * 获取所有支持的计算类型
+   * Get all supported calculation types
    * GET /api/computation/supported-types
    * 
    * @deprecated This endpoint is deprecated and will be removed in v2.0.0 (June 2026).
    *             Calculation types are now part of the knowledge graph model structure.
    *             Query models directly through the KG API instead.
    * 
-   * @returns 支持的计算类型列表
+   * @returns List of supported calculation types
    */
   @Get('supported-types')
   @SuccessResponse('200', 'Success')

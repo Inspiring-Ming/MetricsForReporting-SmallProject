@@ -1,11 +1,11 @@
 import { GraphDBRepository } from './graphDBRepository';
-import { 
-  FrameworkDTO, 
-  FrameworkDetailDTO, 
+import {
+  FrameworkDTO,
+  FrameworkDetailDTO,
   CategoryDTO,
   GetFrameworksRequest,
   CreateFrameworkRequest,
-  UpdateFrameworkRequest 
+  UpdateFrameworkRequest
 } from '../types/kg';
 import { GraphDBQueryError, NotFoundError, ValidationError, DeleteConflictError } from '../types/errors';
 
@@ -32,8 +32,8 @@ export class FrameworkRepository {
     const offset = (page - 1) * size;
 
     // 构建搜索过滤条件
-    const searchFilter = search 
-      ? `FILTER(CONTAINS(LCASE(?label), LCASE("${this.escapeSparql(search)}")))` 
+    const searchFilter = search
+      ? `FILTER(CONTAINS(LCASE(?label), LCASE("${this.escapeSparql(search)}")))`
       : '';
 
     // 构建行业过滤条件
@@ -151,7 +151,7 @@ export class FrameworkRepository {
   /**
    * 创建新报告框架
    */
-  async createFramework(data: CreateFrameworkRequest): Promise<{ uri: string, label: string }> {
+  async createFramework(data: CreateFrameworkRequest): Promise<{ iri: string, label: string }> {
     const { label, sourceDocument, categories } = data;
 
     // 验证 label 唯一性
@@ -195,7 +195,7 @@ export class FrameworkRepository {
 
     try {
       await this.graphDB.executeSparqlQuery(query);
-      return { uri: frameworkUri, label };
+      return { iri: frameworkUri, label };
     } catch (error) {
       throw new GraphDBQueryError('Failed to create framework', { originalError: error });
     }
@@ -204,7 +204,7 @@ export class FrameworkRepository {
   /**
    * 更新报告框架
    */
-  async updateFramework(id: string, data: UpdateFrameworkRequest): Promise<{ uri: string, label: string }> {
+  async updateFramework(id: string, data: UpdateFrameworkRequest): Promise<{ iri: string, label: string }> {
     const frameworkUri = this.resolveFrameworkUri(id);
     const { label, sourceDocument, categories } = data;
 
@@ -251,7 +251,7 @@ export class FrameworkRepository {
       `;
       if (categories.length > 0) {
         const categoryInserts = categories
-          .map(uri => `<${frameworkUri}> esg:includes <${uri}> .`)
+          .map(iri => `<${frameworkUri}> esg:includes <${iri}> .`)
           .join('\n        ');
         insertClause += `
           ${categoryInserts}
@@ -282,7 +282,7 @@ export class FrameworkRepository {
 
     try {
       await this.graphDB.executeSparqlQuery(query);
-      return { uri: frameworkUri, label: label || '' };
+      return { iri: frameworkUri, label: label || '' };
     } catch (error) {
       throw new GraphDBQueryError('Failed to update framework', { originalError: error });
     }
@@ -291,7 +291,7 @@ export class FrameworkRepository {
   /**
    * 删除报告框架
    */
-  async deleteFramework(id: string, force: boolean = false): Promise<{ uri: string, deleted: boolean }> {
+  async deleteFramework(id: string, force: boolean = false): Promise<{ iri: string, deleted: boolean }> {
     const frameworkUri = this.resolveFrameworkUri(id);
 
     // 验证框架是否存在
@@ -323,7 +323,7 @@ export class FrameworkRepository {
 
     try {
       await this.graphDB.executeSparqlQuery(query);
-      return { uri: frameworkUri, deleted: true };
+      return { iri: frameworkUri, deleted: true };
     } catch (error) {
       throw new GraphDBQueryError('Failed to delete framework', { originalError: error });
     }
@@ -351,7 +351,7 @@ export class FrameworkRepository {
 
     try {
       const result = await this.graphDB.executeSparqlQuery(query);
-      
+
       return result.results.bindings.map((binding: any) => ({
         iri: binding.category.value,
         label: binding.label.value
@@ -375,7 +375,7 @@ export class FrameworkRepository {
 
     // 构建 INSERT 语句
     const insertTriples = categoryUris
-      .map(uri => `<${frameworkUri}> esg:includes <${uri}> .`)
+      .map(iri => `<${frameworkUri}> esg:includes <${iri}> .`)
       .join('\n        ');
 
     const query = `
@@ -388,7 +388,7 @@ export class FrameworkRepository {
 
     try {
       await this.graphDB.executeSparqlQuery(query);
-      
+
       // 获取添加的分类详情
       return await this.getCategoriesByUris(categoryUris);
     } catch (error) {
@@ -399,7 +399,7 @@ export class FrameworkRepository {
   /**
    * 从框架删除分类
    */
-  async removeCategoryFromFramework(id: string, categoryId: string): Promise<{ uri: string, removed: boolean }> {
+  async removeCategoryFromFramework(id: string, categoryId: string): Promise<{ iri: string, removed: boolean }> {
     const frameworkUri = this.resolveFrameworkUri(id);
     const categoryUri = this.resolveCategoryUri(categoryId);
 
@@ -419,7 +419,7 @@ export class FrameworkRepository {
 
     try {
       await this.graphDB.executeSparqlQuery(query);
-      return { uri: categoryUri, removed: true };
+      return { iri: categoryUri, removed: true };
     } catch (error) {
       throw new GraphDBQueryError('Failed to remove category from framework', { originalError: error });
     }
@@ -467,16 +467,16 @@ export class FrameworkRepository {
   /**
    * 验证框架是否存在
    */
-  private async verifyFrameworkExists(uri: string): Promise<void> {
+  private async verifyFrameworkExists(iri: string): Promise<void> {
     const query = `
       ${this.prefix}
-      ASK { <${uri}> a esg:ReportingFramework . }
+      ASK { <${iri}> a esg:ReportingFramework . }
     `;
 
     try {
       const result = await this.graphDB.executeSparqlQuery(query);
       if (!result.boolean) {
-        throw new NotFoundError(`Framework not found: ${uri}`);
+        throw new NotFoundError(`Framework not found: ${iri}`);
       }
     } catch (error) {
       if (error instanceof NotFoundError) {
@@ -514,13 +514,13 @@ export class FrameworkRepository {
   /**
    * 验证更新时 label 唯一性
    */
-  private async validateUniqueLabelForUpdate(uri: string, label: string): Promise<void> {
+  private async validateUniqueLabelForUpdate(iri: string, label: string): Promise<void> {
     const query = `
       ${this.prefix}
       ASK {
         ?framework a esg:ReportingFramework ;
                    rdfs:label "${this.escapeSparql(label)}" .
-        FILTER(?framework != <${uri}>)
+        FILTER(?framework != <${iri}>)
       }
     `;
 
@@ -540,22 +540,22 @@ export class FrameworkRepository {
   /**
    * 验证分类 URIs
    */
-  private async validateCategoryUris(uris: string[]): Promise<void> {
-    const uriList = uris.map(uri => `<${uri}>`).join(' ');
-    
+  private async validateCategoryUris(iris: string[]): Promise<void> {
+    const iriList = iris.map(iri => `<${iri}>`).join(' ');
+
     const query = `
       ${this.prefix}
-      SELECT ?uri
+      SELECT ?iri
       WHERE {
-        VALUES ?uri { ${uriList} }
-        FILTER NOT EXISTS { ?uri a esg:Category . }
+        VALUES ?iri { ${iriList} }
+        FILTER NOT EXISTS { ?iri a esg:Category . }
       }
     `;
 
     try {
       const result = await this.graphDB.executeSparqlQuery(query);
       if (result.results.bindings.length > 0) {
-        const invalidUris = result.results.bindings.map((b: any) => b.uri.value);
+        const invalidUris = result.results.bindings.map((b: any) => b.iri.value);
         throw new ValidationError(`Invalid category URIs: ${invalidUris.join(', ')}`);
       }
     } catch (error) {
@@ -569,12 +569,12 @@ export class FrameworkRepository {
   /**
    * 检查框架引用
    */
-  private async checkFrameworkReferences(uri: string): Promise<void> {
+  private async checkFrameworkReferences(iri: string): Promise<void> {
     const query = `
       ${this.prefix}
       SELECT ?industry ?label
       WHERE {
-        ?industry esg:reportsUsing <${uri}> ;
+        ?industry esg:reportsUsing <${iri}> ;
                   rdfs:label ?label .
       }
       LIMIT 1
@@ -586,7 +586,7 @@ export class FrameworkRepository {
         const industry = result.results.bindings[0];
         throw new DeleteConflictError(
           `Cannot delete framework: it is referenced by industry "${industry.label.value}"`,
-          { frameworkUri: uri, industryUri: industry.industry.value }
+          { frameworkUri: iri, industryUri: industry.industry.value }
         );
       }
     } catch (error) {
@@ -600,14 +600,14 @@ export class FrameworkRepository {
   /**
    * 根据 URIs 获取分类信息
    */
-  private async getCategoriesByUris(uris: string[]): Promise<CategoryDTO[]> {
-    const uriList = uris.map(uri => `<${uri}>`).join(' ');
-    
+  private async getCategoriesByUris(iris: string[]): Promise<CategoryDTO[]> {
+    const iriList = iris.map(iri => `<${iri}>`).join(' ');
+
     const query = `
       ${this.prefix}
       SELECT ?category ?label
       WHERE {
-        VALUES ?category { ${uriList} }
+        VALUES ?category { ${iriList} }
         ?category rdfs:label ?label .
       }
     `;

@@ -30,9 +30,9 @@ export class MetricRepository {
   /**
    * 创建新指标
    */
-  async createMetric(data: CreateMetricRequest): Promise<{ uri: string, label: string }> {
-    const { label, code, description, unit, dataType, calculationMethod, hasType, 
-            industry, category, framework, disclosureLevel, additionalProperties } = data;
+  async createMetric(data: CreateMetricRequest): Promise<{ iri: string, label: string }> {
+    const { label, code, description, unit, dataType, calculationMethod, hasType,
+      industry, category, framework, disclosureLevel, additionalProperties } = data;
 
     if (!label || label.trim().length === 0) {
       throw new ValidationError('Metric label is required');
@@ -43,8 +43,8 @@ export class MetricRepository {
     }
 
     // 生成 URI（使用 code 或 label 的标准化版本）
-    const uriSuffix = code || this.generateUriSuffix(label);
-    const metricUri = `${ESG_PREFIX}${uriSuffix}`;
+    const iriSuffix = code || this.generateUriSuffix(label);
+    const metricUri = `${ESG_PREFIX}${iriSuffix}`;
 
     // 检查标签是否已存在（不排除任何 URI，因为这是新创建）
     await this.validateLabelUniqueness(label);
@@ -93,7 +93,7 @@ export class MetricRepository {
     if (additionalProperties) {
       for (const [key, value] of Object.entries(additionalProperties)) {
         if (value !== undefined && value !== null) {
-          const escapedValue = typeof value === 'string' 
+          const escapedValue = typeof value === 'string'
             ? `"${this.escapeSparql(value)}"`
             : `"${value}"`;
           insertTriples += `\n      <${metricUri}> esg:${key} ${escapedValue} .`;
@@ -110,7 +110,7 @@ export class MetricRepository {
 
     try {
       await this.graphDB.executeSparqlQuery(insertQuery);
-      return { uri: metricUri, label };
+      return { iri: metricUri, label };
     } catch (error) {
       throw new GraphDBQueryError('Failed to create metric', { originalError: error });
     }
@@ -156,7 +156,7 @@ export class MetricRepository {
 
     for (const field of optionalFields) {
       deleteClause += `\n        <${metricUri}> ${field.predicate} ?${field.var} .`;
-      
+
       const value = (data as any)[field.prop];
       if (value) {
         insertClause += `\n        <${metricUri}> ${field.predicate} "${this.escapeSparql(value)}" .`;
@@ -569,7 +569,7 @@ ${insertClause}
 
     // 构建过滤条件 - 使用完整的关系链
     let filters = '';
-    
+
     if (params.calculationMethod) {
       filters += `\n      ?metric esg:hasCalculationMethod "${params.calculationMethod}" .`;
     }
@@ -701,7 +701,7 @@ ${insertClause}
         : 0;
 
       const metrics = dataResult.results.bindings.map((binding: any) => ({
-        uri: binding.metric.value,
+        iri: binding.metric.value,
         label: binding.label.value,
         code: binding.code?.value,
         unit: binding.unit?.value,
@@ -724,17 +724,17 @@ ${insertClause}
     }
   }
 
-  async getMetricById(uri: string): Promise<MetricDTO | null> {
+  async getMetricById(iri: string): Promise<MetricDTO | null> {
     const query = `
       ${this.prefix}
       SELECT ?label ?hasType ?hasMetricType ?hasUnit ?hasCalculationMethod
       WHERE {
-        <${uri}> a esg:Metric .
-        <${uri}> rdfs:label ?label .
-        <${uri}> esg:hasCalculationMethod ?hasCalculationMethod .
-        OPTIONAL { <${uri}> esg:hasType ?hasType . }
-        OPTIONAL { <${uri}> esg:hasMetricType ?hasMetricType . }
-        OPTIONAL { <${uri}> esg:hasUnit ?hasUnit . }
+        <${iri}> a esg:Metric .
+        <${iri}> rdfs:label ?label .
+        <${iri}> esg:hasCalculationMethod ?hasCalculationMethod .
+        OPTIONAL { <${iri}> esg:hasType ?hasType . }
+        OPTIONAL { <${iri}> esg:hasMetricType ?hasMetricType . }
+        OPTIONAL { <${iri}> esg:hasUnit ?hasUnit . }
       }
     `;
 
@@ -746,7 +746,7 @@ ${insertClause}
 
       const binding = result.results.bindings[0];
       return {
-        iri: uri,
+        iri: iri,
         label: binding.label.value,
         hasCalculationMethod: binding.hasCalculationMethod.value as 'direct_measurement' | 'calculation_model',
         hasType: binding.hasType?.value,
@@ -754,17 +754,17 @@ ${insertClause}
         hasUnit: binding.hasUnit?.value
       };
     } catch (error) {
-      throw new GraphDBQueryError(`Failed to fetch metric: ${uri}`, { originalError: error });
+      throw new GraphDBQueryError(`Failed to fetch metric: ${iri}`, { originalError: error });
     }
   }
 
   /**
    * 检查指标是否存在
    */
-  private async metricExists(uri: string): Promise<boolean> {
+  private async metricExists(iri: string): Promise<boolean> {
     const query = `
       ${this.prefix}
-      ASK { <${uri}> a esg:Metric . }
+      ASK { <${iri}> a esg:Metric . }
     `;
 
     try {
@@ -804,11 +804,11 @@ ${insertClause}
   /**
    * 获取指标的依赖关系（哪些模型使用该指标作为输入）
    */
-  private async getMetricDependencies(uri: string): Promise<string[]> {
+  private async getMetricDependencies(iri: string): Promise<string[]> {
     const query = `
       ${this.prefix}
       SELECT DISTINCT ?model ?modelLabel WHERE {
-        ?model esg:requiresInputFrom <${uri}> .
+        ?model esg:requiresInputFrom <${iri}> .
         ?model rdfs:label ?modelLabel .
       }
     `;
@@ -824,11 +824,11 @@ ${insertClause}
   /**
    * 获取指标关联的计算模型
    */
-  private async getMetricModel(uri: string): Promise<string | null> {
+  private async getMetricModel(iri: string): Promise<string | null> {
     const query = `
       ${this.prefix}
       SELECT ?model WHERE {
-        <${uri}> esg:isCalculatedBy ?model .
+        <${iri}> esg:isCalculatedBy ?model .
       }
       LIMIT 1
     `;
@@ -841,6 +841,181 @@ ${insertClause}
       return result.results.bindings[0].model.value;
     } catch (error) {
       throw new GraphDBQueryError('Failed to get metric model', { originalError: error });
+    }
+  }
+
+  /**
+   * 获取指标的所有计算模型
+   * 用于 GET /api/kg/metrics/:id/models
+   */
+  async getModelsByMetricId(metricUri: string): Promise<any> {
+    const query = `
+      ${this.prefix}
+      
+      SELECT ?model ?label ?calculationType ?formula ?mathematicalExpression
+             ?implementation ?implLabel ?implLanguage
+             ?inputMetric ?inputLabel
+      WHERE {
+        <${metricUri}> esg:isCalculatedBy ?model .
+        ?model rdfs:label ?label .
+        
+        OPTIONAL { ?model esg:hasCalculationType ?calculationType . }
+        OPTIONAL { ?model esg:hasFormula ?formula . }
+        OPTIONAL { ?model esg:hasMathematicalExpression ?mathematicalExpression . }
+        
+        # 获取实现信息
+        OPTIONAL {
+          ?model esg:executesWith ?implementation .
+          ?implementation rdfs:label ?implLabel .
+          OPTIONAL { ?implementation esg:hasLanguage ?implLanguage . }
+        }
+        
+        # 获取输入指标
+        OPTIONAL {
+          ?model esg:requiresInputFrom ?inputMetric .
+          ?inputMetric rdfs:label ?inputLabel .
+        }
+      }
+      ORDER BY ?label
+    `;
+
+    try {
+      const result = await this.graphDB.executeSparqlQuery(query);
+      
+      // 组织数据结构
+      const modelsMap = new Map();
+      
+      for (const binding of result.results.bindings) {
+        const modelIri = binding.model.value;
+        
+        if (!modelsMap.has(modelIri)) {
+          modelsMap.set(modelIri, {
+            iri: modelIri,
+            label: binding.label.value,
+            calculationType: binding.calculationType?.value,
+            formula: binding.formula?.value,
+            mathematicalExpression: binding.mathematicalExpression?.value,
+            implementation: binding.implementation ? {
+              iri: binding.implementation.value,
+              label: binding.implLabel?.value,
+              language: binding.implLanguage?.value
+            } : undefined,
+            inputMetrics: []
+          });
+        }
+        
+        // 添加输入指标
+        if (binding.inputMetric) {
+          const model = modelsMap.get(modelIri);
+          const inputExists = model.inputMetrics.some((im: any) => im.iri === binding.inputMetric.value);
+          if (!inputExists) {
+            model.inputMetrics.push({
+              iri: binding.inputMetric.value,
+              label: binding.inputLabel?.value
+            });
+          }
+        }
+      }
+      
+      return Array.from(modelsMap.values());
+    } catch (error) {
+      throw new GraphDBQueryError(
+        `Failed to get models for metric: ${metricUri}`,
+        { metricUri, originalError: error }
+      );
+    }
+  }
+
+  /**
+   * 获取依赖该指标作为输入的所有模型
+   * 用于 GET /api/kg/metrics/:id/models?usage=input
+   */
+  async getModelsUsingMetricAsInput(metricUri: string): Promise<any> {
+    const query = `
+      ${this.prefix}
+      
+      SELECT ?model ?label ?calculationType ?formula ?mathematicalExpression
+             ?implementation ?implLabel ?implLanguage
+             ?outputMetric ?outputLabel
+             ?inputMetric ?inputLabel
+      WHERE {
+        ?model esg:requiresInputFrom <${metricUri}> .
+        ?model rdfs:label ?label .
+        
+        OPTIONAL { ?model esg:hasCalculationType ?calculationType . }
+        OPTIONAL { ?model esg:hasFormula ?formula . }
+        OPTIONAL { ?model esg:hasMathematicalExpression ?mathematicalExpression . }
+        
+        # 获取实现信息
+        OPTIONAL {
+          ?model esg:executesWith ?implementation .
+          ?implementation rdfs:label ?implLabel .
+          OPTIONAL { ?implementation esg:hasLanguage ?implLanguage . }
+        }
+        
+        # 获取该模型计算的输出指标
+        OPTIONAL {
+          ?outputMetric esg:isCalculatedBy ?model .
+          ?outputMetric rdfs:label ?outputLabel .
+        }
+        
+        # 获取该模型的所有输入指标
+        OPTIONAL {
+          ?model esg:requiresInputFrom ?inputMetric .
+          ?inputMetric rdfs:label ?inputLabel .
+        }
+      }
+      ORDER BY ?label
+    `;
+
+    try {
+      const result = await this.graphDB.executeSparqlQuery(query);
+      
+      // 组织数据结构
+      const modelsMap = new Map();
+      
+      for (const binding of result.results.bindings) {
+        const modelIri = binding.model.value;
+        
+        if (!modelsMap.has(modelIri)) {
+          modelsMap.set(modelIri, {
+            iri: modelIri,
+            label: binding.label.value,
+            calculationType: binding.calculationType?.value,
+            formula: binding.formula?.value,
+            mathematicalExpression: binding.mathematicalExpression?.value,
+            implementation: binding.implementation ? {
+              iri: binding.implementation.value,
+              label: binding.implLabel?.value,
+              language: binding.implLanguage?.value
+            } : undefined,
+            outputMetric: binding.outputMetric ? {
+              iri: binding.outputMetric.value,
+              label: binding.outputLabel?.value
+            } : undefined,
+            inputMetrics: []
+          });
+        }
+        
+        // 添加输入指标
+        if (binding.inputMetric) {
+          const model = modelsMap.get(modelIri);
+          const inputExists = model.inputMetrics.some((im: any) => im.iri === binding.inputMetric.value);
+          if (!inputExists) {
+            model.inputMetrics.push({
+              iri: binding.inputMetric.value,
+              label: binding.inputLabel?.value
+            });
+          }
+        }
+      }
+      
+      return Array.from(modelsMap.values());
+    } catch (error) {
+      throw new GraphDBQueryError(
+        `Failed to get models using metric as input: ${metricUri}`,
+        { metricUri, originalError: error }
+      );
     }
   }
 

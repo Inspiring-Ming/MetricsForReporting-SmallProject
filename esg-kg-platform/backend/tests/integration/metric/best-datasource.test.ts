@@ -45,11 +45,11 @@ describe('Metric API - GET /api/kg/metrics/:id/best-datasource', () => {
 
     it('should prioritize Corporate Disclosure over other sources', async () => {
       const metricUri = await helper.createTestMetric('Multi Source Metric');
-      
+
       // Create datasources with different disclosure types
       const corpDisclosure = await helper.createTestDatasource('Corporate Disclosure');
       const sustReport = await helper.createTestDatasource('Sustainability Report');
-      
+
       await helper.addDatasourceToMetric(metricUri, sustReport);
       await helper.addDatasourceToMetric(metricUri, corpDisclosure);
 
@@ -74,7 +74,7 @@ describe('Metric API - GET /api/kg/metrics/:id/best-datasource', () => {
 
       expect(response.body).toHaveProperty('metricId');
       expect(response.body).toHaveProperty('dataSource');
-      
+
       if (response.body.dataSource) {
         expect(response.body.dataSource).toHaveProperty('dataSourceID');
         expect(response.body.dataSource).toHaveProperty('disclosureType');
@@ -85,7 +85,7 @@ describe('Metric API - GET /api/kg/metrics/:id/best-datasource', () => {
   describe('Error Cases', () => {
     it('should return 404 for non-existent metric', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistent';
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(nonExistentUri)}/best-datasource`)
         .expect(404);
@@ -95,7 +95,7 @@ describe('Metric API - GET /api/kg/metrics/:id/best-datasource', () => {
 
     it('should return 400 for invalid URI format', async () => {
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent('invalid uri')}/best-datasource`)
+        .get(`${baseUrl}/${encodeURIComponent('invalid iri')}/best-datasource`)
         .expect(400);
 
       expect(response.body.error).toBeDefined();
@@ -113,7 +113,7 @@ describe('Metric API - GET /api/kg/metrics/:id/best-datasource', () => {
   describe('Different ID Formats', () => {
     it('should accept full URI format', async () => {
       const metricUri = await helper.createTestMetric('URI Test');
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(metricUri)}/best-datasource`)
         .expect(200);
@@ -124,7 +124,7 @@ describe('Metric API - GET /api/kg/metrics/:id/best-datasource', () => {
     it('should accept encoded URI', async () => {
       const metricUri = await helper.createTestMetric('Encoded Test');
       const encodedUri = encodeURIComponent(metricUri);
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodedUri}/best-datasource`)
         .expect(200);
@@ -136,7 +136,7 @@ describe('Metric API - GET /api/kg/metrics/:id/best-datasource', () => {
   describe('Edge Cases', () => {
     it('should handle metric with special characters', async () => {
       const metricUri = await helper.createTestMetric('Metric & Special');
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(metricUri)}/best-datasource`)
         .expect(200);

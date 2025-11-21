@@ -19,28 +19,28 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
 
   describe('Normal Update', () => {
     it('should update dataset variable label', async () => {
-      const uri = await helper.createTestDatasetVariable('Original Label');
+      const iri = await helper.createTestDatasetVariable('Original Label');
 
       const updates = {
         label: 'Updated Label'
       };
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send(updates)
         .expect(200);
 
-      expect(response.body).toHaveProperty('uri', uri);
+      expect(response.body).toHaveProperty('iri', iri);
       expect(response.body).toHaveProperty('label', 'Updated Label');
       expect(response.body).toHaveProperty('updated_at');
 
       // Verify in database
-      const detail = await helper.getDatasetVariableDetail(uri);
+      const detail = await helper.getDatasetVariableDetail(iri);
       expect(detail.label).toBe('Updated Label');
     });
 
     it('should update alignment reason', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable', {
+      const iri = await helper.createTestDatasetVariable('Test Variable', {
         alignmentReason: 'Original reason'
       });
 
@@ -49,16 +49,16 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
       };
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send(updates)
         .expect(200);
 
-      const detail = await helper.getDatasetVariableDetail(uri);
+      const detail = await helper.getDatasetVariableDetail(iri);
       expect(detail.alignmentReason).toBe('Updated alignment reason');
     });
 
     it('should update confidence score', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable', {
+      const iri = await helper.createTestDatasetVariable('Test Variable', {
         confidenceScore: 50
       });
 
@@ -67,16 +67,16 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
       };
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send(updates)
         .expect(200);
 
-      const detail = await helper.getDatasetVariableDetail(uri);
+      const detail = await helper.getDatasetVariableDetail(iri);
       expect(detail.confidenceScore).toBe(90);
     });
 
     it('should update isUnitCompatible', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable', {
+      const iri = await helper.createTestDatasetVariable('Test Variable', {
         isUnitCompatible: 'Yes'
       });
 
@@ -85,16 +85,16 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
       };
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send(updates)
         .expect(200);
 
-      const detail = await helper.getDatasetVariableDetail(uri);
+      const detail = await helper.getDatasetVariableDetail(iri);
       expect(detail.isUnitCompatible).toBe('No - different units');
     });
 
     it('should update multiple fields at once', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable', {
+      const iri = await helper.createTestDatasetVariable('Test Variable', {
         alignmentReason: 'Old reason',
         confidenceScore: 60,
         isUnitCompatible: 'Yes'
@@ -108,11 +108,11 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
       };
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send(updates)
         .expect(200);
 
-      const detail = await helper.getDatasetVariableDetail(uri);
+      const detail = await helper.getDatasetVariableDetail(iri);
       expect(detail.label).toBe('Updated Variable');
       expect(detail.alignmentReason).toBe('New reason');
       expect(detail.confidenceScore).toBe(95);
@@ -120,8 +120,8 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
     });
 
     it('should update by short ID', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestDatasetVariable('Test Variable');
+      const shortId = iri.split('#')[1];
 
       const updates = {
         label: 'Updated via Short ID'
@@ -136,8 +136,8 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
     });
 
     it('should update by namespace format', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestDatasetVariable('Test Variable');
+      const shortId = iri.split('#')[1];
       const namespaceId = `esg:${shortId}`;
 
       const updates = {
@@ -156,7 +156,7 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
   describe('Data Sources Update', () => {
     it('should replace data sources with new ones', async () => {
       const oldSource = await helper.createTestDatasource('Old Source');
-      const uri = await helper.createTestDatasetVariable('Test Variable', {
+      const iri = await helper.createTestDatasetVariable('Test Variable', {
         sources: [oldSource]
       });
 
@@ -166,17 +166,17 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
       };
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send(updates)
         .expect(200);
 
-      const detail = await helper.getDatasetVariableDetail(uri);
+      const detail = await helper.getDatasetVariableDetail(iri);
       expect(detail.sources).toHaveLength(1);
       expect(detail.sources[0]).toBe(newSource);
     });
 
     it('should add multiple new sources', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const source1 = await helper.createTestDatasource('Source 1');
       const source2 = await helper.createTestDatasource('Source 2');
@@ -185,17 +185,17 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
       };
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send(updates)
         .expect(200);
 
-      const detail = await helper.getDatasetVariableDetail(uri);
+      const detail = await helper.getDatasetVariableDetail(iri);
       expect(detail.sources).toHaveLength(2);
     });
 
     it('should remove all sources with empty array', async () => {
       const source = await helper.createTestDatasource('Test Source');
-      const uri = await helper.createTestDatasetVariable('Test Variable', {
+      const iri = await helper.createTestDatasetVariable('Test Variable', {
         sources: [source]
       });
 
@@ -204,21 +204,21 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
       };
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send(updates)
         .expect(200);
 
-      const detail = await helper.getDatasetVariableDetail(uri);
+      const detail = await helper.getDatasetVariableDetail(iri);
       expect(detail.sources).toHaveLength(0);
     });
   });
 
   describe('Validation', () => {
     it('should reject empty update request', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({})
         .expect(400);
 
@@ -226,10 +226,10 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
     });
 
     it('should reject empty label', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ label: '' })
         .expect(400);
 
@@ -237,10 +237,10 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
     });
 
     it('should reject whitespace-only label', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ label: '   ' })
         .expect(400);
 
@@ -248,10 +248,10 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
     });
 
     it('should reject non-string label', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ label: 123 })
         .expect(400);
 
@@ -259,10 +259,10 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
     });
 
     it('should reject confidence score < 0', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ confidenceScore: -1 })
         .expect(400);
 
@@ -270,10 +270,10 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
     });
 
     it('should reject confidence score > 100', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ confidenceScore: 101 })
         .expect(400);
 
@@ -281,10 +281,10 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
     });
 
     it('should reject non-numeric confidence score', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ confidenceScore: '50' })
         .expect(400);
 
@@ -292,10 +292,10 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
     });
 
     it('should reject non-array sources', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ sources: 'not-an-array' })
         .expect(400);
 
@@ -303,10 +303,10 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
     });
 
     it('should reject sources with empty string', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ sources: [''] })
         .expect(400);
 
@@ -314,10 +314,10 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
     });
 
     it('should reject sources with non-string values', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ sources: [123] })
         .expect(400);
 
@@ -337,7 +337,7 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
 
     it('should return 404 for non-existent full URI', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistentVar';
-      
+
       const response = await request(app)
         .patch(`${baseUrl}/${encodeURIComponent(nonExistentUri)}`)
         .send({ label: 'Updated Label' })
@@ -356,26 +356,26 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
 
   describe('Response Structure', () => {
     it('should return properly structured response', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ label: 'Updated Variable' })
         .expect(200);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label');
       expect(response.body).toHaveProperty('updated_at');
-      expect(typeof response.body.uri).toBe('string');
+      expect(typeof response.body.iri).toBe('string');
       expect(typeof response.body.label).toBe('string');
       expect(typeof response.body.updated_at).toBe('string');
     });
 
     it('should return valid ISO 8601 timestamp', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ label: 'Updated Variable' })
         .expect(200);
 
@@ -385,11 +385,11 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
     });
 
     it('should return recent timestamp', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
       const beforeUpdate = Date.now();
-      
+
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ label: 'Updated Variable' })
         .expect(200);
 
@@ -403,41 +403,41 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
 
   describe('Boundary Values', () => {
     it('should accept confidence score of 0', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable', {
+      const iri = await helper.createTestDatasetVariable('Test Variable', {
         confidenceScore: 50
       });
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ confidenceScore: 0 })
         .expect(200);
 
-      const detail = await helper.getDatasetVariableDetail(uri);
+      const detail = await helper.getDatasetVariableDetail(iri);
       expect(detail.confidenceScore).toBe(0);
     });
 
     it('should accept confidence score of 100', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable', {
+      const iri = await helper.createTestDatasetVariable('Test Variable', {
         confidenceScore: 50
       });
 
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ confidenceScore: 100 })
         .expect(200);
 
-      const detail = await helper.getDatasetVariableDetail(uri);
+      const detail = await helper.getDatasetVariableDetail(iri);
       expect(detail.confidenceScore).toBe(100);
     });
   });
 
   describe('Special Characters', () => {
     it('should handle label with special characters', async () => {
-      const uri = await helper.createTestDatasetVariable('Original');
+      const iri = await helper.createTestDatasetVariable('Original');
 
       const newLabel = 'Updated-With_Special.Chars!@#';
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ label: newLabel })
         .expect(200);
 
@@ -445,28 +445,28 @@ describe('Dataset Variable API - PATCH /api/kg/dataset-variables/:id (Update)', 
     });
 
     it('should handle multiline alignment reason', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const multilineReason = 'Line 1\nLine 2\nLine 3';
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ alignmentReason: multilineReason })
         .expect(200);
 
-      const detail = await helper.getDatasetVariableDetail(uri);
+      const detail = await helper.getDatasetVariableDetail(iri);
       expect(detail.alignmentReason).toBe(multilineReason);
     });
 
     it('should handle alignment reason with quotes', async () => {
-      const uri = await helper.createTestDatasetVariable('Test Variable');
+      const iri = await helper.createTestDatasetVariable('Test Variable');
 
       const reasonWithQuotes = 'Updated "quoted" reason';
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .patch(`${baseUrl}/${encodeURIComponent(iri)}`)
         .send({ alignmentReason: reasonWithQuotes })
         .expect(200);
 
-      const detail = await helper.getDatasetVariableDetail(uri);
+      const detail = await helper.getDatasetVariableDetail(iri);
       expect(detail.alignmentReason).toBe(reasonWithQuotes);
     });
   });

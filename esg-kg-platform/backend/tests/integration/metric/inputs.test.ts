@@ -22,9 +22,9 @@ describe('Metric API - GET /api/kg/metrics/:id/inputs', () => {
       const input1 = await helper.createTestMetric('Input 1');
       const input2 = await helper.createTestMetric('Input 2');
       const model = await helper.createTestModel('Test Model', [input1, input2]);
-      
+
       const calcMetric = await helper.createTestMetric('Calculated Metric');
-      
+
       // Update metric to calculation_model type and link to model
       const updateQuery = `
         PREFIX esg: <http://example.org/esg#>
@@ -56,7 +56,7 @@ describe('Metric API - GET /api/kg/metrics/:id/inputs', () => {
     it('should return empty inputs for calculation model without inputs', async () => {
       const model = await helper.createTestModel('Simple Model', []);
       const calcMetric = await helper.createTestMetric('Simple Calc');
-      
+
       const updateQuery = `
         PREFIX esg: <http://example.org/esg#>
         
@@ -84,7 +84,7 @@ describe('Metric API - GET /api/kg/metrics/:id/inputs', () => {
       const input = await helper.createTestMetric('Input Metric');
       const model = await helper.createTestModel('Model With Info', [input]);
       const calcMetric = await helper.createTestMetric('Calc With Model');
-      
+
       const updateQuery = `
         PREFIX esg: <http://example.org/esg#>
         
@@ -141,7 +141,7 @@ describe('Metric API - GET /api/kg/metrics/:id/inputs', () => {
       const input = await helper.createTestMetric('Input');
       const model = await helper.createTestModel('Model', [input]);
       const calcMetric = await helper.createTestMetric('Calc Metric');
-      
+
       const updateQuery = `
         PREFIX esg: <http://example.org/esg#>
         
@@ -166,7 +166,7 @@ describe('Metric API - GET /api/kg/metrics/:id/inputs', () => {
       expect(response.body).toHaveProperty('model');
       expect(response.body).toHaveProperty('inputs');
       expect(response.body).toHaveProperty('total');
-      
+
       expect(typeof response.body.metricId).toBe('string');
       expect(typeof response.body.calculationMethod).toBe('string');
       expect(Array.isArray(response.body.inputs)).toBe(true);
@@ -192,7 +192,7 @@ describe('Metric API - GET /api/kg/metrics/:id/inputs', () => {
   describe('Error Cases', () => {
     it('should return 404 for non-existent metric', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistent';
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(nonExistentUri)}/inputs`)
         .expect(404);
@@ -202,7 +202,7 @@ describe('Metric API - GET /api/kg/metrics/:id/inputs', () => {
 
     it('should return 400 for invalid URI format', async () => {
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent('invalid uri')}/inputs`)
+        .get(`${baseUrl}/${encodeURIComponent('invalid iri')}/inputs`)
         .expect(400);
 
       expect(response.body.error).toBeDefined();
@@ -220,7 +220,7 @@ describe('Metric API - GET /api/kg/metrics/:id/inputs', () => {
   describe('Different ID Formats', () => {
     it('should accept full URI format', async () => {
       const metricUri = await helper.createTestMetric('URI Test');
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(metricUri)}/inputs`)
         .expect(200);
@@ -231,7 +231,7 @@ describe('Metric API - GET /api/kg/metrics/:id/inputs', () => {
     it('should accept encoded URI', async () => {
       const metricUri = await helper.createTestMetric('Encoded');
       const encodedUri = encodeURIComponent(metricUri);
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodedUri}/inputs`)
         .expect(200);
@@ -243,7 +243,7 @@ describe('Metric API - GET /api/kg/metrics/:id/inputs', () => {
   describe('Edge Cases', () => {
     it('should handle metric with special characters', async () => {
       const metric = await helper.createTestMetric('Metric & Special');
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(metric)}/inputs`)
         .expect(200);

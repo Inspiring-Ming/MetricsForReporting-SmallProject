@@ -33,12 +33,12 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
         .send(newMetric)
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label', newMetric.label);
       expect(response.body).toHaveProperty('calculationMethod', newMetric.calculationMethod);
       expect(response.body).toHaveProperty('created_at');
 
-      const exists = await helper.metricExists(response.body.uri);
+      const exists = await helper.metricExists(response.body.iri);
       expect(exists).toBe(true);
     });
 
@@ -69,11 +69,11 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
         .send(newMetric)
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label', newMetric.label);
       expect(response.body).toHaveProperty('code', newMetric.code);
 
-      const exists = await helper.metricExists(response.body.uri);
+      const exists = await helper.metricExists(response.body.iri);
       expect(exists).toBe(true);
     });
 
@@ -104,7 +104,7 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
         .expect(201);
 
       expect(response.body.label).toBe(newMetric.label);
-      const detail = await helper.getMetricDetail(response.body.uri);
+      const detail = await helper.getMetricDetail(response.body.iri);
       expect(detail.label).toBe(newMetric.label);
     });
 
@@ -162,7 +162,7 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
         .send(newMetric)
         .expect(201);
 
-      expect(response.body.uri).toContain('TEST_METRIC_001');
+      expect(response.body.iri).toContain('TEST_METRIC_001');
     });
   });
 
@@ -206,9 +206,9 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
     it('should reject creation with invalid calculationMethod', async () => {
       const response = await request(app)
         .post(baseUrl)
-        .send({ 
-          label: 'Test Metric', 
-          calculationMethod: 'invalid_method' 
+        .send({
+          label: 'Test Metric',
+          calculationMethod: 'invalid_method'
         })
         .expect(400);
 
@@ -219,9 +219,9 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
       const longLabel = 'A'.repeat(201);
       const response = await request(app)
         .post(baseUrl)
-        .send({ 
-          label: longLabel, 
-          calculationMethod: 'direct_measurement' 
+        .send({
+          label: longLabel,
+          calculationMethod: 'direct_measurement'
         })
         .expect(400);
 
@@ -234,11 +234,11 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
         .send({
           label: 'Test Metric',
           calculationMethod: 'direct_measurement',
-          category: 'invalid uri with spaces'
+          category: 'invalid iri with spaces'
         })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*category.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*category.*iri/i);
     });
 
     it('should reject creation with invalid industry URI format', async () => {
@@ -247,11 +247,11 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
         .send({
           label: 'Test Metric',
           calculationMethod: 'direct_measurement',
-          industry: 'invalid uri with spaces'
+          industry: 'invalid iri with spaces'
         })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*industry.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*industry.*iri/i);
     });
 
     it('should reject creation with invalid framework URI format', async () => {
@@ -260,11 +260,11 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
         .send({
           label: 'Test Metric',
           calculationMethod: 'direct_measurement',
-          framework: 'invalid uri with spaces'
+          framework: 'invalid iri with spaces'
         })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*framework.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*framework.*iri/i);
     });
   });
 
@@ -300,7 +300,7 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
         .expect(201);
 
       const categoryMetrics = await helper.getCategoryMetrics(category);
-      expect(categoryMetrics).toContain(response.body.uri);
+      expect(categoryMetrics).toContain(response.body.iri);
     });
 
     it('should create metric with full hierarchy (industry > framework > category)', async () => {
@@ -319,7 +319,7 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
         })
         .expect(201);
 
-      expect(response.body.uri).toBeDefined();
+      expect(response.body.iri).toBeDefined();
     });
   });
 
@@ -334,7 +334,7 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
         })
         .expect(201);
 
-      expect(response.body.uri).toBeDefined();
+      expect(response.body.iri).toBeDefined();
     });
 
     it('should handle creation with empty additionalProperties', async () => {
@@ -347,7 +347,7 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
         })
         .expect(201);
 
-      expect(response.body.uri).toBeDefined();
+      expect(response.body.iri).toBeDefined();
     });
 
     it('should handle creation with disclosureLevel boundaries', async () => {
@@ -360,7 +360,7 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
           disclosureLevel: 1
         })
         .expect(201);
-      expect(response1.body.uri).toBeDefined();
+      expect(response1.body.iri).toBeDefined();
 
       // Test level 3
       const response3 = await request(app)
@@ -371,7 +371,7 @@ describe('Metric API - POST /api/kg/metrics (Create)', () => {
           disclosureLevel: 3
         })
         .expect(201);
-      expect(response3.body.uri).toBeDefined();
+      expect(response3.body.iri).toBeDefined();
     });
   });
 });

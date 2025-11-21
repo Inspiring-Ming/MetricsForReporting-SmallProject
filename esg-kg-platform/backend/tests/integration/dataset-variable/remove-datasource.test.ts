@@ -36,8 +36,8 @@ describe('DatasetVariable API - DELETE /api/kg/dataset-variables/:id/datasources
         .delete(`${baseUrl}/${encodeURIComponent(variableUri)}/datasources/${datasourceId}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('variable_uri', variableUri);
-      expect(response.body).toHaveProperty('datasource_uri', datasourceUri);
+      expect(response.body).toHaveProperty('variable_iri', variableUri);
+      expect(response.body).toHaveProperty('datasource_iri', datasourceUri);
       expect(response.body).toHaveProperty('removed_at');
       expect(response.body.removed_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
 
@@ -52,13 +52,13 @@ describe('DatasetVariable API - DELETE /api/kg/dataset-variables/:id/datasources
 
       const shortDatasourceId = datasourceUri.split('#')[1];
       const shortVariableId = variableUri.split('#')[1];
-      
+
       const response = await request(app)
         .delete(`${baseUrl}/${shortVariableId}/datasources/${shortDatasourceId}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('variable_uri');
-      expect(response.body).toHaveProperty('datasource_uri');
+      expect(response.body).toHaveProperty('variable_iri');
+      expect(response.body).toHaveProperty('datasource_iri');
       expect(response.body).toHaveProperty('removed_at');
     });
 
@@ -100,7 +100,7 @@ describe('DatasetVariable API - DELETE /api/kg/dataset-variables/:id/datasources
       await helper.addDatasourceToVariable(variableUri, datasourceUri);
 
       const shortVariableId = variableUri.split('#')[1];
-      
+
       await request(app)
         .delete(`${baseUrl}/${shortVariableId}/datasources/${encodeURIComponent(datasourceUri)}`)
         .expect(200);
@@ -125,8 +125,8 @@ describe('DatasetVariable API - DELETE /api/kg/dataset-variables/:id/datasources
         .delete(`${baseUrl}/${encodeURIComponent(variableUri)}/datasources/${encodeURIComponent(datasourceUri)}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('variable_uri', variableUri);
-      expect(response.body).toHaveProperty('datasource_uri', datasourceUri);
+      expect(response.body).toHaveProperty('variable_iri', variableUri);
+      expect(response.body).toHaveProperty('datasource_iri', datasourceUri);
       expect(response.body).toHaveProperty('removed_at');
     });
 
@@ -137,8 +137,8 @@ describe('DatasetVariable API - DELETE /api/kg/dataset-variables/:id/datasources
         .delete(`${baseUrl}/${encodeURIComponent(variableUri)}/datasources/${encodeURIComponent(nonExistentDatasource)}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('variable_uri', variableUri);
-      expect(response.body).toHaveProperty('datasource_uri', nonExistentDatasource);
+      expect(response.body).toHaveProperty('variable_iri', variableUri);
+      expect(response.body).toHaveProperty('datasource_iri', nonExistentDatasource);
     });
 
     it('should allow repeated deletion of same association', async () => {
@@ -150,16 +150,16 @@ describe('DatasetVariable API - DELETE /api/kg/dataset-variables/:id/datasources
         .delete(`${baseUrl}/${encodeURIComponent(variableUri)}/datasources/${encodeURIComponent(datasourceUri)}`)
         .expect(200);
 
-      expect(response1.body).toHaveProperty('variable_uri', variableUri);
-      expect(response1.body).toHaveProperty('datasource_uri', datasourceUri);
+      expect(response1.body).toHaveProperty('variable_iri', variableUri);
+      expect(response1.body).toHaveProperty('datasource_iri', datasourceUri);
 
       // Second deletion (should still succeed)
       const response2 = await request(app)
         .delete(`${baseUrl}/${encodeURIComponent(variableUri)}/datasources/${encodeURIComponent(datasourceUri)}`)
         .expect(200);
 
-      expect(response2.body).toHaveProperty('variable_uri', variableUri);
-      expect(response2.body).toHaveProperty('datasource_uri', datasourceUri);
+      expect(response2.body).toHaveProperty('variable_iri', variableUri);
+      expect(response2.body).toHaveProperty('datasource_iri', datasourceUri);
 
       // Verify it's still not associated
       const datasources = await helper.getVariableDatasources(variableUri);
@@ -177,22 +177,22 @@ describe('DatasetVariable API - DELETE /api/kg/dataset-variables/:id/datasources
 
     it('should return 400 for invalid datasource URI format', async () => {
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(variableUri)}/datasources/${encodeURIComponent('invalid uri format')}`)
+        .delete(`${baseUrl}/${encodeURIComponent(variableUri)}/datasources/${encodeURIComponent('invalid iri format')}`)
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
 
     it('should return 400 for invalid variable URI format', async () => {
       const datasourceUri = await helper.createTestDatasource('Valid Datasource');
 
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent('invalid variable uri')}/datasources/${encodeURIComponent(datasourceUri)}`)
+        .delete(`${baseUrl}/${encodeURIComponent('invalid variable iri')}/datasources/${encodeURIComponent(datasourceUri)}`)
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
 
     it('should return 404 for empty datasource ID', async () => {
@@ -221,8 +221,8 @@ describe('DatasetVariable API - DELETE /api/kg/dataset-variables/:id/datasources
         .delete(`${baseUrl}/${encodeURIComponent(nonExistentVariable)}/datasources/${encodeURIComponent(datasourceUri)}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('variable_uri', nonExistentVariable);
-      expect(response.body).toHaveProperty('datasource_uri', datasourceUri);
+      expect(response.body).toHaveProperty('variable_iri', nonExistentVariable);
+      expect(response.body).toHaveProperty('datasource_iri', datasourceUri);
     });
 
     it('should handle special characters in IDs correctly', async () => {
@@ -230,13 +230,13 @@ describe('DatasetVariable API - DELETE /api/kg/dataset-variables/:id/datasources
       await helper.addDatasourceToVariable(variableUri, datasourceUri);
 
       const shortDatasourceId = datasourceUri.split('#')[1];
-      
+
       const response = await request(app)
         .delete(`${baseUrl}/${encodeURIComponent(variableUri)}/datasources/${shortDatasourceId}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('variable_uri');
-      expect(response.body).toHaveProperty('datasource_uri');
+      expect(response.body).toHaveProperty('variable_iri');
+      expect(response.body).toHaveProperty('datasource_iri');
     });
   });
 
@@ -257,13 +257,13 @@ describe('DatasetVariable API - DELETE /api/kg/dataset-variables/:id/datasources
         .expect(200);
 
       // Check all required fields
-      expect(response.body).toHaveProperty('variable_uri');
-      expect(response.body).toHaveProperty('datasource_uri');
+      expect(response.body).toHaveProperty('variable_iri');
+      expect(response.body).toHaveProperty('datasource_iri');
       expect(response.body).toHaveProperty('removed_at');
 
       // Check types
-      expect(typeof response.body.variable_uri).toBe('string');
-      expect(typeof response.body.datasource_uri).toBe('string');
+      expect(typeof response.body.variable_iri).toBe('string');
+      expect(typeof response.body.datasource_iri).toBe('string');
       expect(typeof response.body.removed_at).toBe('string');
 
       // Check timestamp format (ISO 8601)
@@ -272,8 +272,8 @@ describe('DatasetVariable API - DELETE /api/kg/dataset-variables/:id/datasources
       // Check no extra fields
       const keys = Object.keys(response.body);
       expect(keys).toHaveLength(3);
-      expect(keys).toContain('variable_uri');
-      expect(keys).toContain('datasource_uri');
+      expect(keys).toContain('variable_iri');
+      expect(keys).toContain('datasource_iri');
       expect(keys).toContain('removed_at');
     });
 
@@ -285,10 +285,10 @@ describe('DatasetVariable API - DELETE /api/kg/dataset-variables/:id/datasources
         .delete(`${baseUrl}/${encodeURIComponent(variableUri)}/datasources/${encodeURIComponent(datasourceUri)}`)
         .expect(200);
 
-      expect(response.body.variable_uri).toBe(variableUri);
-      expect(response.body.datasource_uri).toBe(datasourceUri);
-      expect(response.body.variable_uri).toContain('http://');
-      expect(response.body.datasource_uri).toContain('http://');
+      expect(response.body.variable_iri).toBe(variableUri);
+      expect(response.body.datasource_iri).toBe(datasourceUri);
+      expect(response.body.variable_iri).toContain('http://');
+      expect(response.body.datasource_iri).toContain('http://');
     });
   });
 
@@ -379,8 +379,8 @@ describe('DatasetVariable API - DELETE /api/kg/dataset-variables/:id/datasources
       // All should succeed (idempotent)
       responses.forEach(response => {
         expect(response.status).toBe(200);
-        expect(response.body).toHaveProperty('variable_uri', variableUri);
-        expect(response.body).toHaveProperty('datasource_uri', datasourceUri);
+        expect(response.body).toHaveProperty('variable_iri', variableUri);
+        expect(response.body).toHaveProperty('datasource_iri', datasourceUri);
       });
 
       // Verify association is removed

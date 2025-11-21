@@ -120,15 +120,6 @@ export const createMetricRoutes = (): Router => {
   router.get('/:id/datasources', metricController.getMetricDataSources);
 
   /**
-   * GET /api/kg/metrics/:id/models
-   * 获取使用该指标作为输入的所有模型（反向依赖查询）
-   * 
-   * 返回所有将该指标作为输入（requiresInputFrom）的模型。
-   * 这是一个反向依赖查询，用于了解该指标在哪些计算模型中被使用。
-   */
-  router.get('/:id/models', metricController.getMetricModels);
-
-  /**
    * GET /api/kg/metrics/:id/inputs
    * 获取指标计算所需的输入指标列表
    * 
@@ -138,7 +129,19 @@ export const createMetricRoutes = (): Router => {
    */
   router.get('/:id/inputs', metricController.getMetricInputs);
 
-
+  /**
+   * GET /api/kg/metrics/:id/models
+   * 获取与指标相关的模型列表
+   * 
+   * 查询参数：
+   * - usage=output (默认): 返回所有计算该指标的模型（metric → model via isCalculatedBy）
+   * - usage=input: 返回所有使用该指标作为输入的模型（model → metric via requiresInputFrom）
+   * 
+   * 对于 direct_measurement 类型的指标：
+   * - usage=output: 返回空列表（直接测量指标不由模型计算）
+   * - usage=input: 可能返回使用该指标的模型列表
+   */
+  router.get('/:id/models', metricController.getMetricModelsDetail);
 
   /**
    * POST /api/kg/metrics/:id/datasources

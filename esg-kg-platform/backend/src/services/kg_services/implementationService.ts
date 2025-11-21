@@ -10,7 +10,7 @@ import {
   DeleteImplementationResponse,
   ImplementationDTO
 } from '../../types/kg';
-import { ValidationError, NotFoundError } from '../../types/errors';
+import { ValidationError, NotFoundError, DeleteConflictError } from '../../types/errors';
 
 /**
  * Implementation Service - 处理实现相关的业务逻辑
@@ -88,10 +88,10 @@ export class ImplementationService {
    */
   async createImplementation(data: CreateImplementationRequest): Promise<CreateImplementationResponse> {
     try {
-      const uri = await this.implRepo.createImplementation(data);
+      const iri = await this.implRepo.createImplementation(data);
 
       return {
-        uri,
+        iri,
         label: data.name,
         language: data.language,
         file_path: data.file_path,
@@ -130,7 +130,7 @@ export class ImplementationService {
       const updated = await this.implRepo.getImplementationById(id);
 
       return {
-        uri: updated.iri || '',
+        iri: updated.iri || '',
         label: updated.label || '',
         language: updated.language,
         file_path: updated.filePath,
@@ -159,17 +159,17 @@ export class ImplementationService {
     try {
       // 获取实现信息（用于返回）
       const implementation = await this.implRepo.getImplementationById(id);
-      
+
       // 执行删除
       await this.implRepo.deleteImplementation(id, force);
 
       return {
-        uri: implementation.iri || '',
+        iri: implementation.iri || '',
         deleted: true,
         deleted_at: new Date().toISOString()
       };
     } catch (error) {
-      if (error instanceof ValidationError || error instanceof NotFoundError) {
+      if (error instanceof ValidationError || error instanceof NotFoundError || error instanceof DeleteConflictError) {
         throw error;
       }
       throw new Error(`Failed to delete implementation: ${id}. ${error}`);

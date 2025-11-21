@@ -28,11 +28,11 @@ describe('Category API - POST /api/kg/categories (Create)', () => {
         .send(newCategory)
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label', newCategory.label);
       expect(response.body).toHaveProperty('created_at');
 
-      const exists = await helper.categoryExists(response.body.uri);
+      const exists = await helper.categoryExists(response.body.iri);
       expect(exists).toBe(true);
     });
 
@@ -50,10 +50,10 @@ describe('Category API - POST /api/kg/categories (Create)', () => {
         .send(newCategory)
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label', newCategory.label);
 
-      const detail = await helper.getCategoryDetail(response.body.uri);
+      const detail = await helper.getCategoryDetail(response.body.iri);
       expect(detail.metrics).toHaveLength(2);
       expect(detail.metrics.map((m: any) => m.iri)).toContain(metric1);
       expect(detail.metrics.map((m: any) => m.iri)).toContain(metric2);
@@ -70,7 +70,7 @@ describe('Category API - POST /api/kg/categories (Create)', () => {
         .expect(201);
 
       expect(response.body.label).toBe(newCategory.label);
-      const detail = await helper.getCategoryDetail(response.body.uri);
+      const detail = await helper.getCategoryDetail(response.body.iri);
       expect(detail.label).toBe(newCategory.label);
     });
 
@@ -145,11 +145,11 @@ describe('Category API - POST /api/kg/categories (Create)', () => {
         .post(baseUrl)
         .send({
           label: 'Test Category',
-          metrics: ['invalid-uri']
+          metrics: ['invalid-iri']
         })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid metric uri/i);
+      expect(response.body.error.message).toMatch(/invalid metric iri/i);
     });
 
     it('should reject creation with non-existent metric URI', async () => {
@@ -161,12 +161,12 @@ describe('Category API - POST /api/kg/categories (Create)', () => {
         })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid metric uri/i);
+      expect(response.body.error.message).toMatch(/invalid metric iri/i);
     });
 
     it('should reject creation with mixed valid and invalid metric URIs', async () => {
       const validMetric = await helper.createTestMetric('Valid Metric');
-      
+
       const response = await request(app)
         .post(baseUrl)
         .send({
@@ -175,16 +175,16 @@ describe('Category API - POST /api/kg/categories (Create)', () => {
         })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid metric uri/i);
+      expect(response.body.error.message).toMatch(/invalid metric iri/i);
     });
   });
 
   describe('Uniqueness Constraints', () => {
     it('should reject creation with duplicate label', async () => {
       const category = { label: 'Duplicate Category' };
-      
+
       await request(app).post(baseUrl).send(category).expect(201);
-      
+
       const response = await request(app)
         .post(baseUrl)
         .send(category)
@@ -198,7 +198,7 @@ describe('Category API - POST /api/kg/categories (Create)', () => {
         .post(baseUrl)
         .send({ label: 'Test Category' })
         .expect(201);
-      
+
       const response = await request(app)
         .post(baseUrl)
         .send({ label: 'Test Category' })
@@ -218,7 +218,7 @@ describe('Category API - POST /api/kg/categories (Create)', () => {
         })
         .expect(201);
 
-      const detail = await helper.getCategoryDetail(response.body.uri);
+      const detail = await helper.getCategoryDetail(response.body.iri);
       expect(detail.metrics).toEqual([]);
     });
 
@@ -233,13 +233,13 @@ describe('Category API - POST /api/kg/categories (Create)', () => {
         .expect(201);
 
       expect(response.body.label).toBe(newCategory.label);
-      const detail = await helper.getCategoryDetail(response.body.uri);
+      const detail = await helper.getCategoryDetail(response.body.iri);
       expect(detail.label).toBe(newCategory.label);
     });
 
     it('should handle creation with duplicate metrics in array', async () => {
       const metric = await helper.createTestMetric('Test Metric');
-      
+
       const response = await request(app)
         .post(baseUrl)
         .send({
@@ -248,13 +248,13 @@ describe('Category API - POST /api/kg/categories (Create)', () => {
         })
         .expect(201);
 
-      const detail = await helper.getCategoryDetail(response.body.uri);
+      const detail = await helper.getCategoryDetail(response.body.iri);
       expect(detail.metrics).toHaveLength(1);
     });
 
     it('should create category with many metrics', async () => {
       const metrics = await Promise.all(
-        Array.from({ length: 10 }, (_, i) => 
+        Array.from({ length: 10 }, (_, i) =>
           helper.createTestMetric(`Metric ${i + 1}`)
         )
       );
@@ -267,7 +267,7 @@ describe('Category API - POST /api/kg/categories (Create)', () => {
         })
         .expect(201);
 
-      const detail = await helper.getCategoryDetail(response.body.uri);
+      const detail = await helper.getCategoryDetail(response.body.iri);
       expect(detail.metrics).toHaveLength(10);
     });
 
@@ -277,8 +277,8 @@ describe('Category API - POST /api/kg/categories (Create)', () => {
         .send({ label: '  Test Category  ' })
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
-      const detail = await helper.getCategoryDetail(response.body.uri);
+      expect(response.body).toHaveProperty('iri');
+      const detail = await helper.getCategoryDetail(response.body.iri);
       expect(detail.label).toBeTruthy();
     });
 
@@ -306,24 +306,24 @@ describe('Category API - POST /api/kg/categories (Create)', () => {
         .expect(201);
 
       expect(response.body.label).toBe(newCategory.label);
-      const detail = await helper.getCategoryDetail(response.body.uri);
+      const detail = await helper.getCategoryDetail(response.body.iri);
       expect(detail.label).toBe(newCategory.label);
     });
   });
 
   describe('Concurrent Creation', () => {
     it('should handle concurrent category creations', async () => {
-      const promises = Array.from({ length: 5 }, (_, i) => 
+      const promises = Array.from({ length: 5 }, (_, i) =>
         request(app)
           .post(baseUrl)
           .send({ label: `Concurrent Category ${i + 1}` })
       );
 
       const responses = await Promise.all(promises);
-      
+
       responses.forEach(response => {
         expect(response.status).toBe(201);
-        expect(response.body).toHaveProperty('uri');
+        expect(response.body).toHaveProperty('iri');
       });
 
       const count = await helper.getCategoryCount();

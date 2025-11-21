@@ -35,7 +35,7 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Partial Update)', () => {
         })
         .expect(200);
 
-      expect(response.body).toHaveProperty('uri', metricUri);
+      expect(response.body).toHaveProperty('iri', metricUri);
       expect(response.body).toHaveProperty('label', 'Updated Label');
       expect(response.body).toHaveProperty('updated_at');
 
@@ -54,7 +54,7 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Partial Update)', () => {
         })
         .expect(200);
 
-      expect(response.body).toHaveProperty('uri', metricUri);
+      expect(response.body).toHaveProperty('iri', metricUri);
       expect(response.body).toHaveProperty('updated_at');
 
       const detail = await helper.getMetricDetail(metricUri);
@@ -72,7 +72,7 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Partial Update)', () => {
         })
         .expect(200);
 
-      expect(response.body).toHaveProperty('uri', metricUri);
+      expect(response.body).toHaveProperty('iri', metricUri);
       expect(response.body).toHaveProperty('label', 'New Label');
 
       const detail = await helper.getMetricDetail(metricUri);
@@ -201,13 +201,13 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Partial Update)', () => {
 
     it('should return 400 for invalid metric URI format', async () => {
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent('invalid uri')}`)
+        .patch(`${baseUrl}/${encodeURIComponent('invalid iri')}`)
         .send({
           label: 'New Label'
         })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
   });
 
@@ -229,7 +229,7 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Partial Update)', () => {
         })
         .expect(200);
 
-      expect(response.body.uri).toBe(metricWithSpace);
+      expect(response.body.iri).toBe(metricWithSpace);
     });
 
     it('should handle rapid successive patches', async () => {
@@ -344,7 +344,7 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Partial Update)', () => {
         })
         .expect(200);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label');
       expect(response.body).toHaveProperty('calculationMethod');
       expect(response.body).toHaveProperty('updated_at');

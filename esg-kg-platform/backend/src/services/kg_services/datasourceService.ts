@@ -1,5 +1,5 @@
 import { DatasourceRepository } from '../../repositories/datasourceRepository';
-import { 
+import {
   DatasourcesResponse,
   DatasourceDetailResponse,
   GetDatasourcesRequest,

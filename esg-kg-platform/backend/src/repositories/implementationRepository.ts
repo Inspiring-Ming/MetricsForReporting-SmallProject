@@ -1,9 +1,9 @@
 import { GraphDBRepository } from './graphDBRepository';
-import { 
-  ImplementationDTO, 
+import {
+  ImplementationDTO,
   GetImplementationsRequest,
   CreateImplementationRequest,
-  UpdateImplementationRequest 
+  UpdateImplementationRequest
 } from '../types/kg';
 import { GraphDBQueryError, NotFoundError, ValidationError, DeleteConflictError } from '../types/errors';
 
@@ -31,21 +31,21 @@ export class ImplementationRepository {
 
     // 构建过滤条件
     const filters: string[] = [];
-    
+
     if (search) {
       filters.push(`FILTER(CONTAINS(LCASE(?label), LCASE("${this.escapeSparql(search)}")))`);
     }
-    
+
     if (language) {
       filters.push(`FILTER(?language = "${this.escapeSparql(language)}")`);
     }
-    
+
     if (filePath) {
       filters.push(`FILTER(CONTAINS(?filePath, "${this.escapeSparql(filePath)}"))`);
     }
 
     // 如果按计算类型筛选，需要通过模型反向查询
-    const calculationTypeJoin = calculationType 
+    const calculationTypeJoin = calculationType
       ? `?model a esg:Model ;
            esg:hasCalculationType "${this.escapeSparql(calculationType)}" ;
            esg:executesWith ?implementation .`
@@ -119,10 +119,10 @@ export class ImplementationRepository {
   /**
    * 根据 ID 获取实现详情
    */
-  async getImplementationById(id: string): Promise<ImplementationDTO & { 
-    description?: string, 
+  async getImplementationById(id: string): Promise<ImplementationDTO & {
+    description?: string,
     inputParameters?: string,
-    relatedModels?: Array<{ uri: string, label: string, calculationType?: string }>
+    relatedModels?: Array<{ iri: string, label: string, calculationType?: string }>
   }> {
     const implementationUri = this.resolveImplementationUri(id);
 
@@ -153,22 +153,22 @@ export class ImplementationRepository {
 
     try {
       const data = await this.graphDB.executeSparqlQuery(query);
-      
+
       if (data.results.bindings.length === 0) {
         throw new NotFoundError(`Implementation not found: ${id}`);
       }
 
       const firstBinding = data.results.bindings[0];
-      
+
       // 收集所有关联的模型
-      const relatedModels: Array<{ uri: string, label: string, calculationType?: string }> = [];
+      const relatedModels: Array<{ iri: string, label: string, calculationType?: string }> = [];
       const seenModels = new Set<string>();
-      
+
       for (const binding of data.results.bindings) {
         if (binding.model && !seenModels.has(binding.model.value)) {
           seenModels.add(binding.model.value);
           relatedModels.push({
-            uri: binding.model.value,
+            iri: binding.model.value,
             label: binding.modelLabel?.value || '',
             calculationType: binding.calculationType?.value
           });
@@ -202,7 +202,7 @@ export class ImplementationRepository {
     this.validateImplementationData(data);
 
     const implementationUri = `http://example.org/esg#Implementation_${data.name}`;
-    
+
     // 检查是否已存在
     const existsQuery = `
       ${this.prefix}
@@ -360,15 +360,17 @@ export class ImplementationRepository {
       }
     }
 
-    // 删除实现
+    // 删除实现及其所有引用
     const deleteQuery = `
       ${this.prefix}
       DELETE {
         <${implementationUri}> ?p ?o .
+        ?model esg:executesWith <${implementationUri}> .
       }
       WHERE {
         <${implementationUri}> a esg:Implementation ;
                               ?p ?o .
+        OPTIONAL { ?model esg:executesWith <${implementationUri}> . }
       }
     `;
 
@@ -387,12 +389,12 @@ export class ImplementationRepository {
     if (id.startsWith('http://') || id.startsWith('https://')) {
       return id;
     }
-    
+
     // 如果是命名空间格式 (esg:Implementation_Name)
     if (id.startsWith('esg:')) {
       return id.replace('esg:', 'http://example.org/esg#');
     }
-    
+
     // 否则假设是简短 ID，构建标准 URI
     return `http://example.org/esg#Implementation_${id}`;
   }

@@ -40,7 +40,7 @@ describe('Category API - GET /api/kg/categories (List)', () => {
 
       expect(response.body.result).toHaveLength(3);
       expect(response.body.total).toBe(3);
-      
+
       response.body.result.forEach((category: any) => {
         expect(category).toHaveProperty('iri');
         expect(category).toHaveProperty('label');
@@ -157,7 +157,7 @@ describe('Category API - GET /api/kg/categories (List)', () => {
 
       expect(response.body.result).toHaveLength(2);
       expect(response.body.total).toBe(2);
-      
+
       const labels = response.body.result.map((c: any) => c.label);
       expect(labels).toContain('Environmental Impact');
       expect(labels).toContain('Environmental Sustainability');
@@ -166,7 +166,7 @@ describe('Category API - GET /api/kg/categories (List)', () => {
     it('should search categories with partial match', async () => {
       const response = await request(app)
         .get(baseUrl)
-        .query({ search: 'secu' })
+        .query({ search: 'secur' })
         .expect(200);
 
       expect(response.body.result).toHaveLength(1);
@@ -185,7 +185,7 @@ describe('Category API - GET /api/kg/categories (List)', () => {
 
     it('should handle search with special characters', async () => {
       await helper.createTestCategory('Category & Co.');
-      
+
       const response = await request(app)
         .get(baseUrl)
         .query({ search: '&' })
@@ -220,9 +220,9 @@ describe('Category API - GET /api/kg/categories (List)', () => {
         .expect(200);
 
       expect(response.body.result).toHaveLength(2);
-      const uris = response.body.result.map((c: any) => c.iri);
-      expect(uris).toContain(category1);
-      expect(uris).toContain(category2);
+      const iris = response.body.result.map((c: any) => c.iri);
+      expect(iris).toContain(category1);
+      expect(iris).toContain(category2);
     });
 
     it('should return different results for different frameworks', async () => {
@@ -232,14 +232,14 @@ describe('Category API - GET /api/kg/categories (List)', () => {
         .expect(200);
 
       expect(response.body.result).toHaveLength(2);
-      const uris = response.body.result.map((c: any) => c.iri);
-      expect(uris).toContain(category2);
-      expect(uris).toContain(category3);
+      const iris = response.body.result.map((c: any) => c.iri);
+      expect(iris).toContain(category2);
+      expect(iris).toContain(category3);
     });
 
     it('should return empty array for framework with no categories', async () => {
       const emptyFramework = await helper.createTestFramework('Empty Framework');
-      
+
       const response = await request(app)
         .get(baseUrl)
         .query({ framework: emptyFramework })
@@ -318,7 +318,7 @@ describe('Category API - GET /api/kg/categories (List)', () => {
     it('should combine search, framework, and pagination', async () => {
       const response = await request(app)
         .get(baseUrl)
-        .query({ 
+        .query({
           search: 'Data',
           framework,
           page: 1,
@@ -333,7 +333,7 @@ describe('Category API - GET /api/kg/categories (List)', () => {
     it('should combine all filters with sorting', async () => {
       const response = await request(app)
         .get(baseUrl)
-        .query({ 
+        .query({
           search: 'Environmental',
           framework,
           sort: 'label',
@@ -352,7 +352,7 @@ describe('Category API - GET /api/kg/categories (List)', () => {
   describe('Edge Cases', () => {
     it('should handle empty search string', async () => {
       await helper.createTestCategory('Test Category');
-      
+
       const response = await request(app)
         .get(baseUrl)
         .query({ search: '' })
@@ -363,7 +363,7 @@ describe('Category API - GET /api/kg/categories (List)', () => {
 
     it('should handle very long search string', async () => {
       const longSearch = 'A'.repeat(500);
-      
+
       const response = await request(app)
         .get(baseUrl)
         .query({ search: longSearch })
@@ -375,7 +375,7 @@ describe('Category API - GET /api/kg/categories (List)', () => {
     it('should handle invalid framework URI', async () => {
       const response = await request(app)
         .get(baseUrl)
-        .query({ framework: 'invalid-uri' })
+        .query({ framework: 'invalid-iri' })
         .expect(200);
 
       expect(response.body.result).toEqual([]);

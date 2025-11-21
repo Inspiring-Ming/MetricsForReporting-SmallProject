@@ -14,8 +14,8 @@ import { ValidationError, GraphDBQueryError } from '../types/errors';
 export class MetricComputationService {
   private kgRepository: KnowledgeGraphRepository;
 
-  constructor(kgRepository: KnowledgeGraphRepository) {
-    this.kgRepository = kgRepository;
+  constructor(kgRepository?: KnowledgeGraphRepository) {
+    this.kgRepository = kgRepository || new KnowledgeGraphRepository();
   }
 
   /**

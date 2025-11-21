@@ -28,12 +28,12 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
         .send(newVariable)
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label', newVariable.label);
       expect(response.body).toHaveProperty('created_at');
 
       // Verify in database
-      const exists = await helper.datasetVariableExists(response.body.uri);
+      const exists = await helper.datasetVariableExists(response.body.iri);
       expect(exists).toBe(true);
     });
 
@@ -57,7 +57,7 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
       expect(response.body.label).toBe(newVariable.label);
 
       // Verify in database
-      const detail = await helper.getDatasetVariableDetail(response.body.uri);
+      const detail = await helper.getDatasetVariableDetail(response.body.iri);
       expect(detail.label).toBe(newVariable.label);
       expect(detail.alignmentReason).toBe(newVariable.alignmentReason);
       expect(detail.confidenceScore).toBe(newVariable.confidenceScore);
@@ -71,10 +71,10 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
         .send({ label: 'New Variable' })
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label');
       expect(response.body).toHaveProperty('created_at');
-      expect(typeof response.body.uri).toBe('string');
+      expect(typeof response.body.iri).toBe('string');
       expect(typeof response.body.label).toBe('string');
       expect(typeof response.body.created_at).toBe('string');
     });
@@ -90,7 +90,7 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
         .send({ label: 'Variable 1' })
         .expect(201);
 
-      expect(response1.body.uri).not.toBe(response2.body.uri);
+      expect(response1.body.iri).not.toBe(response2.body.iri);
     });
   });
 
@@ -151,7 +151,7 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
         })
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
     });
 
     it('should accept confidence score of 100', async () => {
@@ -163,7 +163,7 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
         })
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
     });
 
     it('should accept valid confidence score in range', async () => {
@@ -175,7 +175,7 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
         })
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
     });
 
     it('should reject confidence score less than 0', async () => {
@@ -227,7 +227,7 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
         })
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
     });
 
     it('should accept multiple sources', async () => {
@@ -242,7 +242,7 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
         })
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
     });
 
     it('should accept sources with short IDs', async () => {
@@ -254,7 +254,7 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
         })
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
     });
 
     it('should reject non-array sources', async () => {
@@ -316,7 +316,7 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
         })
         .expect(201);
 
-      const detail = await helper.getDatasetVariableDetail(response.body.uri);
+      const detail = await helper.getDatasetVariableDetail(response.body.iri);
       expect(detail.alignmentReason).toBe('Test alignment reason');
     });
 
@@ -329,7 +329,7 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
         })
         .expect(201);
 
-      const detail = await helper.getDatasetVariableDetail(response.body.uri);
+      const detail = await helper.getDatasetVariableDetail(response.body.iri);
       expect(detail.confidenceScore).toBe(80);
     });
 
@@ -342,7 +342,7 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
         })
         .expect(201);
 
-      const detail = await helper.getDatasetVariableDetail(response.body.uri);
+      const detail = await helper.getDatasetVariableDetail(response.body.iri);
       expect(detail.isUnitCompatible).toBe('Yes - compatible');
     });
   });
@@ -377,7 +377,7 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
         })
         .expect(201);
 
-      const detail = await helper.getDatasetVariableDetail(response.body.uri);
+      const detail = await helper.getDatasetVariableDetail(response.body.iri);
       expect(detail.alignmentReason).toBe(multilineReason);
     });
 
@@ -391,7 +391,7 @@ describe('Dataset Variable API - POST /api/kg/dataset-variables (Create)', () =>
         })
         .expect(201);
 
-      const detail = await helper.getDatasetVariableDetail(response.body.uri);
+      const detail = await helper.getDatasetVariableDetail(response.body.iri);
       expect(detail.alignmentReason).toBe(reasonWithQuotes);
     });
   });

@@ -215,8 +215,8 @@ export class KnowledgeGraphRepository {
         for (const binding of result.results.bindings) {
           if (binding.metric && binding.metric.value) {
             // 提取URI的本地名称部分（去掉命名空间前缀）
-            const uri = binding.metric.value;
-            const localName = uri.includes('#') ? uri.split('#').pop() : uri.split('/').pop();
+            const iri = binding.metric.value;
+            const localName = iri.includes('#') ? iri.split('#').pop() : iri.split('/').pop();
             metricUris.push(`esg:${localName}`);
           }
         }
@@ -235,8 +235,8 @@ export class KnowledgeGraphRepository {
    * 获取分类下使用 model calculation 方法的指标
    */
   async getModelCalculationMetricsByCategory(
-    industry: string, 
-    category: string, 
+    industry: string,
+    category: string,
     framework: string
   ): Promise<string[]> {
     const query = `
@@ -300,11 +300,11 @@ export class KnowledgeGraphRepository {
 
     try {
       const result = await this.executeSparqlQuery(query);
-      
+
       if (result.results && result.results.bindings) {
         return this.createDataMapFromGraphDB(result.results.bindings);
       }
-      
+
       return new Map<string, string>();
     } catch (error) {
       throw new GraphDBQueryError(
@@ -329,11 +329,11 @@ export class KnowledgeGraphRepository {
 
     try {
       const result = await this.executeSparqlQuery(query);
-      
+
       if (result.results && result.results.bindings) {
         return this.createDataMapFromGraphDB(result.results.bindings);
       }
-      
+
       return new Map<string, string>();
     } catch (error) {
       throw new GraphDBQueryError(
@@ -358,12 +358,12 @@ export class KnowledgeGraphRepository {
 
     try {
       const result = await this.executeSparqlQuery(query);
-      
+
       if (result.results && result.results.bindings) {
         const resultMap = this.createDataMapFromGraphDB(result.results.bindings);
         return resultMap.get('label');
       }
-      
+
       return undefined;
     } catch (error) {
       throw new GraphDBQueryError(
@@ -410,18 +410,18 @@ export class KnowledgeGraphRepository {
 
     try {
       const results = await this.executeSparqlQuery(query);
-      
+
       if (results.results.bindings.length > 0) {
         const binding = results.results.bindings[0];
         const dataSourceID = binding.dataSourceID?.value || '';
         const disclosureType = binding.disclosureType?.value?.split('#')[1] || 'unknown';
-        
+
         return {
           dataSourceID,
           disclosureType
         };
       }
-      
+
       return null;
     } catch (error) {
       throw new GraphDBQueryError(
@@ -441,9 +441,9 @@ export class KnowledgeGraphRepository {
   async getImplementationByModel(modelIRIOrLabel: string): Promise<Implementation> {
     // 判断是完整 IRI 还是 label
     const isFullIRI = modelIRIOrLabel.startsWith('http://') || modelIRIOrLabel.startsWith('https://');
-    
+
     let query: string;
-    
+
     if (isFullIRI) {
       // 使用完整 IRI 查询（最精确、最快速）
       query = `
@@ -485,7 +485,7 @@ export class KnowledgeGraphRepository {
 
     try {
       const result = await this.executeSparqlQuery(query);
-      
+
       if (result.results && result.results.bindings && result.results.bindings.length > 0) {
         const binding = result.results.bindings[0];
         return {
@@ -496,7 +496,7 @@ export class KnowledgeGraphRepository {
           functionName: binding.functionName?.value
         };
       }
-      
+
       throw new GraphDBQueryError(
         `No implementation found for model: ${modelIRIOrLabel}`,
         { modelIRIOrLabel }
@@ -536,7 +536,7 @@ export class KnowledgeGraphRepository {
 
     try {
       const result = await this.executeSparqlQuery(query);
-      
+
       if (result.results && result.results.bindings && result.results.bindings.length > 0) {
         const binding = result.results.bindings[0];
         return {
@@ -549,7 +549,7 @@ export class KnowledgeGraphRepository {
           validation: binding.validation?.value
         };
       }
-      
+
       throw new GraphDBQueryError(
         `No implementation found with label: ${implementationLabel}`,
         { implementationLabel }
@@ -568,7 +568,7 @@ export class KnowledgeGraphRepository {
   /**
    * 获取所有实现
    */
-  async getAllImplementations(): Promise<Array<{label: string; language: string; description: string}>> {
+  async getAllImplementations(): Promise<Array<{ label: string; language: string; description: string }>> {
     const query = `
       ${this.ESG_PREFIX}
       ${this.RDFS_PREFIX}
@@ -584,7 +584,7 @@ export class KnowledgeGraphRepository {
 
     try {
       const result = await this.executeSparqlQuery(query);
-      const implementations: Array<{label: string; language: string; description: string}> = [];
+      const implementations: Array<{ label: string; language: string; description: string }> = [];
 
       if (result.results && result.results.bindings) {
         for (const binding of result.results.bindings) {
@@ -682,7 +682,7 @@ export class KnowledgeGraphRepository {
           if (binding.calculationType && binding.modelLabel) {
             const calcType = binding.calculationType.value;
             const modelLabel = binding.modelLabel.value;
-            
+
             if (!calculationTypeMap.has(calcType)) {
               calculationTypeMap.set(calcType, new Set());
             }
@@ -718,14 +718,14 @@ export class KnowledgeGraphRepository {
     bindings.forEach(binding => {
       const p = binding.p?.value;
       const o = binding.o?.value;
-      const oType = binding.o?.type; // 'uri' or 'literal'
+      const oType = binding.o?.type; // 'iri' or 'literal'
 
       if (p && o) {
         // 谓词始终移除 IRI 前缀（用作 Map 的 key）
         const predicate = this.removeIRI(p);
-        
+
         // 对象值：URI 类型保留完整 IRI，literal 类型移除前缀
-        const object = oType === 'uri' ? o : this.removeIRI(o);
+        const object = oType === 'iri' ? o : this.removeIRI(o);
 
         // 如果谓词已存在，追加对象值
         if (dataMap.has(predicate)) {
@@ -775,7 +775,7 @@ export class KnowledgeGraphRepository {
 
     try {
       const result = await this.executeSparqlQuery(query);
-      
+
       if (result.results && result.results.bindings && result.results.bindings.length > 0) {
         const binding = result.results.bindings[0];
         return {
@@ -810,10 +810,10 @@ export class KnowledgeGraphRepository {
         throw error;
       }
       // SPARQL语法错误通常是URI格式问题
-      if (error instanceof Error && 
-          (error.message.includes('syntax') || 
-           error.message.includes('malformed') ||
-           error.message.includes('illegal'))) {
+      if (error instanceof Error &&
+        (error.message.includes('syntax') ||
+          error.message.includes('malformed') ||
+          error.message.includes('illegal'))) {
         throw new ValidationError(`Invalid metric URI format: ${metricIri}`);
       }
       if (error instanceof GraphDBQueryError) {
@@ -865,7 +865,7 @@ export class KnowledgeGraphRepository {
       if (result.results && result.results.bindings) {
         for (const binding of result.results.bindings) {
           const dvIri = binding.datasetVariable.value;
-          
+
           if (!datasetVariables.has(dvIri)) {
             datasetVariables.set(dvIri, {
               iri: dvIri,
@@ -962,7 +962,7 @@ export class KnowledgeGraphRepository {
 
       if (result.results && result.results.bindings && result.results.bindings.length > 0) {
         const bindings = result.results.bindings;
-        
+
         // 提取模型信息（从第一行获取）
         const firstBinding = bindings[0];
         modelInfo = {
@@ -985,7 +985,7 @@ export class KnowledgeGraphRepository {
         for (const binding of bindings) {
           if (binding.inputDatasetVariable) {
             const dvIri = binding.inputDatasetVariable.value;
-            
+
             if (!inputDataVariables.has(dvIri)) {
               inputDataVariables.set(dvIri, {
                 iri: dvIri,
@@ -1135,13 +1135,13 @@ export class KnowledgeGraphRepository {
 
     try {
       const result = await this.executeSparqlQuery(query);
-      
+
       let modelInfo = null;
       const inputMetricsMap = new Map();
 
       if (result.results && result.results.bindings && result.results.bindings.length > 0) {
         const bindings = result.results.bindings;
-        
+
         // 提取模型信息（所有行都相同）
         const firstBinding = bindings[0];
         if (firstBinding.model) {
@@ -1156,7 +1156,7 @@ export class KnowledgeGraphRepository {
         for (const binding of bindings) {
           if (binding.inputMetric) {
             const inputIri = binding.inputMetric.value;
-            
+
             if (!inputMetricsMap.has(inputIri)) {
               inputMetricsMap.set(inputIri, {
                 iri: inputIri,
@@ -1250,7 +1250,7 @@ export class KnowledgeGraphRepository {
   /**
    * 根据 label 获取实体的完整信息
    */
-  private async getEntityByLabel(label: string, entityType: 'Implementation' | 'Model' | 'Metric'): Promise<{ uri: string; label: string } | null> {
+  private async getEntityByLabel(label: string, entityType: 'Implementation' | 'Model' | 'Metric'): Promise<{ iri: string; label: string } | null> {
     const query = `
       ${this.ESG_PREFIX}
       ${this.RDFS_PREFIX}
@@ -1267,7 +1267,7 @@ export class KnowledgeGraphRepository {
       if (result.results && result.results.bindings && result.results.bindings.length > 0) {
         const binding = result.results.bindings[0];
         return {
-          uri: binding.entity.value,
+          iri: binding.entity.value,
           label: binding.label.value
         };
       }
@@ -1288,9 +1288,9 @@ export class KnowledgeGraphRepository {
    * @param entityType - 实体类型（可选），用于验证实体类型
    * @returns 实体的 URI 和 label，如果不存在返回 null
    */
-  private async getEntityByIRI(iri: string, entityType?: 'Implementation' | 'Model' | 'Metric'): Promise<{ uri: string; label: string } | null> {
+  private async getEntityByIRI(iri: string, entityType?: 'Implementation' | 'Model' | 'Metric'): Promise<{ iri: string; label: string } | null> {
     const typeFilter = entityType ? `?entity a esg:${entityType} .` : '';
-    
+
     const query = `
       ${this.ESG_PREFIX}
       ${this.RDFS_PREFIX}
@@ -1307,7 +1307,7 @@ export class KnowledgeGraphRepository {
       if (result.results && result.results.bindings && result.results.bindings.length > 0) {
         const binding = result.results.bindings[0];
         return {
-          uri: binding.entity.value,
+          iri: binding.entity.value,
           label: binding.label.value
         };
       }
@@ -1324,15 +1324,15 @@ export class KnowledgeGraphRepository {
    * 创建 Implementation
    */
   async createImplementation(
-    name: string, 
-    language: string, 
+    name: string,
+    language: string,
     filePath: string,
     functionName?: string,
     description?: string,
     inputParameters?: string,
     returnType?: string,
     validation?: string
-  ): Promise<{ uri: string; label: string }> {
+  ): Promise<{ iri: string; label: string }> {
     // 检查是否已存在
     const exists = await this.checkEntityExists(name, 'Implementation');
     if (exists) {
@@ -1343,7 +1343,7 @@ export class KnowledgeGraphRepository {
     }
 
     const implementationUri = `http://example.org/esg#${name}`;
-    
+
     // 构建可选属性
     const optionalTriples: string[] = [];
     if (functionName) optionalTriples.push(`esg:hasFunction "${functionName}"`);
@@ -1351,11 +1351,11 @@ export class KnowledgeGraphRepository {
     if (inputParameters) optionalTriples.push(`esg:hasInputParameters "${inputParameters}"`);
     if (returnType) optionalTriples.push(`esg:hasReturnType "${returnType}"`);
     if (validation) optionalTriples.push(`esg:hasValidation "${validation}"`);
-    
-    const optionalTriplesStr = optionalTriples.length > 0 
-      ? ' ;\n                    ' + optionalTriples.join(' ;\n                    ') 
+
+    const optionalTriplesStr = optionalTriples.length > 0
+      ? ' ;\n                    ' + optionalTriples.join(' ;\n                    ')
       : '';
-    
+
     const insertQuery = `
       ${this.ESG_PREFIX}
       ${this.RDFS_PREFIX}
@@ -1371,7 +1371,7 @@ export class KnowledgeGraphRepository {
     try {
       await this.executeSparqlUpdate(insertQuery);
       return {
-        uri: implementationUri,
+        iri: implementationUri,
         label: name
       };
     } catch (error) {
@@ -1386,18 +1386,18 @@ export class KnowledgeGraphRepository {
    * 创建 Model
    */
   async createModel(
-    name: string, 
-    calculationType: string, 
-    inputMetrics: string[], 
+    name: string,
+    calculationType: string,
+    inputMetrics: string[],
     implementationName: string,
     description?: string,
     formula?: string,
     mathematicalExpression?: string
-  ): Promise<{ 
-    uri: string; 
-    label: string; 
-    inputMetrics: Array<{ uri: string; label: string }>; 
-    implementation: { uri: string; label: string } 
+  ): Promise<{
+    iri: string;
+    label: string;
+    inputMetrics: Array<{ iri: string; label: string }>;
+    implementation: { iri: string; label: string }
   }> {
     // 检查 Model 是否已存在
     const modelExists = await this.checkEntityExists(name, 'Model');
@@ -1418,7 +1418,7 @@ export class KnowledgeGraphRepository {
     }
 
     // 检查所有输入指标是否存在
-    const resolvedInputMetrics: Array<{ uri: string; label: string }> = [];
+    const resolvedInputMetrics: Array<{ iri: string; label: string }> = [];
     for (const metricLabel of inputMetrics) {
       const metric = await this.getEntityByLabel(metricLabel, 'Metric');
       if (!metric) {
@@ -1431,10 +1431,10 @@ export class KnowledgeGraphRepository {
     }
 
     const modelUri = `http://example.org/esg#${name}`;
-    
+
     // 构建 requiresInputFrom 三元组
     const requiresInputFromTriples = resolvedInputMetrics
-      .map(m => `<${m.uri}>`)
+      .map(m => `<${m.iri}>`)
       .join(', ');
 
     // 构建可选属性
@@ -1442,9 +1442,9 @@ export class KnowledgeGraphRepository {
     if (description) optionalTriples.push(`esg:hasDescription "${description}"`);
     if (formula) optionalTriples.push(`esg:hasFormula "${formula}"`);
     if (mathematicalExpression) optionalTriples.push(`esg:hasMathematicalExpression "${mathematicalExpression}"`);
-    
-    const optionalTriplesStr = optionalTriples.length > 0 
-      ? ' ;\n                    ' + optionalTriples.join(' ;\n                    ') 
+
+    const optionalTriplesStr = optionalTriples.length > 0
+      ? ' ;\n                    ' + optionalTriples.join(' ;\n                    ')
       : '';
 
     const insertQuery = `
@@ -1456,14 +1456,14 @@ export class KnowledgeGraphRepository {
                     rdfs:label "${name}" ;
                     esg:hasCalculationType "${calculationType}" ;
                     esg:requiresInputFrom ${requiresInputFromTriples} ;
-                    esg:executesWith <${implementation.uri}>${optionalTriplesStr} .
+                    esg:executesWith <${implementation.iri}>${optionalTriplesStr} .
       }
     `;
 
     try {
       await this.executeSparqlUpdate(insertQuery);
       return {
-        uri: modelUri,
+        iri: modelUri,
         label: name,
         inputMetrics: resolvedInputMetrics,
         implementation

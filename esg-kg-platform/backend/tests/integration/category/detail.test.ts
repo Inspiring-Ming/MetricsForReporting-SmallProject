@@ -95,12 +95,12 @@ describe('Category API - GET /api/kg/categories/:id (Detail)', () => {
         .get(`${baseUrl}/${doubleEncoded}`)
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
 
     it('should handle URI with special characters', async () => {
       const specialCategory = await helper.createTestCategory('Category & Co.');
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(specialCategory)}`)
         .expect(200);
@@ -112,7 +112,7 @@ describe('Category API - GET /api/kg/categories/:id (Detail)', () => {
   describe('Error Cases', () => {
     it('should return 404 for non-existent category', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistentCategory';
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(nonExistentUri)}`)
         .expect(404);
@@ -122,10 +122,10 @@ describe('Category API - GET /api/kg/categories/:id (Detail)', () => {
 
     it('should return 400 for invalid URI format', async () => {
       const response = await request(app)
-        .get(`${baseUrl}/invalid-uri`)
+        .get(`${baseUrl}/invalid-iri`)
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
 
     it('should return 400 for whitespace-only URI', async () => {
@@ -133,23 +133,23 @@ describe('Category API - GET /api/kg/categories/:id (Detail)', () => {
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent('   ')}`)
         .expect(400);
-        
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
 
     it('should return 400 for malformed URI', async () => {
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent('not a uri')}`)
+        .get(`${baseUrl}/${encodeURIComponent('not a iri')}`)
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
   });
 
   describe('Complex Relationships', () => {
     it('should show category with many metrics', async () => {
       const metrics = await Promise.all(
-        Array.from({ length: 10 }, (_, i) => 
+        Array.from({ length: 10 }, (_, i) =>
           helper.createTestMetric(`Metric ${i + 1}`)
         )
       );
@@ -164,11 +164,11 @@ describe('Category API - GET /api/kg/categories/:id (Detail)', () => {
 
     it('should show category used by many frameworks', async () => {
       const frameworks = await Promise.all(
-        Array.from({ length: 5 }, (_, i) => 
+        Array.from({ length: 5 }, (_, i) =>
           helper.createTestFramework(`Framework ${i + 1}`)
         )
       );
-      
+
       for (const framework of frameworks) {
         await helper.addCategoriesToFramework(framework, [categoryUri]);
       }
@@ -198,7 +198,7 @@ describe('Category API - GET /api/kg/categories/:id (Detail)', () => {
   describe('Edge Cases', () => {
     it('should handle category with Unicode label', async () => {
       const unicodeCategory = await helper.createTestCategory('分类 🌍');
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(unicodeCategory)}`)
         .expect(200);
@@ -209,7 +209,7 @@ describe('Category API - GET /api/kg/categories/:id (Detail)', () => {
     it('should handle very long category URI', async () => {
       const longLabel = 'A'.repeat(100);
       const longCategory = await helper.createTestCategory(longLabel);
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(longCategory)}`)
         .expect(200);

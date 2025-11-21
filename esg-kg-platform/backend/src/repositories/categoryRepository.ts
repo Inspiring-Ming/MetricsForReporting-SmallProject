@@ -85,8 +85,8 @@ export class CategoryRepository {
         label: binding.label.value
       }));
 
-      const total = countResults.results.bindings[0]?.count?.value 
-        ? parseInt(countResults.results.bindings[0].count.value) 
+      const total = countResults.results.bindings[0]?.count?.value
+        ? parseInt(countResults.results.bindings[0].count.value)
         : 0;
 
       return { categories, total };
@@ -138,19 +138,19 @@ export class CategoryRepository {
       }
 
       const binding = bindings[0];
-      
+
       const metrics = binding.metricUris?.value
-        ? binding.metricUris.value.split(',').map((uri: string, index: number) => ({
-            iri: uri,
-            label: binding.metricLabels.value.split('|')[index]
-          }))
+        ? binding.metricUris.value.split(',').map((iri: string, index: number) => ({
+          iri: iri,
+          label: binding.metricLabels.value.split('|')[index]
+        }))
         : [];
 
       const frameworks = binding.frameworkUris?.value
-        ? binding.frameworkUris.value.split(',').map((uri: string, index: number) => ({
-            iri: uri,
-            label: binding.frameworkLabels.value.split('|')[index]
-          }))
+        ? binding.frameworkUris.value.split(',').map((iri: string, index: number) => ({
+          iri: iri,
+          label: binding.frameworkLabels.value.split('|')[index]
+        }))
         : [];
 
       return {
@@ -169,7 +169,7 @@ export class CategoryRepository {
    */
   async createCategory(data: CreateCategoryRequest): Promise<string> {
     const { label, metrics } = data;
-    const uri = `${ESG_PREFIX}${this.generateUriSuffix(label)}`;
+    const iri = `${ESG_PREFIX}${this.generateUriSuffix(label)}`;
 
     // 验证标签唯一性
     await this.validateLabelUniqueness(label);
@@ -180,13 +180,13 @@ export class CategoryRepository {
     }
 
     let insertTriples = `
-      <${uri}> a esg:Category .
-      <${uri}> rdfs:label "${this.escapeSparql(label)}" .
+      <${iri}> a esg:Category .
+      <${iri}> rdfs:label "${this.escapeSparql(label)}" .
     `;
 
     if (metrics && metrics.length > 0) {
       metrics.forEach(metricUri => {
-        insertTriples += `\n      <${uri}> esg:consistsOf <${metricUri}> .`;
+        insertTriples += `\n      <${iri}> esg:consistsOf <${metricUri}> .`;
       });
     }
 
@@ -200,7 +200,7 @@ export class CategoryRepository {
 
     try {
       await this.graphDB.executeSparqlQuery(updateQuery);
-      return uri;
+      return iri;
     } catch (error) {
       throw new GraphDBQueryError('Failed to create category', { originalError: error });
     }
@@ -243,7 +243,7 @@ export class CategoryRepository {
     // 更新指标关联
     if (metrics !== undefined) {
       deleteClause += `<${id}> esg:consistsOf ?oldMetric .\n`;
-      
+
       if (metrics.length > 0) {
         const metricInserts = metrics
           .map(metricUri => `      <${id}> esg:consistsOf <${metricUri}> .`)
@@ -374,7 +374,7 @@ export class CategoryRepository {
     // 检查哪些指标已经关联
     const existingMetrics = await this.getCategoryMetrics(id);
     const existingUris = new Set(existingMetrics.map(m => m.iri));
-    const newMetricUris = metricUris.filter(uri => !existingUris.has(uri));
+    const newMetricUris = metricUris.filter(iri => !existingUris.has(iri));
 
     if (newMetricUris.length === 0) {
       return existingMetrics; // 所有指标都已存在
@@ -468,7 +468,7 @@ export class CategoryRepository {
       ${this.prefix}
       
       SELECT ?metric WHERE {
-        VALUES ?metric { ${metricUris.map(uri => `<${uri}>`).join(' ')} }
+        VALUES ?metric { ${metricUris.map(iri => `<${iri}>`).join(' ')} }
         ?metric a esg:Metric .
       }
     `;
@@ -476,10 +476,10 @@ export class CategoryRepository {
     try {
       const results = await this.graphDB.executeSparqlQuery(query);
       const foundUris = new Set(results.results.bindings.map((b: any) => b.metric.value));
-      const invalidUris = metricUris.filter(uri => !foundUris.has(uri));
+      const invalidUris = metricUris.filter(iri => !foundUris.has(iri));
 
       if (invalidUris.length > 0) {
-        throw new ValidationError(`Invalid metric URI(s): ${invalidUris.join(', ')}`);
+        throw new ValidationError(`Invalid metric IRI(s): ${invalidUris.join(', ')}`);
       }
     } catch (error) {
       if (error instanceof ValidationError) {

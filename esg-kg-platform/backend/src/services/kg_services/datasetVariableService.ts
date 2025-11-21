@@ -1,5 +1,5 @@
 import { DatasetVariableRepository } from '../../repositories/datasetVariableRepository';
-import { 
+import {
   DatasetVariablesResponse,
   DatasetVariableDetailResponse,
   GetDatasetVariablesRequest,
@@ -94,7 +94,7 @@ export class DatasetVariableService {
       if (!Array.isArray(data.sources)) {
         throw new ValidationError('Sources must be an array');
       }
-      
+
       if (data.sources.length === 0) {
         throw new ValidationError('Sources array cannot be empty');
       }
@@ -119,8 +119,8 @@ export class DatasetVariableService {
     this.validateId(id);
 
     // 验证至少有一个字段需要更新
-    if (data.label === undefined && data.alignmentReason === undefined && data.confidenceScore === undefined && 
-        data.isUnitCompatible === undefined && data.sources === undefined) {
+    if (data.label === undefined && data.alignmentReason === undefined && data.confidenceScore === undefined &&
+      data.isUnitCompatible === undefined && data.sources === undefined) {
       throw new ValidationError('At least one field must be provided for update');
     }
 
@@ -207,8 +207,8 @@ export class DatasetVariableService {
     const result = await this.repository.addDatasourceToVariable(id, data.datasourceUri);
 
     return {
-      variable_uri: result.variableUri,
-      datasource_uri: result.datasourceUri,
+      variable_iri: result.variableUri,
+      datasource_iri: result.datasourceUri,
       added_at: new Date().toISOString()
     };
   }
@@ -237,18 +237,18 @@ export class DatasetVariableService {
    */
   async removeVariableDatasource(id: string, datasourceId: string): Promise<RemoveVariableDatasourceResponse> {
     if (!this.isValidUri(id)) {
-      throw new ValidationError('Invalid variable URI format');
+      throw new ValidationError('Invalid variable IRI format');
     }
 
     if (!this.isValidUri(datasourceId)) {
-      throw new ValidationError('Invalid datasource URI format');
+      throw new ValidationError('Invalid datasource IRI format');
     }
 
     await this.repository.removeVariableDatasource(id, datasourceId);
 
     return {
-      variable_uri: id,
-      datasource_uri: datasourceId,
+      variable_iri: id,
+      datasource_iri: datasourceId,
       removed_at: new Date().toISOString()
     };
   }
@@ -277,7 +277,7 @@ export class DatasetVariableService {
     if (!id || typeof id !== 'string') {
       throw new ValidationError('Dataset variable ID is required');
     }
-    
+
     // 检查是否全是空格或为空
     if (id.trim().length === 0) {
       throw new ValidationError('Dataset variable ID cannot be empty or whitespace');
@@ -287,31 +287,31 @@ export class DatasetVariableService {
   /**
    * 验证 URI 格式是否有效
    */
-  private isValidUri(uri: string): boolean {
-    if (!uri || uri.trim().length === 0) {
+  private isValidUri(iri: string): boolean {
+    if (!iri || iri.trim().length === 0) {
       return false;
     }
-    
+
     // 完整 URL 格式
-    if (uri.startsWith('http://') || uri.startsWith('https://')) {
+    if (iri.startsWith('http://') || iri.startsWith('https://')) {
       try {
-        new URL(uri);
+        new URL(iri);
         return true;
       } catch {
         return false;
       }
     }
-    
+
     // 命名空间格式 (prefix:localName)
-    if (/^[a-zA-Z][a-zA-Z0-9]*:[a-zA-Z_][a-zA-Z0-9_-]*$/.test(uri)) {
+    if (/^[a-zA-Z][a-zA-Z0-9]*:[a-zA-Z_][a-zA-Z0-9_-]*$/.test(iri)) {
       return true;
     }
-    
+
     // 简单标识符 (字母开头，可包含字母数字下划线连字符)
-    if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(uri)) {
+    if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(iri)) {
       return true;
     }
-    
+
     return false;
   }
 

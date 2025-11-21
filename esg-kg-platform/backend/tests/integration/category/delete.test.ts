@@ -28,7 +28,7 @@ describe('Category API - DELETE /api/kg/categories/:id (Delete)', () => {
         .delete(`${baseUrl}/${encodeURIComponent(categoryUri)}`)
         .expect(200);
 
-      expect(response.body.uri).toBe(categoryUri);
+      expect(response.body.iri).toBe(categoryUri);
       expect(response.body.deleted).toBe(true);
       expect(response.body).toHaveProperty('deleted_at');
 
@@ -47,7 +47,7 @@ describe('Category API - DELETE /api/kg/categories/:id (Delete)', () => {
       expect(response.body.deleted).toBe(true);
       const exists = await helper.categoryExists(categoryUri);
       expect(exists).toBe(false);
-      
+
       const metricStillExists = await helper.metricExists(metric);
       expect(metricStillExists).toBe(true);
     });
@@ -77,7 +77,7 @@ describe('Category API - DELETE /api/kg/categories/:id (Delete)', () => {
         .expect(409);
 
       expect(response.body.error.message).toMatch(/used by.*framework/i);
-      
+
       const exists = await helper.categoryExists(categoryUri);
       expect(exists).toBe(true);
     });
@@ -99,7 +99,7 @@ describe('Category API - DELETE /api/kg/categories/:id (Delete)', () => {
   describe('Error Cases', () => {
     it('should return 404 for non-existent category', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistent';
-      
+
       const response = await request(app)
         .delete(`${baseUrl}/${encodeURIComponent(nonExistentUri)}`)
         .expect(404);
@@ -109,10 +109,10 @@ describe('Category API - DELETE /api/kg/categories/:id (Delete)', () => {
 
     it('should return 400 for invalid URI format', async () => {
       const response = await request(app)
-        .delete(`${baseUrl}/invalid-uri`)
+        .delete(`${baseUrl}/invalid-iri`)
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
   });
 
@@ -177,7 +177,7 @@ describe('Category API - DELETE /api/kg/categories/:id (Delete)', () => {
 
     it('should handle deletion with Unicode label', async () => {
       const unicodeCategory = await helper.createTestCategory('分类 🌍');
-      
+
       await request(app)
         .delete(`${baseUrl}/${encodeURIComponent(unicodeCategory)}`)
         .expect(200);
@@ -199,12 +199,12 @@ describe('Category API - DELETE /api/kg/categories/:id (Delete)', () => {
       // 可能所有请求都通过 exists 检查然后都执行删除
       // 第一个删除成功，后续的 DELETE WHERE 不匹配任何数据但也不报错
       // 因此我们只检查至少有一个成功，且 Category 最终被删除
-      const successful = responses.filter((r: any) => 
+      const successful = responses.filter((r: any) =>
         r.status === 'fulfilled' && r.value.status === 200
       );
 
       expect(successful.length).toBeGreaterThanOrEqual(1);
-      
+
       // 验证 Category 确实被删除了
       const exists = await helper.categoryExists(categoryUri);
       expect(exists).toBe(false);

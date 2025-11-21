@@ -1,5 +1,5 @@
 import { GraphDBRepository } from './graphDBRepository';
-import { 
+import {
   DatasetVariable,
   DatasetVariableDTO,
   DataSourceDTO,
@@ -28,23 +28,23 @@ export class DatasetVariableRepository {
    * 获取数据集变量列表（支持分页、搜索和筛选）
    */
   async getDatasetVariables(params: GetDatasetVariablesRequest): Promise<{ variables: DatasetVariableDTO[], total: number }> {
-    const { 
-      page = 1, 
-      size = 20, 
-      search, 
+    const {
+      page = 1,
+      size = 20,
+      search,
       datasource,
       metric,
       minConfidenceScore,
       isUnitCompatible,
-      sort = 'label', 
-      order = 'asc' 
+      sort = 'label',
+      order = 'asc'
     } = params;
-    
+
     const offset = (page - 1) * size;
 
     // 构建搜索过滤条件
     const filters: string[] = [];
-    
+
     if (search) {
       filters.push(`FILTER(CONTAINS(LCASE(?label), LCASE("${this.escapeSparql(search)}")))`);
     }
@@ -130,8 +130,8 @@ export class DatasetVariableRepository {
             iri: variableUri,
             label: binding.label.value,
             alignmentReason: binding.alignmentReason?.value,
-            confidenceScore: binding.confidenceScore 
-              ? parseInt(binding.confidenceScore.value, 10) 
+            confidenceScore: binding.confidenceScore
+              ? parseInt(binding.confidenceScore.value, 10)
               : undefined,
             isUnitCompatible: binding.isUnitCompatible?.value,
             sources
@@ -236,8 +236,8 @@ export class DatasetVariableRepository {
         iri: variableUri,
         label: firstBinding.label.value,
         alignmentReason: firstBinding.alignmentReason?.value,
-        confidenceScore: firstBinding.confidenceScore 
-          ? parseInt(firstBinding.confidenceScore.value, 10) 
+        confidenceScore: firstBinding.confidenceScore
+          ? parseInt(firstBinding.confidenceScore.value, 10)
           : undefined,
         isUnitCompatible: firstBinding.isUnitCompatible?.value,
         sources,
@@ -263,7 +263,7 @@ export class DatasetVariableRepository {
     if (id.startsWith('http://') || id.startsWith('https://')) {
       return id;
     }
-    
+
     // Namespace 格式: esg:TestVar -> http://example.org/esg#TestVar
     if (id.includes(':')) {
       const [prefix, localPart] = id.split(':', 2);
@@ -271,7 +271,7 @@ export class DatasetVariableRepository {
         return `http://example.org/esg#${localPart}`;
       }
     }
-    
+
     // 简单 ID: TestVar -> http://example.org/esg#TestVar
     return `http://example.org/esg#${id}`;
   }
@@ -311,7 +311,7 @@ export class DatasetVariableRepository {
   /**
    * 创建数据集变量
    */
-  async createDatasetVariable(data: CreateDatasetVariableRequest): Promise<{ uri: string; label: string; created_at: string }> {
+  async createDatasetVariable(data: CreateDatasetVariableRequest): Promise<{ iri: string; label: string; created_at: string }> {
     // 验证必填字段
     if (!data.label || data.label.trim() === '') {
       throw new ValidationError('Label is required');
@@ -371,7 +371,7 @@ export class DatasetVariableRepository {
       await this.graphDB.executeSparqlQuery(insertQuery);
 
       return {
-        uri: variableUri,
+        iri: variableUri,
         label: data.label,
         created_at: createdAt
       };
@@ -383,7 +383,7 @@ export class DatasetVariableRepository {
   /**
    * 更新数据集变量（部分更新）
    */
-  async updateDatasetVariable(id: string, data: UpdateDatasetVariableRequest): Promise<{ uri: string; label: string; updated_at: string }> {
+  async updateDatasetVariable(id: string, data: UpdateDatasetVariableRequest): Promise<{ iri: string; label: string; updated_at: string }> {
     const variableUri = this.resolveVariableUri(id);
 
     // 验证变量是否存在
@@ -391,7 +391,7 @@ export class DatasetVariableRepository {
       ${this.prefix}
       ASK { <${variableUri}> a esg:DatasetVariable . }
     `;
-    
+
     try {
       const existsResult = await this.graphDB.executeSparqlQuery(existsQuery);
       if (!existsResult.boolean) {
@@ -463,7 +463,7 @@ export class DatasetVariableRepository {
       const label = labelResult.results.bindings[0]?.label?.value || '';
 
       return {
-        uri: variableUri,
+        iri: variableUri,
         label: label,
         updated_at: updatedAt
       };
@@ -471,15 +471,15 @@ export class DatasetVariableRepository {
 
     // 构建更新查询
     let updateQuery = `${this.prefix}\n`;
-    
+
     if (deleteTriples) {
       updateQuery += `DELETE {\n${deleteTriples}}\n`;
     }
-    
+
     if (insertTriples) {
       updateQuery += `INSERT {\n${insertTriples}}\n`;
     }
-    
+
     updateQuery += `WHERE {\n${whereTriples}}`;
 
     try {
@@ -494,7 +494,7 @@ export class DatasetVariableRepository {
       const label = labelResult.results.bindings[0]?.label?.value || data.label || '';
 
       return {
-        uri: variableUri,
+        iri: variableUri,
         label: label,
         updated_at: updatedAt
       };
@@ -506,7 +506,7 @@ export class DatasetVariableRepository {
   /**
    * 删除数据集变量
    */
-  async deleteDatasetVariable(id: string, force: boolean = false): Promise<{ uri: string; deleted: boolean; deleted_at: string }> {
+  async deleteDatasetVariable(id: string, force: boolean = false): Promise<{ iri: string; deleted: boolean; deleted_at: string }> {
     const variableUri = this.resolveVariableUri(id);
 
     // 验证变量是否存在
@@ -514,7 +514,7 @@ export class DatasetVariableRepository {
       ${this.prefix}
       ASK { <${variableUri}> a esg:DatasetVariable . }
     `;
-    
+
     try {
       const existsResult = await this.graphDB.executeSparqlQuery(existsQuery);
       if (!existsResult.boolean) {
@@ -535,7 +535,7 @@ export class DatasetVariableRepository {
           ?metric esg:obtainedFrom <${variableUri}> .
         }
       `;
-      
+
       try {
         const dependencyResult = await this.graphDB.executeSparqlQuery(dependencyQuery);
         if (dependencyResult.boolean) {
@@ -576,7 +576,7 @@ export class DatasetVariableRepository {
       await this.graphDB.executeSparqlQuery(deleteQuery);
 
       return {
-        uri: variableUri,
+        iri: variableUri,
         deleted: true,
         deleted_at: deletedAt
       };
@@ -755,7 +755,7 @@ export class DatasetVariableRepository {
    */
   async removeVariableDatasource(variableId: string, datasourceId: string): Promise<void> {
     const variableUri = this.resolveVariableUri(variableId);
-    const datasourceUri = this.resolveVariableUri(datasourceId);
+    const datasourceUri = this.resolveDatasourceUri(datasourceId);
 
     // 删除 esg:sourceFrom 关联
     const deleteQuery = `
@@ -816,8 +816,8 @@ export class DatasetVariableRepository {
       return {
         variableUri,
         variableLabel: binding.label.value,
-        confidenceScore: binding.confidenceScore 
-          ? parseInt(binding.confidenceScore.value, 10) 
+        confidenceScore: binding.confidenceScore
+          ? parseInt(binding.confidenceScore.value, 10)
           : undefined,
         isUnitCompatible: binding.isUnitCompatible?.value,
         alignmentReason: binding.alignmentReason?.value

@@ -53,6 +53,9 @@ RUN pnpm install --prod --frozen-lockfile
 # Copy built application from builder stage
 COPY --from=builder --chown=nodejs:nodejs /app/backend/dist ./backend/dist
 
+# Copy swagger documentation (generated during build)
+COPY --from=builder --chown=nodejs:nodejs /app/backend/swagger.json ./backend/swagger.json
+
 # Switch to nodejs user
 USER nodejs
 
