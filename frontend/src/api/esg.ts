@@ -46,12 +46,57 @@ export type ReportGenRes = {
   fileURL: string,
 };
 
+type UploadSuccess = {
+  success: true,
+  data: {
+    uri?: string,
+    label: string,
+    language?: string,
+    file_path?: string,
+    created_at?: string,
+  };
+};
+
+type UpdateMetricCalMethodSuccess = {
+  success: true,
+  data: {
+    metric_uri: string,
+    metric_label: string,
+    calculation_method: string,
+    model: {
+      uri: string,
+      label: string,
+    },
+    updated_at: string,
+  };
+};
+
+// --- Upload info to embed into report ---
+export type UploadItem = {
+  category: string;
+  metric: string;
+  modelName: string;
+  implementationName: string;          // e.g. "percentage_ratio.py"
+  implementationFilePath?: string;     // e.g. "models/user_scripts/percentage_ratio.py"
+  implementationUri?: string;          // KG IRI returned when implementation is created
+  modelUri?: string;                   // KG IRI returned when model is created
+  inputMetrics: string[];              // user's chosen input metrics
+  calculationType?: string;            // e.g. "user_scripts/percentage_ratio"
+  link?: {
+    metric_label: string;
+    model_label: string;
+    updated_at?: string;
+  };
+  notes?: string;                      // reminders, e.g., mock/random values note
+  created_at: string;                  // ISO timestamp
+};
+
 // --- Types you can export from ./api/esg (or keep local) --------------------
 export type ReportItem = {
   category: string;
   metric: string;
-  modelDisplay: string;             // what we show in the UI (“direct_measurement” or model name)
-  value: number | string;           // computed result shown in table
+  modelDisplay: string;                     // e.g. "direct_measurement" or calculation type
+  value: number | string;                   // computed result
   method: "direct_measurement" | "calculation_model";
   methodDetails: {
     direct?: {
@@ -61,10 +106,10 @@ export type ReportItem = {
       pillar?: string | null;
     };
     calc?: {
-      calculationType?: string | null;    // method.hasCalculationType
-      modelExecution?: string | null;     // e.g. "percentage_ratio.py"
-      formula?: string | undefined;       // method.hasFormula
-      inputs?: string[];                  // method.requiresInputFrom
+      calculationType?: string | null;     // method.hasCalculationType
+      modelExecution?: string | null;      // implementation filename if any
+      formula?: string | undefined;        // method.hasFormula
+      inputs?: string[];                   // method.requiresInputFrom
       metricInfo?: Array<{
         metric_name: string;
         value: number;
@@ -85,9 +130,12 @@ export type ReportData = {
   framework?: string;
   year: string;
   items: ReportItem[];
+  uploadItem?: UploadItem; // include upload information for report rendering
 };
 
-// --- Code validation/submit/execute (IDE) ----------------------------------
+// ========================================================================= //
+// ======================== COMPUTATION MICROSERVICE ======================= //
+// ========================================================================= //
 export type CodeValidationError = { message: string; line?: number; column?: number; text?: string };
 export type CodeValidationRes = { ok: boolean; error?: CodeValidationError; errors?: CodeValidationError[] };
 
@@ -104,8 +152,8 @@ export type SaveUserScriptRes = {
   errors?: CodeValidationError[];
 };
 
-export function submitCodeReq(language: "python", code: string): Promise<Result<SaveUserScriptRes>> {
-  return requestHelper("POST", "/SAGE/code/submit", { language, code });
+export function submitCodeReq(language: "python", code: string, name?: string): Promise<Result<SaveUserScriptRes>> {
+  return requestHelper("POST", "/SAGE/code/submit", { language, code, name });
 }
 
 export type ExecuteUserScriptRes = {
@@ -115,8 +163,12 @@ export type ExecuteUserScriptRes = {
   error?: CodeValidationError;
 };
 
-export function executeCodeReq(id: string, inputs: unknown): Promise<Result<ExecuteUserScriptRes>> {
-  return requestHelper("POST", "/SAGE/code/execute", { id, inputs });
+export function executeCodeReq(
+  id: string | undefined,
+  inputs: unknown,
+  script_name?: string
+): Promise<Result<ExecuteUserScriptRes>> {
+  return requestHelper("POST", "/SAGE/code/execute", { id, script_name, inputs });
 }
 
 export function executeTempCodeReq(language: "python", code: string, inputs: unknown): Promise<Result<ExecuteUserScriptRes>> {
@@ -128,6 +180,26 @@ export function getCompanyInfoReq(perm_id: string): Promise<Result<CompanyInfoRe
   return requestHelper("GET", "/SAGE/dynamoDB/company/info", { perm_id });
 }
 
+export function getMetricValueReq(
+  perm_id: string,
+  metric_name: string,
+  year: string
+): Promise<Result<MetricValRes>> {
+  return requestHelper("GET", "/SAGE/dynamoDB/metric/value", { perm_id, metric_name, year });
+}
+
+export function modelExecutionReq(
+  perm_id: string,
+  calculation_type: string,
+  year: string,
+  metricArray: string[]
+): Promise<Result<ModelExecutaionRes>> {
+  return requestHelper("POST", "/SAGE/model/computation", { perm_id, calculation_type, year, metricArray });
+}
+
+// ========================================================================= //
+// ============================ KG MICROSERVICE ============================ //
+// ========================================================================= //
 export function getReportFrameworkReq(industry: string): Promise<Result<FrameworkRes>> {
   // KG API - goes to docker backend (port 3000)
   return requestHelper("GET", "/api/kg/frameworks", { industry });
@@ -148,6 +220,68 @@ export function getModelCalMetricsReq(industry: string, category_label:string, f
   return requestHelper("GET", "/api/kg/metrics/model-calculation", { industry, category_label, framework });
 }
 
+export function uploadModelReq(
+  name: string,
+  calculation_type: string,
+  input_metrics: string[],
+  implementation: string,
+  description?: string,
+  formula?: string,
+  mathematical_expression?: string,
+): Promise<Result<UploadSuccess>> {
+  // KG API - goes to docker backend (port 3000)
+  return requestHelper(
+    "POST",
+    "/api/kg/models",
+    {
+      name,
+      calculation_type,
+      input_metrics,
+      implementation,
+      description,
+      formula,
+      mathematical_expression,
+    }
+  )
+}
+
+export function uploadImplementationReq(
+  name: string,
+  language: string,
+  file_path: string,
+  description?: string,
+): Promise<Result<UploadSuccess>> {
+  // KG API - goes to docker backend (port 3000)
+
+  return requestHelper(
+    "POST",
+    "/api/kg/implementations",
+    { name, language, file_path, description }
+  );
+}
+
+export function resetKGReq() {
+  // KG API - goes to docker backend (port 3000)
+
+  return requestHelper(
+    "POST",
+    "/api/kg/reset",
+  );
+}
+
+export function updateMetricCalMethodReq(
+  metric_label: string,
+  model: string,
+): Promise<Result<UpdateMetricCalMethodSuccess>> {
+  // KG API - goes to docker backend (port 3000)
+
+  return requestHelper(
+    "PATCH",
+    `/api/kg/metrics/${metric_label}/calculation-method`,
+    { model }
+  );
+}
+
 // Wrong output type -- NEEDS FIXING
 // export function getMetricComputationMethodReq(metric_label: string): Promise<Result<MetricMethod>> {
 //   // KG Computation API - goes to docker backend (port 3000)
@@ -160,23 +294,9 @@ export function getMetricComputationMethodReq(metric_label: string): Promise<Res
   return requestHelper("GET", "/SAGE/KG/metric/computation/method", { metric_label });
 }
 
-export function getMetricValueReq(
-  perm_id: string,
-  metric_name: string,
-  year: string
-): Promise<Result<MetricValRes>> {
-  return requestHelper("GET", "/SAGE/dynamoDB/metric/value", { perm_id, metric_name, year });
-}
-
-export function modelExecutionReq(
-  perm_id: string,
-  calculation_type: string,
-  year: string,
-  metricArray: string[]
-): Promise<Result<ModelExecutaionRes>> {
-  return requestHelper("POST", "/SAGE/model/computation", { perm_id, calculation_type, year, metricArray });
-}
-
+// ========================================================================= //
+// ===================== REPORT GENERATION MICROSERVICE ==================== //
+// ========================================================================= //
 export function generateReportReq(fileType: string, data: ReportData) {
   return requestHelper<ReportGenRes>("POST", "/SAGE/report/generate", { fileType, data });
 }

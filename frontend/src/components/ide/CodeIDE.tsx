@@ -1,8 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
-import { validateCodeReq, submitCodeReq, executeCodeReq } from "../../api/esg";
+import {
+  validateCodeReq, submitCodeReq, executeCodeReq, 
+  uploadModelReq, uploadImplementationReq 
+} from "../../api/esg";
+import { updateMetricCalMethodReq } from "../../api/esg";
 
 type Props = {
   category: string;
@@ -10,9 +14,18 @@ type Props = {
   inputs: string[];
   onBack: () => void;
   language?: "python";
+  // New
+  modelName?: string;
+  implementationName?: string; // expect "<name>.py"
 };
 
-function generatePythonTemplate(category: string, metric: string, inputs: string[]) {
+function generatePythonTemplate(
+  category: string,
+  metric: string,
+  inputs: string[],
+  modelName?: string,
+  implementationName?: string
+) {
   return [
     "# Python Implementation Editor",
     "# Rules for compatibility:",
@@ -23,6 +36,9 @@ function generatePythonTemplate(category: string, metric: string, inputs: string
     `category = ${JSON.stringify(category)}`,
     `metric = ${JSON.stringify(metric)}`,
     `input_names = ${JSON.stringify(inputs)}`,
+    // New metadata
+    `model_name = ${JSON.stringify(modelName ?? "")}`,
+    `implementation_name = ${JSON.stringify(implementationName ?? "")}`,
     "",
     "import sys, json, math",
     "",
@@ -46,6 +62,8 @@ function generatePythonTemplate(category: string, metric: string, inputs: string
     "args = parse_args(input_names)",
     "print('category:', category)",
     "print('metric:', metric)",
+    "print('model_name:', model_name)",
+    "print('implementation_name:', implementation_name)",
     "print('input_names:', input_names)",
     "print('args:', args)",
     "result = compute(args)",
@@ -62,9 +80,14 @@ export default function CodeIDE({
   inputs,
   onBack,
   language = "python",
+  // New
+  modelName,
+  implementationName,
 }: Props) {
   const [code, setCode] = useState<string>(() =>
-    language === "python" ? generatePythonTemplate(category, metric, inputs) : ""
+    language === "python"
+      ? generatePythonTemplate(category, metric, inputs, modelName, implementationName)
+      : ""
   );
 
   // --- fullscreen handling ---
@@ -153,15 +176,117 @@ export default function CodeIDE({
     }
   };
 
+  const [savedFilePath, setSavedFilePath] = useState<string | null>(null);
+  const [modelUploadMsg, setModelUploadMsg] = useState<string | null>(null);
+  const [implUploadMsg, setImplUploadMsg] = useState<string | null>(null);
+  const [linkMsg, setLinkMsg] = useState<string | null>(null); // new: metric-model link status
+  // Track uploaded model URI for visualization
+  const [modelUri, setModelUri] = useState<string | null>(null);
+  const [persistMsg, setPersistMsg] = useState<string | null>(null); // new: saved to report
+
   const submitScript = async () => {
     setIsSubmitting(true);
     setSubmitErr(null);
     setSavedId(null);
+    setSavedFilePath(null);
+    setModelUploadMsg(null);
+    setImplUploadMsg(null);
+    setLinkMsg(null);
+    setModelUri(null);
+    setPersistMsg(null);
     try {
-      const res = await submitCodeReq("python", code);
+      const res = await submitCodeReq("python", code, implementationName);
       if (!res.ok) return setSubmitErr(res.message);
       if (!res.data.ok || !res.data.id) return setSubmitErr(res.data.error?.message || "Failed to submit script");
       setSavedId(res.data.id);
+      if (res.data.file?.path) setSavedFilePath(res.data.file.path);
+
+      // Upload implementation first; only proceed to model on success
+      let implOk = false;
+      let implUri: string | null = null; // capture IRI for implementation
+      let implPath: string | null = null;
+      if (implementationName) {
+        const baseImpl = implementationName.replace(/\.py$/i, "");
+        implPath = `models/user_scripts/${baseImpl}.py`;
+        const implRes = await uploadImplementationReq(baseImpl, "Python", implPath);
+        if (implRes.ok) {
+          implOk = true;
+          implUri = implRes.data?.data?.uri || null;
+          const iri = implUri || baseImpl;
+          setImplUploadMsg(`Implementation uploaded with IRI: ${iri}`);
+        } else {
+          const msg = typeof implRes.message === "string" ? implRes.message : JSON.stringify(implRes.message);
+          setImplUploadMsg(`Implementation upload failed: ${msg}`);
+        }
+      } else {
+        setImplUploadMsg("Implementation upload skipped: missing implementation name.");
+      }
+
+      // Only upload model if implementation upload succeeded
+      let modelOk = false;
+      let modelIriLocal: string | null = null;
+      let calculation_type: string | undefined = undefined;
+      if (implOk && modelName && implementationName) {
+        const baseImpl = implementationName.replace(/\.py$/i, "");
+        calculation_type = `user_scripts/${baseImpl}`;
+        const kgRes = await uploadModelReq(modelName, calculation_type, inputs, baseImpl);
+        if (kgRes.ok) {
+          modelOk = true;
+          modelIriLocal = kgRes.data?.data?.uri || modelName;
+          setModelUploadMsg(`Model uploaded with IRI: ${modelIriLocal}`);
+          setModelUri(modelIriLocal); // save for visualization
+        } else {
+          const msg = typeof kgRes.message === "string" ? kgRes.message : JSON.stringify(kgRes.message);
+          setModelUploadMsg(`Model upload failed: ${msg}`);
+        }
+      } else if (modelName && implementationName) {
+        setModelUploadMsg("Model upload skipped: implementation upload did not succeed.");
+      } else {
+        setModelUploadMsg("Model upload skipped: missing model or implementation name.");
+      }
+
+      // Link metric to model only if model upload succeeded
+      let linkInfo: { metric_label: string; model_label: string; updated_at?: string } | undefined = undefined;
+      if (modelOk && modelName && metric) {
+        const linkRes = await updateMetricCalMethodReq(metric, modelName);
+        if (linkRes.ok) {
+          const linkedMetric = linkRes.data.data.metric_label || metric;
+          const linkedModel = linkRes.data.data.model?.label || modelName;
+          linkInfo = {
+            metric_label: linkedMetric,
+            model_label: linkedModel,
+            updated_at: linkRes.data.data.updated_at,
+          };
+          setLinkMsg(`Linked metric '${linkedMetric}' to model '${linkedModel}'.`);
+        } else {
+          const msg = typeof linkRes.message === "string" ? linkRes.message : JSON.stringify(linkRes.message);
+          setLinkMsg(`Link metric to model failed: ${msg}`);
+        }
+      }
+
+      // Persist upload info for report only if we have model success
+      // if (modelOk && modelName) {
+      //   const uploadItem = {
+      //     category,
+      //     metric,
+      //     modelName,
+      //     implementationName: implementationName!, // includes .py
+      //     // implementationFilePath: savedFilePath || implPath || undefined,
+      //     implementationUri: implUri || undefined,
+      //     modelUri: modelIriLocal || undefined,
+      //     inputMetrics: inputs,
+      //     calculationType: calculation_type,
+      //     link: linkInfo,
+      //     notes: "Note: Execution values for the uploaded model may use mock/random inputs for demonstration.",
+      //     created_at: new Date().toISOString(),
+      //   };
+      //   try {
+      //     localStorage.setItem("uploadItem", JSON.stringify(uploadItem));
+      //     setPersistMsg("Upload info saved for report.");
+      //   } catch {
+      //     // ignore storage errors
+      //   }
+      // }
     } catch (e: any) {
       setSubmitErr(e.message || "Failed to submit script");
     } finally {
@@ -169,15 +294,22 @@ export default function CodeIDE({
     }
   };
 
+  // Open GraphDB visualization with the uploaded model URI
+  const openGraphVisualization = () => {
+    if (!modelUri) return;
+    const url = `http://localhost:7200/graphs-visualizations?uri=${encodeURIComponent(modelUri)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
   const executeScript = async () => {
-    if (!savedId) return;
+    if (!savedId && !implementationName) return;
     setIsExecuting(true);
     setExecErr(null);
     setExecOutput(null);
     setTermOpen(true);
     setExecLogs((prev) => [...prev, "> Executing script..."]);
     try {
-      const res = await executeCodeReq(savedId, inputs);
+      const res = await executeCodeReq(savedId || undefined, inputs, implementationName);
       if (!res.ok) {
         setExecErr(res.message);
         setExecLogs((prev) => [...prev, `! ERROR: ${res.message}`]);
@@ -186,7 +318,14 @@ export default function CodeIDE({
       const logs = Array.isArray(res.data.logs) ? res.data.logs : [];
       if (res.data.ok) {
         setExecOutput(res.data.result);
-        setExecLogs([...logs, `> Result: ${typeof res.data.result === "object" ? JSON.stringify(res.data.result) : String(res.data.result)}`]);
+        setExecLogs([
+          ...logs,
+          `> Result: ${
+            typeof res.data.result === "object"
+              ? JSON.stringify(res.data.result)
+              : String(res.data.result)
+          }`,
+        ]);
       } else {
         const msg = res.data.error?.message || "Execution failed";
         setExecErr(msg);
@@ -280,6 +419,7 @@ export default function CodeIDE({
             </div>
           </div>
 
+          {/* Details */}
           <div className="grid sm:grid-cols-3 gap-3 text-sm">
             <div>
               <div className="text-xs text-slate-500">Category</div>
@@ -295,6 +435,17 @@ export default function CodeIDE({
             </div>
           </div>
 
+          <div className="grid sm:grid-cols-2 gap-3 text-sm">
+            <div>
+              <div className="text-xs text-slate-500">Model name</div>
+              <div className="font-medium">{modelName || "—"}</div>
+            </div>
+            <div>
+              <div className="text-xs text-slate-500">Implementation (.py)</div>
+              <div className="font-medium">{implementationName || "—"}</div>
+            </div>
+          </div>
+          {/* Editor */}
           <div>
             <div className="text-xs text-slate-500 mb-1">Code (Python)</div>
             <div className="rounded-xl border border-slate-300 overflow-hidden">
@@ -320,6 +471,18 @@ export default function CodeIDE({
               <div className="mt-2 text-xs text-slate-700">
                 Saved id: <span className="font-mono">{savedId}</span>
               </div>
+            )}
+            {modelUploadMsg && (
+              <div className="mt-1 text-xs text-slate-700">{modelUploadMsg}</div>
+            )}
+            {implUploadMsg && (
+              <div className="mt-1 text-xs text-slate-700">{implUploadMsg}</div>
+            )}
+            {linkMsg && (
+              <div className="mt-1 text-xs text-slate-700">{linkMsg}</div>
+            )}
+            {persistMsg && (
+              <div className="mt-1 text-xs text-slate-700">{persistMsg}</div>
             )}
             {submitErr && <div className="mt-2 text-xs text-red-600">{submitErr}</div>}
           </div>
@@ -367,6 +530,15 @@ export default function CodeIDE({
               title={!savedId ? "Submit the script first" : "Execute saved script"}
             >
               {isExecuting ? "Executing..." : "Execute"}
+            </button>
+            {/* New: Graph Visualization button */}
+            <button
+              className="px-4 py-2 rounded-xl bg-indigo-700 text-white text-sm hover:bg-indigo-600 disabled:opacity-50"
+              onClick={openGraphVisualization}
+              disabled={!modelUri}
+              title={!modelUri ? "Upload implementation and model successfully first" : "Open Graph Visualization"}
+            >
+              Graph Visualization
             </button>
           </div>
         </div>
