@@ -256,6 +256,29 @@ ${insertClause}
       `);
     }
 
+    // 更新模型关联 (esg:isCalculatedBy)
+    if (data.model !== undefined) {
+      // 如果 model 为空字符串或 null，移除关联
+      if (!data.model || data.model.trim().length === 0) {
+        updates.push(`
+          DELETE { <${metricUri}> esg:isCalculatedBy ?oldModel . }
+          WHERE { OPTIONAL { <${metricUri}> esg:isCalculatedBy ?oldModel . } }
+        `);
+      } else {
+        // 解析模型 URI
+        const modelUri = this.resolveMetricUri(data.model);
+
+        // 先删除旧的关联，再添加新的关联
+        updates.push(`
+          DELETE { <${metricUri}> esg:isCalculatedBy ?oldModel . }
+          WHERE { OPTIONAL { <${metricUri}> esg:isCalculatedBy ?oldModel . } }
+        `);
+        updates.push(`
+          INSERT DATA { <${metricUri}> esg:isCalculatedBy <${modelUri}> . }
+        `);
+      }
+    }
+
     // 更新其他字段
     const fieldMap: Record<string, string> = {
       description: 'esg:hasDescription',
@@ -881,13 +904,13 @@ ${insertClause}
 
     try {
       const result = await this.graphDB.executeSparqlQuery(query);
-      
+
       // 组织数据结构
       const modelsMap = new Map();
-      
+
       for (const binding of result.results.bindings) {
         const modelIri = binding.model.value;
-        
+
         if (!modelsMap.has(modelIri)) {
           modelsMap.set(modelIri, {
             iri: modelIri,
@@ -903,7 +926,7 @@ ${insertClause}
             inputMetrics: []
           });
         }
-        
+
         // 添加输入指标
         if (binding.inputMetric) {
           const model = modelsMap.get(modelIri);
@@ -916,7 +939,7 @@ ${insertClause}
           }
         }
       }
-      
+
       return Array.from(modelsMap.values());
     } catch (error) {
       throw new GraphDBQueryError(
@@ -970,13 +993,13 @@ ${insertClause}
 
     try {
       const result = await this.graphDB.executeSparqlQuery(query);
-      
+
       // 组织数据结构
       const modelsMap = new Map();
-      
+
       for (const binding of result.results.bindings) {
         const modelIri = binding.model.value;
-        
+
         if (!modelsMap.has(modelIri)) {
           modelsMap.set(modelIri, {
             iri: modelIri,
@@ -996,7 +1019,7 @@ ${insertClause}
             inputMetrics: []
           });
         }
-        
+
         // 添加输入指标
         if (binding.inputMetric) {
           const model = modelsMap.get(modelIri);
@@ -1009,7 +1032,7 @@ ${insertClause}
           }
         }
       }
-      
+
       return Array.from(modelsMap.values());
     } catch (error) {
       throw new GraphDBQueryError(

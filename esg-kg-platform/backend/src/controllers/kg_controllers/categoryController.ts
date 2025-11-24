@@ -36,6 +36,7 @@ export class CategoryController extends Controller {
    * @param page Page number (starting from 1, default 1)
    * @param size Items per page (default 20, max 100)
    * @param search Search keyword (fuzzy match on label)
+   * @param industry Filter by industry (optional)
    * @param framework Filter by framework (optional)
    * @param sort Sort field (default label)
    * @param order Sort order (default asc)
@@ -49,11 +50,12 @@ export class CategoryController extends Controller {
     @Query() page?: number,
     @Query() size?: number,
     @Query() search?: string,
+    @Query() industry?: string,
     @Query() framework?: string,
     @Query() sort?: 'label' | 'createdAt',
     @Query() order?: 'asc' | 'desc'
   ): Promise<CategoriesResponse> {
-    const params: GetCategoriesRequest = { page, size, search, framework, sort, order };
+    const params: GetCategoriesRequest = { page, size, search, industry, framework, sort, order };
     return await this.categoryService.getCategories(params);
   }
 
@@ -63,6 +65,7 @@ export class CategoryController extends Controller {
       page: req.query.page ? parseInt(req.query.page as string) : undefined,
       size: req.query.size ? parseInt(req.query.size as string) : undefined,
       search: req.query.search as string,
+      industry: req.query.industry as string,
       framework: req.query.framework as string,
       sort: req.query.sort as 'label' | 'createdAt',
       order: req.query.order as 'asc' | 'desc'

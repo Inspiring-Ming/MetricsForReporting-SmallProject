@@ -30,6 +30,7 @@ export class CategoryRepository {
       page = 1,
       size = 20,
       search = '',
+      industry = '',
       framework = '',
       sort = 'label',
       order = 'asc'
@@ -40,10 +41,23 @@ export class CategoryRepository {
     // 构建筛选条件
     let filterClause = '';
     if (search) {
-      filterClause += `FILTER(CONTAINS(LCASE(?label), LCASE("${search}"))) .\n`;
+      filterClause += `FILTER(CONTAINS(LCASE(?label), LCASE("${this.escapeSparql(search)}"))) .\n`;
+    }
+    if (industry) {
+      filterClause += `?industryEntity a esg:Industry ;\n`;
+      filterClause += `                 rdfs:label "${this.escapeSparql(industry)}" ;\n`;
+      filterClause += `                 esg:reportsUsing ?framework .\n`;
     }
     if (framework) {
-      filterClause += `<${framework}> <${ESG_PREFIX}includes> ?category .\n`;
+      if (!industry) {
+        // 如果没有 industry 过滤，需要先定义 ?framework 变量
+        filterClause += `?framework a esg:ReportingFramework ;\n`;
+        filterClause += `           rdfs:label "${this.escapeSparql(framework)}" .\n`;
+      } else {
+        // 如果有 industry，?framework 已经通过 esg:reportsUsing 定义
+        filterClause += `?framework rdfs:label "${this.escapeSparql(framework)}" .\n`;
+      }
+      filterClause += `?framework esg:includes ?category .\n`;
     }
 
     // 构建排序字段

@@ -14,8 +14,10 @@ export const createKnowledgeGraphRoutes = (): Router => {
   const kgService = new KnowledgeGraphService(kgRepository);
   const kgController = new KnowledgeGraphController(kgService);
 
+  // DEPRECATED: Use /api/kg/categories and /api/kg/frameworks with query params instead
+  // These routes are now handled by CategoryController and FrameworkController
   // CQ3: 获取报告框架中包含的分类  
-  router.get('/categories', kgController.getCategories);
+  // router.get('/categories', kgController.getCategories);
 
   // CQ4: 获取特定分类下的指标
   router.get('/metrics', kgController.getMetrics);
@@ -61,11 +63,19 @@ export const createKnowledgeGraphRoutes = (): Router => {
   // 重置知识图谱到初始状态
   router.post('/reset', kgController.resetKnowledgeGraph);
 
-  // 创建 Implementation
-  router.post('/implementations', kgController.createImplementation);
+  /**
+   * @deprecated POST /api/kg/implementations is now handled by ImplementationController
+   * This route is disabled to prevent conflicts. Use /api/kg/implementations from implementationRoutes instead.
+   * Will be removed in v2.0.0 (June 2026)
+   */
+  // router.post('/implementations', kgController.createImplementation);
 
-  // 创建 Model
-  router.post('/models', kgController.createModel);
+  /**
+   * @deprecated POST /api/kg/models is now handled by ModelController
+   * This route is disabled to prevent conflicts. Use /api/kg/models from modelRoutes instead.
+   * Will be removed in v2.0.0 (June 2026)
+   */
+  // router.post('/models', kgController.createModel);
 
   return router;
 };

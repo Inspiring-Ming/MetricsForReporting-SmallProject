@@ -274,6 +274,7 @@ export interface GetCategoriesRequest {
   page?: number;                        // 页码（从1开始）
   size?: number;                        // 每页数量
   search?: string;                      // 搜索关键词（label模糊匹配）
+  industry?: string;                    // 按行业筛选（可选）
   framework?: string;                   // 按框架筛选（可选）
   sort?: 'label' | 'createdAt';         // 排序字段
   order?: 'asc' | 'desc';               // 排序顺序
@@ -360,6 +361,7 @@ export interface PatchMetricRequest {
   dataType?: MetricType;                // 数据类型（可选）
   calculationMethod?: CalculationMethod;// 计算方法（可选）
   hasType?: MetricRole;                 // 指标类型（可选）
+  model?: string;                       // 关联的计算模型 URI 或 label（可选，仅用于 calculation_model 类型）
   industry?: string;                    // 所属行业 URI（可选）
   category?: string;                    // 所属分类 URI（可选）
   framework?: string;                   // 所属框架 URI（可选）
@@ -808,6 +810,19 @@ export interface UpdateMetricResponse {
   calculationMethod: CalculationMethod;
   updated_at: string;
 }
+
+/** 更新指标模型关联响应（包含模型详情） */
+export interface UpdateMetricModelResponse {
+  metric_uri: string;
+  metric_label: string;
+  calculation_method: string;
+  model?: {
+    uri: string;
+    label: string;
+  } | null;
+  updated_at: string;
+}
+
 
 /** 删除指标响应 */
 export interface DeleteMetricResponse {

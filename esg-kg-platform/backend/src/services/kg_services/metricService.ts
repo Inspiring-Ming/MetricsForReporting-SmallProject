@@ -1,5 +1,6 @@
 import { KnowledgeGraphRepository } from '../../repositories/knowledgeGraphRepository';
 import { MetricRepository } from '../../repositories/metricRepository';
+import { ModelRepository } from '../../repositories/modelRepository';
 import {
   MetricDetailResponse,
   MetricDatasetsResponse,
@@ -18,6 +19,7 @@ import {
   CreateMetricResponse,
   UpdateMetricRequest,
   UpdateMetricResponse,
+  UpdateMetricModelResponse,
   PatchMetricRequest,
   DeleteMetricRequest,
   DeleteMetricResponse,
@@ -40,10 +42,12 @@ import { ValidationError, NotFoundError } from '../../types/errors';
 export class MetricService {
   private kgRepo: KnowledgeGraphRepository;
   private metricRepo: MetricRepository;
+  private modelRepo: ModelRepository;
 
-  constructor(kgRepo?: KnowledgeGraphRepository, metricRepo?: MetricRepository) {
+  constructor(kgRepo?: KnowledgeGraphRepository, metricRepo?: MetricRepository, modelRepo?: ModelRepository) {
     this.kgRepo = kgRepo || new KnowledgeGraphRepository();
     this.metricRepo = metricRepo || new MetricRepository();
+    this.modelRepo = modelRepo || new ModelRepository();
   }
 
   /**
@@ -680,7 +684,7 @@ export class MetricService {
   /**
    * 部分更新指标
    */
-  async patchMetric(id: string, data: PatchMetricRequest): Promise<UpdateMetricResponse> {
+  async patchMetric(id: string, data: PatchMetricRequest): Promise<UpdateMetricResponse | UpdateMetricModelResponse> {
     // 验证 IRI 格式
     if (!this.isValidUri(id)) {
       throw new ValidationError('Invalid metric IRI format');
@@ -708,6 +712,27 @@ export class MetricService {
       throw new ValidationError('Calculation method must be either "direct_measurement" or "calculation_model"');
     }
 
+    // 验证 model 字段
+    if (data.model !== undefined && data.model && data.model.trim().length > 0) {
+      // 验证模型 URI 格式
+      if (!this.isValidUri(data.model)) {
+        throw new ValidationError(`Invalid model IRI format: ${data.model}`);
+      }
+
+      // 如果同时提供了 calculationMethod，确保它是 calculation_model
+      if (data.calculationMethod && data.calculationMethod !== 'calculation_model') {
+        throw new ValidationError('Cannot set model for direct_measurement metrics. Change calculationMethod to "calculation_model" first.');
+      }
+
+      // 如果没有提供 calculationMethod，检查当前指标的计算方法
+      if (!data.calculationMethod) {
+        const current = await this.metricRepo.getMetricById(id);
+        if (current && current.hasCalculationMethod === 'direct_measurement') {
+          throw new ValidationError('Cannot set model for direct_measurement metrics. Change calculationMethod to "calculation_model" first.');
+        }
+      }
+    }
+
     await this.metricRepo.patchMetric(id, data);
 
     // 获取更新后的指标信息
@@ -716,6 +741,42 @@ export class MetricService {
       throw new NotFoundError(`Metric not found: ${id}`);
     }
 
+    // 如果更新包含 model 字段，返回详细的模型信息
+    if (data.model !== undefined) {
+      let modelInfo: { uri: string; label: string } | null = null;
+
+      // 如果设置了模型（不是移除），查询模型信息
+      if (data.model && data.model.trim().length > 0) {
+        try {
+          const modelUri = this.metricRepo['resolveMetricUri'](data.model);
+          // 查询模型的 label
+          const modelDetail = await this.modelRepo.getModelById(modelUri);
+          if (modelDetail) {
+            modelInfo = {
+              uri: modelUri,
+              label: modelDetail.label || data.model
+            };
+          }
+        } catch (error) {
+          // 如果无法获取模型信息，使用提供的值
+          console.warn(`Failed to get model details for ${data.model}:`, error);
+          modelInfo = {
+            uri: data.model,
+            label: data.model
+          };
+        }
+      }
+
+      return {
+        metric_uri: id,
+        metric_label: updated.label!,
+        calculation_method: updated.hasCalculationMethod,
+        model: modelInfo,
+        updated_at: new Date().toISOString()
+      };
+    }
+
+    // 标准响应（没有更新 model）
     return {
       iri: id,
       label: updated.label!,
@@ -923,7 +984,7 @@ export class MetricService {
       const calculationMethod = metadata.metric.hasCalculationMethod;
 
       let models: any[];
-      
+
       if (usage === 'input') {
         // 查询依赖该指标作为输入的模型（任何指标都可以作为输入）
         models = await this.metricRepo.getModelsUsingMetricAsInput(metricIri);

@@ -10,7 +10,7 @@ import {
   getReportFrameworkReq,
   getCategoriesReq,
   getMetricsReq,
-  getMetricComputationMethodReq,
+  getMetricComputationMethodReqCompat as getMetricComputationMethodReq,
   getMetricValueReq,
   modelExecutionReq,
   generateReportReq,
@@ -263,7 +263,7 @@ export default function ESGDashboard() {
 
     (async () => {
       try {
-        if (!permId) { 
+        if (!permId) {
           // clear when empty
           setIndustry("");
           setCompanyName("");
@@ -565,8 +565,8 @@ export default function ESGDashboard() {
                     fwLoading
                       ? "Loading..."
                       : frameworks.length
-                      ? "Select framework"
-                      : "No frameworks"
+                        ? "Select framework"
+                        : "No frameworks"
                   }
                   className="w-full"
                 >
@@ -656,10 +656,10 @@ export default function ESGDashboard() {
                       metricsLoading[r.category]
                         ? "Loading metrics..."
                         : metricsFor(r.category).length
-                        ? "Select metric"
-                        : metricsErr[r.category]
-                        ? `No metrics (${metricsErr[r.category]})`
-                        : "No metrics"
+                          ? "Select metric"
+                          : metricsErr[r.category]
+                            ? `No metrics (${metricsErr[r.category]})`
+                            : "No metrics"
                     }
                     className="w-full"
                   >
@@ -680,10 +680,10 @@ export default function ESGDashboard() {
                       !r.metric
                         ? "Select a metric first"
                         : r.metric && metricMethodLoading[r.metric]
-                        ? "Loading..."
-                        : r.metric && metricMethodErr[r.metric]
-                        ? `Error: ${metricMethodErr[r.metric]}`
-                        : ""
+                          ? "Loading..."
+                          : r.metric && metricMethodErr[r.metric]
+                            ? `Error: ${metricMethodErr[r.metric]}`
+                            : ""
                     }
                     className="w-full h-10 px-3 py-2 rounded-xl border border-gray-300 bg-slate-100 text-sm"
                   />

@@ -3,8 +3,8 @@ import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
 import { oneDark } from "@codemirror/theme-one-dark";
 import {
-  validateCodeReq, submitCodeReq, executeCodeReq, 
-  uploadModelReq, uploadImplementationReq 
+  validateCodeReq, submitCodeReq, executeCodeReq,
+  uploadModelReq, uploadImplementationReq
 } from "../../api/esg";
 import { updateMetricCalMethodReq } from "../../api/esg";
 
@@ -250,12 +250,12 @@ export default function CodeIDE({
       if (modelOk && modelName && metric) {
         const linkRes = await updateMetricCalMethodReq(metric, modelName);
         if (linkRes.ok) {
-          const linkedMetric = linkRes.data.data.metric_label || metric;
-          const linkedModel = linkRes.data.data.model?.label || modelName;
+          const linkedMetric = linkRes.data.metric_label || metric;
+          const linkedModel = linkRes.data.model?.label || modelName;
           linkInfo = {
             metric_label: linkedMetric,
             model_label: linkedModel,
-            updated_at: linkRes.data.data.updated_at,
+            updated_at: linkRes.data.updated_at,
           };
           setLinkMsg(`Linked metric '${linkedMetric}' to model '${linkedModel}'.`);
         } else {
@@ -320,10 +320,9 @@ export default function CodeIDE({
         setExecOutput(res.data.result);
         setExecLogs([
           ...logs,
-          `> Result: ${
-            typeof res.data.result === "object"
-              ? JSON.stringify(res.data.result)
-              : String(res.data.result)
+          `> Result: ${typeof res.data.result === "object"
+            ? JSON.stringify(res.data.result)
+            : String(res.data.result)
           }`,
         ]);
       } else {
