@@ -7,7 +7,7 @@ import {
   getCategoriesReq, getModelCalMetricsReq,
 } from "../../api/esg";
 
-export default function ImplementationUpload() {
+export default function UploadPage() {
   const navigate = useNavigate();
 
   // Upload type: "metric" or "implementation"
@@ -29,6 +29,8 @@ export default function ImplementationUpload() {
 
   // Mock input metrics list
   const availableInputs = [
+    "Grid Electricity",
+    "Total Energy",
     "Revenue",
     "Employees",
     "Electricity Usage",
@@ -44,10 +46,23 @@ export default function ImplementationUpload() {
     );
   };
 
+  // New: model and implementation names
+  const [modelName, setModelName] = useState<string>("");
+  const [implementationName, setImplementationName] = useState<string>("");
+
+  // Ensure the implementation name ends with ".py"
+  const ensurePyExtension = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return "";
+    return /\.py$/i.test(trimmed) ? trimmed : `${trimmed}.py`;
+  };
+
   // View switching only for Implementation upload
   const [view, setView] = useState<"form" | "ide">("form");
 
   const handleGoToIDE = () => {
+    // Auto-append .py if missing
+    setImplementationName((prev) => ensurePyExtension(prev));
     setView("ide");
     // Bring the editor into focus view
     window.setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
@@ -181,6 +196,16 @@ export default function ImplementationUpload() {
     return () => { alive = false; };
   }, [industry, framework, category]);
 
+  // Add a guard to ensure both names are provided
+  const canProceed = Boolean(
+    category &&
+    metric &&
+    permId &&
+    (frameworks.length === 0 || framework) &&
+    modelName.trim() &&
+    implementationName.trim()
+  );
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Taskbar brand="SAGE" subtitle="Upload" onUploadClick={() => {}} onProfileClick={() => {}} />
@@ -261,7 +286,7 @@ export default function ImplementationUpload() {
 
                 {!permId && (
                   <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800">
-                    Enter a Perm ID to fetch Company Name and available Frameworks.
+                    Enter a Perm ID to fetch Industry and available Frameworks.
                   </div>
                 )}
 
@@ -320,6 +345,36 @@ export default function ImplementationUpload() {
                   </div>
                 </div>
 
+                {/* New: Model name and Implementation name */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <div className="text-xs text-slate-500">Model name</div>
+                    <input
+                      value={modelName}
+                      onChange={(e) => setModelName(e.target.value)}
+                      required
+                      placeholder="e.g. Percentage Ratio"
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white shadow-sm text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="text-xs text-slate-500">Implementation name (.py)</div>
+                    <input
+                      value={implementationName}
+                      onChange={(e) => setImplementationName(e.target.value)}
+                      onBlur={() => setImplementationName((prev) => ensurePyExtension(prev))}
+                      required
+                      placeholder="e.g. percentage_ratio.py"
+                      className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white shadow-sm text-sm"
+                    />
+                    {!/\.py$/i.test(implementationName.trim()) && implementationName.trim().length > 0 && (
+                      <div className="text-[11px] text-slate-500">
+                        Tip: We will append “.py” automatically.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {/* Input metrics multi-select (checkboxes) */}
                 <div className="space-y-2">
                   <div className="text-xs text-slate-500">Input metrics (mock)</div>
@@ -345,15 +400,11 @@ export default function ImplementationUpload() {
                 <div className="flex items-center gap-2">
                   <button
                     className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm shadow hover:bg-indigo-500 disabled:opacity-50"
-                    disabled={
-                      !category ||
-                      !metric ||
-                      !permId ||
-                      (frameworks.length > 0 && !framework)
-                    }
+                    disabled={!canProceed}
                     onClick={handleGoToIDE}
+                    title={!canProceed ? "Fill in all required fields" : "Proceed to IDE"}
                   >
-                    Upload
+                    Next
                   </button>
                   <button
                     className="px-4 py-2 rounded-xl border text-sm hover:bg-slate-50"
@@ -378,6 +429,9 @@ export default function ImplementationUpload() {
                   category={category}
                   metric={metric}
                   inputs={selectedInputs}
+                  // New props
+                  modelName={modelName}
+                  implementationName={implementationName}
                   onBack={() => setView("form")}
                 />
               </>

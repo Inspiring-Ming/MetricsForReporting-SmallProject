@@ -27,7 +27,7 @@ import {
 import {
   validatePythonCode,
   saveAndCompileUserPythonScript,
-  executeSavedUserPythonScript,
+  executeSavedUserPythonScriptFlexible,
 } from "./metricComputation/implementationUpload";
 
 const app = express();
@@ -280,9 +280,9 @@ app.post("/SAGE/code/validate", async (req, res) => {
 });
 
 app.post("/SAGE/code/submit", async (req, res) => {
-  const { language, code } = req.body || {};
+  const { language, code, name } = req.body || {};
   try {
-    const result = await saveAndCompileUserPythonScript(code, language);
+    const result = await saveAndCompileUserPythonScript(code, language, name);
     res.json(result);
   } catch (error) {
     handleHttpError(res, error);
@@ -290,9 +290,11 @@ app.post("/SAGE/code/submit", async (req, res) => {
 });
 
 app.post("/SAGE/code/execute", async (req, res) => {
-  const { id, inputs } = req.body || {};
+  const { id, script_name, inputs } = req.body || {};
+  const identifier = script_name || id;
+  console.log("Executing saved user script identifier:", identifier);
   try {
-    const result = await executeSavedUserPythonScript(id, inputs);
+    const result = await executeSavedUserPythonScriptFlexible(identifier, inputs);
     res.json(result);
   } catch (error) {
     handleHttpError(res, error);

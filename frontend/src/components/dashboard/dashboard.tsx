@@ -24,7 +24,7 @@ import type {
   ModelExecMetricInfo,
 } from "../modals/ResultDetailsModal";
 
-import type { MetricMethod, ReportData, ReportItem } from "../../api/esg";
+import type { MetricMethod, ReportData, ReportItem, UploadItem } from "../../api/esg";
 import { useNavigate } from "react-router-dom";
 
 const YEARS = Array.from({ length: 12 }, (_, i) => `${2014 + i}`);
@@ -226,12 +226,22 @@ export default function ESGDashboard() {
 
     if (items.length === 0) return null;
 
+    // Attach uploadItem persisted from upload flow (if any)
+    let uploadItem: UploadItem | undefined = undefined;
+    try {
+      const raw = localStorage.getItem("uploadItem");
+      if (raw) uploadItem = JSON.parse(raw) as UploadItem;
+    } catch {
+      // ignore parse errors
+    }
+
     return {
       perm_id: permId, // CHANGED
       industry,
       framework,
       year: year!,
       items,
+      uploadItem, // include upload info for report rendering
     };
   };
 

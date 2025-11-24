@@ -9,6 +9,17 @@ function ensureDir(p: string) {
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 }
 
+function sanitizeFilename(name: string): string {
+  const trimmed = (name || "").trim();
+  if (!trimmed) return "";
+  // keep only safe chars, collapse spaces to underscore
+  const base = trimmed.replace(/[/\\:*?"<>|]+/g, "").replace(/\s+/g, "_");
+  // strip any directory parts
+  const just = path.basename(base);
+  // ensure .py
+  return just.toLowerCase().endsWith(".py") ? just : `${just}.py`;
+}
+
 /**
  * Safely validate python code syntax without executing it.
  * Limits payload size and returns structured JSON.
@@ -25,6 +36,7 @@ async function validatePythonCode(source: string, language: string): Promise<Val
 
   const snippet = `
 import sys, base64, json, io, re, ast
+
 b64 = sys.argv[1] if len(sys.argv) > 1 else ""
 try:
     src = base64.b64decode(b64).decode("utf-8", "replace")
@@ -76,12 +88,12 @@ try:
         if isinstance(node, ast.ExceptHandler):
             t = getattr(node, "type", None)
             if isinstance(t, ast.Name) and t.id == "Exception":
-                print(json.dumps({"ok": False, "error": {"message": "Avoid catching Exception; use bare 'except:' or specific errors", "line": node.lineno}}))
+                print(json.dumps({"ok": False, "error": {"message": "Avoid catching 'Exception'; catch specific exception types", "line": node.lineno}}))
                 raise SystemExit(0)
 
     # Require some input mechanism
     if not (uses_argv or uses_input):
-        print(json.dumps({"ok": False, "error": {"message": "Script must read input via sys.argv"}}))
+        print(json.dumps({"ok": False, "error": {"message": "Script must read input via sys.argv or input()"}}))
         raise SystemExit(0)
 
 except SyntaxError as e:
@@ -125,7 +137,6 @@ if issues:
     print(json.dumps({"ok": False, "error": issues[0], "errors": issues}))
 else:
     print(json.dumps({"ok": True}))
-
 `;
 
   const payload = Buffer.from(source, "utf8").toString("base64");
@@ -166,8 +177,10 @@ async function saveAndCompileUserPythonScript(source: string, language: string, 
   const baseDir = path.join(process.cwd(), "models", "user_scripts");
   ensureDir(baseDir);
 
-  const pyPath = path.join(baseDir, `${id}.py`);
-  const pycPath = path.join(baseDir, `${id}.pyc`);
+  // If user provided a name, use it; otherwise fall back to content-hash filename
+  const fileName = name ? sanitizeFilename(name) : `${id}.py`;
+  const pyPath = path.join(baseDir, fileName);
+  const pycPath = path.join(baseDir, `${path.parse(fileName).name}.pyc`);
 
   const snippet = `
 import sys, base64, json, py_compile
@@ -213,20 +226,27 @@ type ExecuteUserScriptResult = {
  * Execute a previously saved user script by its content-hash id.
  * Supports sys.argv and input() via injected argv and a safe input().
  */
-async function executeSavedUserPythonScript(id: string, inputs: unknown): Promise<ExecuteUserScriptResult> {
-  if (!/^[a-f0-9]{64}$/.test(id)) throw HTTPError(400, "Invalid script id");
-
+async function executeSavedUserPythonScriptFlexible(identifier: string, inputs: unknown): Promise<ExecuteUserScriptResult> {
+  if (typeof identifier !== "string" || !identifier.trim()) {
+    throw HTTPError(400, "Missing script identifier");
+  }
   const baseDir = path.join(process.cwd(), "models", "user_scripts");
-  const pyPath = path.join(baseDir, `${id}.py`);
-  if (!fs.existsSync(pyPath)) throw HTTPError(404, "Script not found");
-
+  let pyPath: string;
+  if (/^[a-f0-9]{64}$/.test(identifier)) {
+    // Treat as content hash id
+    pyPath = path.join(baseDir, `${identifier}.py`);
+  } else {
+    // Treat as user-supplied filename
+    const fileName = sanitizeFilename(identifier);
+    if (!fileName) throw HTTPError(400, "Invalid script name");
+    pyPath = path.join(baseDir, fileName);
+  }
+  if (!fs.existsSync(pyPath)) {
+    throw HTTPError(404, "Script not found");
+  }
   const source = fs.readFileSync(pyPath, "utf8");
 
-  // Build numeric argv values:
-  // - numeric stays numeric
-  // - numeric-like strings are parsed
-  // - other values are replaced with a random float
-  // - ensure at least one value
+  // Build numeric argv values
   let argvVals: number[];
   if (Array.isArray(inputs)) {
     const arr = inputs as any[];
@@ -238,15 +258,15 @@ async function executeSavedUserPythonScript(id: string, inputs: unknown): Promis
       }
       return parseFloat((Math.random() * 100).toFixed(2));
     });
-    if (argvVals.length === 0) {
-      argvVals = [parseFloat((Math.random() * 100).toFixed(2))];
-    }
+    if (argvVals.length === 0) argvVals = [parseFloat((Math.random() * 100).toFixed(2))];
   } else {
     argvVals = [parseFloat((Math.random() * 100).toFixed(2))];
   }
 
   const runner = `
 import sys, json, base64, ast, io, threading, traceback
+
+# --- hard timeout using a watchdog thread (SIGKILL-like) ---
 def _force_exit_after(seconds: float):
     import os
     t = threading.Timer(seconds, lambda: os._exit(124))
@@ -254,6 +274,7 @@ def _force_exit_after(seconds: float):
     t.start()
     return t
 
+# --- best-effort line extraction from traceback ---
 def _tb_line(ex):
     try:
         tb = traceback.extract_tb(ex.__traceback__)
@@ -263,27 +284,38 @@ def _tb_line(ex):
         pass
     return None
 
+# --- inputs: base64-encoded code + JSON array of argv values ---
 code_b64 = sys.argv[1]
 inputs_json = sys.argv[2]
 src = base64.b64decode(code_b64).decode("utf-8", "replace")
 
+# wall-clock timeout (watchdog), independent from CPU limit
 TIME_SEC = 2.5
 t = _force_exit_after(TIME_SEC)
+
 try:
+    # --- resource limits (best effort; ignored where unsupported) ---
     try:
         import resource
-        resource.setrlimit(resource.RLIMIT_CPU, (2, 2))
-        resource.setrlimit(resource.RLIMIT_AS, (256*1024*1024, 256*1024*1024))
-        resource.setrlimit(resource.RLIMIT_FSIZE, (1024*1024, 1024*1024))
+        resource.setrlimit(resource.RLIMIT_CPU, (2, 2))  # ~2s CPU
+        resource.setrlimit(resource.RLIMIT_AS, (256*1024*1024, 256*1024*1024))  # 256MB RAM
+        resource.setrlimit(resource.RLIMIT_FSIZE, (1024*1024, 1024*1024))  # 1MB file writes
     except Exception:
         pass
 
-    banned_imports = {"os","subprocess","socket","pathlib","shutil","ctypes","multiprocessing","threading","asyncio","resource","signal","builtins","importlib","site","sitecustomize","runpy","http","urllib","requests","ftplib","ssl"}
-    banned_calls = {"eval","exec","__import__","open"}  # input() allowed
+    # --- static AST pre-scan to block imports/calls before exec ---
+    banned_imports = {
+        "os","subprocess","socket","pathlib","shutil","ctypes",
+        "multiprocessing","threading","asyncio","resource","signal",
+        "builtins","importlib","site","sitecustomize","runpy",
+        "http","urllib","requests","ftplib","ssl"
+    }
+    banned_calls = {"eval","exec","__import__","open"}
 
     try:
         tree = ast.parse(src, filename="<user-code>", mode="exec")
         for node in ast.walk(tree):
+            # imports
             if isinstance(node, ast.Import):
                 for alias in node.names:
                     name = (alias.name or "").split(".")[0]
@@ -295,6 +327,7 @@ try:
                 if base in banned_imports:
                     print(json.dumps({"ok": False, "error": {"message": f"Disallowed import: {base}", "line": node.lineno}}))
                     raise SystemExit(0)
+            # calls
             if isinstance(node, ast.Call):
                 if isinstance(node.func, ast.Name) and node.func.id in banned_calls:
                     print(json.dumps({"ok": False, "error": {"message": f"Disallowed call: {node.func.id}", "line": node.lineno}}))
@@ -303,8 +336,12 @@ try:
         print(json.dumps({"ok": False, "error": {"message": e.msg, "line": e.lineno, "column": e.offset, "text": e.text}}))
         raise SystemExit(0)
 
+    # --- sandbox builtins + controlled import ---
     import builtins as _bi
-    _allow = {"abs","min","max","sum","len","range","enumerate","map","filter","sorted","reversed","list","dict","set","tuple","float","int","str","bool","zip","any","all","round","print"}
+    _allow = {
+        "abs","min","max","sum","len","range","enumerate","map","filter","sorted","reversed",
+        "list","dict","set","tuple","float","int","str","bool","zip","any","all","round","print"
+    }
     SAFE_BUILTINS = {k: getattr(_bi, k) for k in _allow if hasattr(_bi, k)}
 
     ALLOWED_IMPORTS = {"sys","math","json"}
@@ -313,11 +350,13 @@ try:
         if root not in ALLOWED_IMPORTS:
             raise ImportError(f"Import of '{root}' is blocked")
         return _bi.__import__(name, globals, locals, fromlist, level)
+
     SAFE_BUILTINS["__import__"] = _restricted_import
 
-    # Shared namespace so imports remain visible
+    # user code runs in this namespace
     ns = {"__builtins__": SAFE_BUILTINS, "__name__": "__not_main__"}
 
+    # --- parse argv values (JSON array) ---
     try:
         argv_vals = json.loads(inputs_json)
         if not isinstance(argv_vals, list):
@@ -326,10 +365,12 @@ try:
         print(json.dumps({"ok": False, "error": {"message": "Invalid inputs"}}))
         raise SystemExit(0)
 
-    print("runner argv:", argv_vals)
+    # debug to stderr to avoid corrupting stdout JSON
+    print("runner argv:", argv_vals, file=sys.stderr)
     sys.argv = ["<user-code>"] + [str(v) for v in argv_vals]
-    print("runner sys.argv:", sys.argv)
+    print("runner sys.argv:", sys.argv, file=sys.stderr)
 
+    # --- provide input() shim that consumes argv values in order ---
     def _make_input(vals):
         it = iter([str(v) for v in vals])
         def _input(prompt=None):
@@ -338,9 +379,9 @@ try:
             except StopIteration:
                 raise EOFError()
         return _input
-
     ns["input"] = _make_input(argv_vals)
 
+    # --- compile & execute user code ---
     try:
         code_obj = compile(src, "<user-code>", "exec")
         exec(code_obj, ns, ns)
@@ -348,32 +389,31 @@ try:
         print(json.dumps({"ok": False, "error": {"message": str(e), "line": _tb_line(e)}}))
         raise SystemExit(0)
 
+    # --- sanitize result for JSON serialization ---
     def _sanitize(v):
         if isinstance(v, (int, float, str, bool)) or v is None:
             return v
         if isinstance(v, (list, tuple)):
             return [_sanitize(x) for x in v]
         if isinstance(v, dict):
-            return {str(k): _sanitize(v) for k, v in v.items()}
+            return {str(k): _sanitize(val) for k, val in v.items()}
         return str(v)
 
     res_val = ns.get("result", None)
     print(json.dumps({"ok": True, "result": _sanitize(res_val)}))
+
 finally:
+    # cancel watchdog if we got here in time
     try:
         t.cancel()
     except Exception:
         pass
-
 `;
-
-  const codePayload = Buffer.from(source, "utf8").toString("base64");
-  const inputsPayload = JSON.stringify(argvVals);
 
   try {
     const out = await PythonShell.runString(runner, {
       pythonOptions: ["-I", "-u"],
-      args: [codePayload, inputsPayload],
+      args: [Buffer.from(source, "utf8").toString("base64"), JSON.stringify(argvVals)],
       mode: "text",
     });
     const last = out.at(-1) ?? "";
@@ -388,5 +428,5 @@ finally:
 export {
   validatePythonCode,
   saveAndCompileUserPythonScript,
-  executeSavedUserPythonScript,
+  executeSavedUserPythonScriptFlexible,
 };
