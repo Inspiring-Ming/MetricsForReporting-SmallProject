@@ -36,23 +36,36 @@ function Select({
   children,
   placeholder = "Select...",
   className = "",
+  id,
+  label,
 }: React.PropsWithChildren<{
   value?: string;
   onChange: (v: string) => void;
   placeholder?: string;
   className?: string;
+  id?: string;
+  label?: string;
 }>) {
   return (
-    <select
-      value={value ?? ""}
-      onChange={(e) => onChange(e.target.value)}
-      className={`px-3 py-2 rounded-xl border border-gray-300 bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${className}`}
-    >
-      <option value="" disabled>
-        {placeholder}
-      </option>
-      {children}
-    </select>
+    <div>
+      {/* Accessible label for screen readers */}
+      {label && id && (
+        <label htmlFor={id} className="sr-only">
+          {label}
+        </label>
+      )}
+      <select
+        id={id}
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value)}
+        className={`px-3 py-2 rounded-xl border border-gray-300 bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 ${className}`}
+      >
+        <option value="" disabled>
+          {placeholder}
+        </option>
+        {children}
+      </select>
+    </div>
   );
 }
 
@@ -537,28 +550,34 @@ export default function ESGDashboard() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <div className="text-xs text-slate-500">Perm ID</div>
+                {/* Accessible label */}
+                <label htmlFor="perm-id" className="sr-only">Perm ID</label>
                 <input
+                  id="perm-id"
                   value={permId}
                   onChange={(e) => setPermId(e.target.value)}
                   placeholder="Enter Perm ID"
                   className="w-full h-10 px-3 py-2 rounded-xl border border-gray-300 bg-white text-sm"
                 />
               </div>
-
               {/* Company Name field */}
               <div className="space-y-1">
                 <div className="text-xs text-slate-500">Company Name</div>
+                {/* Accessible label */}
+                <label htmlFor="company-name" className="sr-only">Company Name</label>
                 <input
+                  id="company-name"
                   value={companyName}
                   placeholder={companyName.length ? "Company Name" : "No Company Name"}
                   readOnly
                   className="w-full h-10 px-3 py-2 rounded-xl border border-gray-300 bg-slate-100 text-sm"
                 />
               </div>
-
               <div className="space-y-1">
                 <div className="text-xs text-slate-500">Framework</div>
                 <Select
+                  id="framework-select"
+                  label="Framework"
                   value={framework}
                   onChange={setFramework}
                   placeholder={
@@ -576,14 +595,13 @@ export default function ESGDashboard() {
                     </option>
                   ))}
                 </Select>
-                {fwErr && <div className="text-xs text-red-600">{fwErr}</div>}
+                {fwErr && <div id="framework-error" className="text-xs text-red-600">{fwErr}</div>}
                 {catLoading && <div className="text-xs text-slate-500">Loading categories…</div>}
-                {catErr && <div className="text-xs text-red-600">{catErr}</div>}
+                {catErr && <div id="category-error" className="text-xs text-red-600">{catErr}</div>}
               </div>
-
               <div className="space-y-1">
                 <div className="text-xs text-slate-500">Year</div>
-                <Select value={year} onChange={setYear} placeholder="Select year">
+                <Select id="year-select" label="Year" value={year} onChange={setYear} placeholder="Select year">
                   {YEARS.map((y) => (
                     <option key={y} value={y}>
                       {y}
@@ -591,17 +609,18 @@ export default function ESGDashboard() {
                   ))}
                 </Select>
               </div>
-
               <div className="space-y-1">
                 <div className="text-xs text-slate-500">Industry</div>
+                {/* Accessible label */}
+                <label htmlFor="industry" className="sr-only">Industry</label>
                 <input
+                  id="industry"
                   value={industry}
                   placeholder={industry.length ? "Select Industry" : "No Industry"}
                   readOnly
                   className="w-full h-10 px-3 py-2 rounded-xl border border-gray-300 bg-slate-100 text-sm"
                 />
               </div>
-
             </div>
           </div>
 
@@ -643,10 +662,11 @@ export default function ESGDashboard() {
               >
                 {/* Category */}
                 <div className="col-span-3 text-sm truncate">{r.category}</div>
-
                 {/* Metric */}
                 <div className="col-span-5">
                   <Select
+                    id={`metric-${r.category}`}
+                    label={`Metric for ${r.category}`}
                     value={r.metric}
                     onChange={(v) => {
                       updateRow(r.category, { metric: v, model: undefined });
@@ -670,10 +690,14 @@ export default function ESGDashboard() {
                     ))}
                   </Select>
                 </div>
-
                 {/* Model */}
                 <div className="col-span-2">
+                  {/* Accessible label */}
+                  <label htmlFor={`model-${r.category}`} className="sr-only">
+                    Model for {r.category}
+                  </label>
                   <input
+                    id={`model-${r.category}`}
                     value={modelDisplayFor(r.metric)}
                     readOnly
                     placeholder={
@@ -686,9 +710,16 @@ export default function ESGDashboard() {
                         : ""
                     }
                     className="w-full h-10 px-3 py-2 rounded-xl border border-gray-300 bg-slate-100 text-sm"
+                    aria-describedby={
+                      r.metric && metricMethodErr[r.metric] ? `model-err-${r.category}` : undefined
+                    }
                   />
+                  {r.metric && metricMethodErr[r.metric] && (
+                    <div id={`model-err-${r.category}`} className="text-xs text-red-600">
+                      {metricMethodErr[r.metric]}
+                    </div>
+                  )}
                 </div>
-
                 {/* Actions */}
                 <div className="col-span-2">
                   <RowActions

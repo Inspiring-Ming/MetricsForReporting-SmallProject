@@ -9,7 +9,13 @@
         "DEFAULT_VIS_GRAPH_SCHEMA" : true,
         "DEFAULT_SAMEAS" : true,
         "IGNORE_SHARED_QUERIES" : false,
-        "EXECUTE_COUNT" : true
+        "EXECUTE_COUNT" : true,
+        "COOKIE_CONSENT" : {
+          "policyAccepted" : true,
+          "statistic" : true,
+          "thirdParty" : true,
+          "updatedAt" : 1764216138646
+        }
       },
       "dateCreated" : 1760320471903,
       "gptThreads" : [ ]
