@@ -5,30 +5,30 @@ import type { Result } from "./callout";
 // ===================== BACKEND RESPONSE TYPES (Internal) ================ //
 // ========================================================================= //
 
-/** 分页信息 */
+// Pagination info
 interface PaginationInfo {
   page?: number;
   size?: number;
   total?: number;
 }
 
-/** 带有 label 的 DTO 对象 */
+// DTO with label
 interface LabeledDTO {
   iri?: string;
   label: string;
 }
 
-/** Framework 后端响应（分页格式） */
+// Framework backend response (paginated)
 interface FrameworkBackendRes extends PaginationInfo {
   result: LabeledDTO[];
 }
 
-/** Category 后端响应（分页格式） */
+// Category backend response (paginated)
 interface CategoryBackendRes extends PaginationInfo {
   result: LabeledDTO[];
 }
 
-/** Metric 后端响应（分页格式） */
+// Metric backend response (paginated)
 interface MetricBackendRes extends PaginationInfo {
   result: LabeledDTO[];
 }
@@ -37,40 +37,43 @@ interface MetricBackendRes extends PaginationInfo {
 // ==================== FRONTEND RESPONSE TYPES (Public) ================== //
 // ========================================================================= //
 
-// Response Type - 前端使用的简单格式
+// Response Type - simplified format used by the frontend
 export type CompanyInfoRes = { industry: string, company_name: string };
-export type FrameworkRes = { result: string[] };  // 简单字符串数组
-export type CategoryRes = { result: string[] };  // 简单字符串数组
-export type MetricRes = { result: string[] };    // 简单字符串数组
+export type FrameworkRes = { result: string[] };  // simple string array
+export type CategoryRes = { result: string[] };   // simple string array
+export type MetricRes = { result: string[] };     // simple string array
 
 // ========================================================================= //
 // ========================== UTILITY FUNCTIONS ============================ //
 // ========================================================================= //
 
 /**
- * 提取分页响应中的 label 数组
- * @param response 分页响应对象
- * @returns label 字符串数组
+ * Extract label array from a paginated response (supports string[] or object array)
+ * @param response paginated response object
+ * @returns label strings
  */
-function extractLabels<T extends { result: LabeledDTO[] }>(response: T): string[] {
-  return response.result.map(item => item.label);
+function extractLabels<T extends { result: Array<LabeledDTO | string> }>(response: T): string[] {
+  const arr = response.result ?? [];
+  return arr
+    .map((item) => (typeof item === "string" ? item : item.label))
+    .filter((s) => typeof s === "string" && s.trim().length > 0);
 }
 
 /**
- * 将后端分页响应转换为前端简单格式
+ * Convert backend paginated response to simplified frontend format
  */
-function toSimpleFormat<T extends { result: LabeledDTO[] }>(backendResponse: T): { result: string[] } {
+function toSimpleFormat<T extends { result: Array<LabeledDTO | string> }>(backendResponse: T): { result: string[] } {
   return { result: extractLabels(backendResponse) };
 }
 
 /**
- * 自动翻页获取所有数据
- * @param endpoint API 端点路径
- * @param params 查询参数
- * @param pageSize 每页大小，默认 100
- * @returns Result 类型，成功时包含所有数据的聚合结果
+ * Fetch all pages automatically
+ * @param endpoint API endpoint path
+ * @param params query parameters
+ * @param pageSize page size, default 100
+ * @returns Result type with aggregated data when successful
  */
-async function fetchAllPages<T extends PaginationInfo & { result: LabeledDTO[] }>(
+async function fetchAllPages<T extends PaginationInfo & { result: Array<LabeledDTO | string> }>(
   endpoint: string,
   params: Record<string, unknown>,
   pageSize: number = 100
@@ -86,28 +89,28 @@ async function fetchAllPages<T extends PaginationInfo & { result: LabeledDTO[] }
       { ...params, page, size: pageSize }
     );
 
-    // 如果请求失败
+    // If request failed
     if (!backendResult.ok) {
-      // 如果是第一页就失败，直接返回错误
+      // If the first page fails, return error immediately
       if (page === 1) {
         return backendResult;
       }
-      // 如果不是第一页，可能是已经获取完所有数据，跳出循环
+      // If not the first page, we likely reached the end; stop looping
       break;
     }
 
     const currentPageItems = backendResult.data.result || [];
     allItems.push(...currentPageItems);
 
-    // 保存 total 信息（如果有的话）
+    // Save total info if provided
     if (backendResult.data.total !== undefined) {
       total = backendResult.data.total;
     }
 
-    // 判断是否已获取所有数据
-    // 1. 当前页数据为空
-    // 2. 当前页数据少于 pageSize（最后一页）
-    // 3. 如果有 total 信息，检查是否已达到总数
+    // Determine if all data has been fetched:
+    // 1) current page is empty
+    // 2) fewer items than pageSize (last page)
+    // 3) reached total if provided
     if (
       currentPageItems.length === 0 ||
       currentPageItems.length < pageSize ||
@@ -118,14 +121,14 @@ async function fetchAllPages<T extends PaginationInfo & { result: LabeledDTO[] }
 
     page++;
 
-    // 安全限制：最多翻 100 页，避免无限循环
+    // Safety cap: max 100 pages to avoid infinite loops
     if (page > 100) {
       console.warn(`fetchAllPages: Reached maximum page limit (100) for ${endpoint}`);
       break;
     }
   }
 
-  // 返回聚合后的结果
+  // Return aggregated data
   return {
     ok: true,
     data: {
@@ -145,9 +148,9 @@ async function fetchAllPages<T extends PaginationInfo & { result: LabeledDTO[] }
 // ===================== METRIC CALCULATION METHOD TYPES =================== //
 // ========================================================================= //
 
-/** 
- * 指标计算方法响应（新版 KG API）
- * 来自 GET /api/kg/metrics/:id/calculation-method
+/**
+ * Metric calculation method response (new KG API)
+ * from GET /api/kg/metrics/:id/calculation-method
  */
 export type MetricCalculationMethod = {
   metric_label: string;
@@ -178,9 +181,9 @@ export type MetricCalculationMethod = {
   };
 };
 
-/** 
- * @deprecated 旧版类型，保留用于向后兼容
- * 请使用 MetricCalculationMethod 代替
+/**
+ * @deprecated Legacy type retained for backward compatibility
+ * Use MetricCalculationMethod instead
  */
 export type DirectMeasure = {
   measureMethod: "direct_measurement";
@@ -188,9 +191,9 @@ export type DirectMeasure = {
   source?: string;
 };
 
-/** 
- * @deprecated 旧版类型，保留用于向后兼容
- * 请使用 MetricCalculationMethod 代替
+/**
+ * @deprecated Legacy type retained for backward compatibility
+ * Use MetricCalculationMethod instead
  */
 export type CalcModel = {
   measureMethod: "calculation_model";
@@ -200,9 +203,9 @@ export type CalcModel = {
   requiresInputFrom: string[];
 };
 
-/** 
- * @deprecated 旧版类型，保留用于向后兼容
- * 请使用 MetricCalculationMethod 代替
+/**
+ * @deprecated Legacy union retained for backward compatibility
+ * Use MetricCalculationMethod instead
  */
 export type MetricMethod = DirectMeasure | CalcModel;
 
@@ -222,14 +225,14 @@ export type ModelExecutaionRes = {
 // ========================================================================= //
 
 /**
- * 将新的 MetricCalculationMethod 格式转换为旧的 MetricMethod 格式
- * 用于向后兼容
+ * Convert new MetricCalculationMethod format to legacy MetricMethod format
+ * for backward compatibility
  */
 export function convertToLegacyMetricMethod(
   newFormat: MetricCalculationMethod
 ): MetricMethod {
   if (newFormat.calculation_method === 'direct_measurement') {
-    // 从 data_sources 中提取第一个数据源
+    // Take the first data source from data_sources
     const firstDataSource = newFormat.data_sources?.[0];
     return {
       measureMethod: 'direct_measurement',
@@ -243,7 +246,7 @@ export function convertToLegacyMetricMethod(
       isCalculatedBy: newFormat.model?.label || newFormat.model?.iri || '',
       hasCalculationType: newFormat.model?.calculationType || 'calculation_model',
       hasFormula: newFormat.model?.formula,
-      requiresInputFrom: [], // 新 API 不直接返回输入指标列表
+      requiresInputFrom: [], // New API does not directly return input metrics list
     };
   }
 }
@@ -282,12 +285,12 @@ export type UploadItem = {
   category: string;
   metric: string;
   modelName: string;
-  implementationName: string;          // e.g. "percentage_ratio.py"
-  implementationFilePath?: string;     // e.g. "models/user_scripts/percentage_ratio.py"
+  implementationName: string;          // e.g., "percentage_ratio.py"
+  implementationFilePath?: string;     // e.g., "models/user_scripts/percentage_ratio.py"
   implementationUri?: string;          // KG IRI returned when implementation is created
   modelUri?: string;                   // KG IRI returned when model is created
   inputMetrics: string[];              // user's chosen input metrics
-  calculationType?: string;            // e.g. "user_scripts/percentage_ratio"
+  calculationType?: string;            // e.g., "user_scripts/percentage_ratio"
   link?: {
     metric_label: string;
     model_label: string;
@@ -301,7 +304,7 @@ export type UploadItem = {
 export type ReportItem = {
   category: string;
   metric: string;
-  modelDisplay: string;                     // e.g. "direct_measurement" or calculation type
+  modelDisplay: string;                     // e.g., "direct_measurement" or calculation type
   value: number | string;                   // computed result
   method: "direct_measurement" | "calculation_model";
   methodDetails: {
@@ -408,8 +411,9 @@ export function modelExecutionReq(
 // ========================================================================= //
 
 /**
- * 获取报告框架列表（兼容层）
- * 内部调用后端分页 API，自动翻页获取所有数据，并转换为简单字符串数组格式
+ * Get list of reporting frameworks (compat layer)
+ * Internally calls backend paginated API, auto-fetches all pages,
+ * and converts to simple string array format
  */
 export async function getReportFrameworkReq(industry: string): Promise<Result<FrameworkRes>> {
   const result = await fetchAllPages<FrameworkBackendRes>("/api/kg/frameworks", { industry });
@@ -425,8 +429,9 @@ export async function getReportFrameworkReq(industry: string): Promise<Result<Fr
 }
 
 /**
- * 获取分类列表（兼容层）
- * 内部调用后端分页 API，自动翻页获取所有数据，并转换为简单字符串数组格式
+ * Get category list (compat layer)
+ * Internally calls backend paginated API, auto-fetches all pages,
+ * and converts to simple string array format
  */
 export async function getCategoriesReq(industry: string, framework: string): Promise<Result<CategoryRes>> {
   const result = await fetchAllPages<CategoryBackendRes>("/api/kg/categories", { industry, framework });
@@ -442,11 +447,12 @@ export async function getCategoriesReq(industry: string, framework: string): Pro
 }
 
 /**
- * 获取指标列表（兼容层）
- * 内部调用后端分页 API，自动翻页获取所有数据，并转换为简单字符串数组格式
+ * Get metric list (compat layer)
+ * Internally calls backend paginated API, auto-fetches all pages,
+ * and converts to simple string array format
  */
-export async function getMetricsReq(industry: string, category: string, framework: string): Promise<Result<MetricRes>> {
-  const result = await fetchAllPages<MetricBackendRes>("/api/kg/metrics", { industry, category, framework });
+export async function getMetricsReq(industry: string, category_label: string, framework: string): Promise<Result<MetricRes>> {
+  const result = await fetchAllPages<MetricBackendRes>("/api/kg/metrics", { industry, category_label, framework });
 
   if (!result.ok) {
     return result;
@@ -459,18 +465,19 @@ export async function getMetricsReq(industry: string, category: string, framewor
 }
 
 /**
- * 获取模型计算指标列表（兼容层）
- * 内部调用后端分页 API，自动翻页获取所有数据，并转换为简单字符串数组格式
- * 
- * 注意：使用统一的 /api/kg/metrics 端点 + calculationMethod 参数
- * 原端点 /api/kg/metrics/model-calculation 已废弃，将在 2026-06-01 移除
+ * Get metrics that use calculation models (compat layer)
+ * Internally calls backend paginated API, auto-fetches all pages,
+ * and converts to simple string array format
+ *
+ * Note: use unified /api/kg/metrics endpoint + calculationMethod parameter.
+ * Legacy endpoint /api/kg/metrics/model-calculation is deprecated and will be removed on 2026-06-01.
  */
 export async function getModelCalMetricsReq(industry: string, category: string, framework: string): Promise<Result<MetricRes>> {
   const result = await fetchAllPages<MetricBackendRes>("/api/kg/metrics", {
     industry,
     category,
     framework,
-    calculationMethod: "calculation_model"  // 只获取 calculation_model 类型的指标
+    calculationMethod: "calculation_model"  // only fetch metrics with calculation_model
   });
 
   if (!result.ok) {
@@ -537,7 +544,7 @@ export function updateMetricCalMethodReq(
   model: string,
 ): Promise<Result<UpdateMetricCalMethodSuccess>> {
   // KG API - goes to docker backend (port 3000)
-  // 使用 PATCH /api/kg/metrics/:id 端点更新指标的模型关联
+  // Use PATCH /api/kg/metrics/:id to update the metric's model association
 
   return requestHelper(
     "PATCH",
@@ -547,11 +554,11 @@ export function updateMetricCalMethodReq(
 }
 
 /**
- * 获取指标的计算方法信息
- * 使用新的 KG API: GET /api/kg/metrics/:id/calculation-method
- * 
- * @param metric_label 指标标识符（label 或 IRI）
- * @returns 指标计算方法详细信息
+ * Get metric calculation method information
+ * Uses new KG API: GET /api/kg/metrics/:id/calculation-method
+ *
+ * @param metric_label metric identifier (label or IRI)
+ * @returns detailed calculation method information
  */
 export function getMetricComputationMethodReq(
   metric_label: string
@@ -564,8 +571,8 @@ export function getMetricComputationMethodReq(
 }
 
 /**
- * 向后兼容包装函数
- * 调用新 API 但返回旧格式，使现有代码无需修改
+ * Backward-compat wrapper
+ * Calls new API but returns legacy format so existing code can remain unchanged
  */
 export async function getMetricComputationMethodReqCompat(
   metric_label: string
@@ -576,7 +583,7 @@ export async function getMetricComputationMethodReqCompat(
     return result;
   }
 
-  // 转换为旧格式
+  // Convert to legacy format
   const legacyFormat = convertToLegacyMetricMethod(result.data);
 
   return {

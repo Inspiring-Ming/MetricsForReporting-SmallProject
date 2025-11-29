@@ -306,6 +306,7 @@ export default function ESGDashboard() {
 
         if (fr.ok) {
           const list = fr.data.result ?? [];
+          console.log("Fetched frameworks:", list);
           setFrameworks(list);
           setFwErr(null);
           // Keep existing framework if still valid; otherwise preselect if only one
