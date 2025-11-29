@@ -135,7 +135,7 @@ export interface ShaclValidationResult {
 export interface Repository {
   id: string;
   title: string;
-  uri: string;
+  iri: string;
   type: string;
   sesameType: string;
   location: string;

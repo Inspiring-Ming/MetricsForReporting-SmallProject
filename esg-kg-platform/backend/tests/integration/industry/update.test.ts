@@ -17,8 +17,8 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
 
   describe('Single Field Update', () => {
     it('should update label only', async () => {
-      const uri = await helper.createTestIndustry('Original Name', 'Original Description');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Original Name', 'Original Description');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -29,14 +29,14 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
       expect(response.body).toHaveProperty('updated_at');
 
       // Verify description unchanged
-      const detail = await helper.getIndustryDetail(uri);
+      const detail = await helper.getIndustryDetail(iri);
       expect(detail.label).toBe('Updated Name');
       expect(detail.description).toBe('Original Description');
     });
 
     it('should update description only', async () => {
-      const uri = await helper.createTestIndustry('Industry Name', 'Original Description');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Industry Name', 'Original Description');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -46,7 +46,7 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
       expect(response.body.description).toBe('Updated Description');
 
       // Verify label unchanged
-      const detail = await helper.getIndustryDetail(uri);
+      const detail = await helper.getIndustryDetail(iri);
       expect(detail.label).toBe('Industry Name');
       expect(detail.description).toBe('Updated Description');
     });
@@ -54,8 +54,8 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
     it('should update reportsUsing only', async () => {
       const fw1 = await helper.createTestFramework('Framework 1');
       const fw2 = await helper.createTestFramework('Framework 2');
-      const uri = await helper.createTestIndustry('Test Industry', 'Desc', [fw1]);
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry', 'Desc', [fw1]);
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -63,7 +63,7 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
         .expect(200);
 
       // Verify frameworks updated
-      const detail = await helper.getIndustryDetail(uri);
+      const detail = await helper.getIndustryDetail(iri);
       expect(detail.frameworks).toHaveLength(1);
       expect(detail.frameworks[0]).toBe(fw2);
     });
@@ -71,8 +71,8 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
 
   describe('Multiple Fields Update', () => {
     it('should update label and description together', async () => {
-      const uri = await helper.createTestIndustry('Old Name', 'Old Description');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Old Name', 'Old Description');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -89,8 +89,8 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
     it('should update all fields at once', async () => {
       const fw1 = await helper.createTestFramework('Framework 1');
       const fw2 = await helper.createTestFramework('Framework 2');
-      const uri = await helper.createTestIndustry('Old Name', 'Old Desc', [fw1]);
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Old Name', 'Old Desc', [fw1]);
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -101,7 +101,7 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
         })
         .expect(200);
 
-      const detail = await helper.getIndustryDetail(uri);
+      const detail = await helper.getIndustryDetail(iri);
       expect(detail.label).toBe('New Name');
       expect(detail.description).toBe('New Description');
       expect(detail.frameworks).toContain(fw2);
@@ -111,37 +111,37 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
 
   describe('Field Deletion', () => {
     it('should delete description by setting to empty string', async () => {
-      const uri = await helper.createTestIndustry('Test Industry', 'Original Description');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry', 'Original Description');
+      const shortId = iri.split('#')[1];
 
       await request(app)
         .patch(`${baseUrl}/${shortId}`)
         .send({ description: '' })
         .expect(200);
 
-      const detail = await helper.getIndustryDetail(uri);
+      const detail = await helper.getIndustryDetail(iri);
       expect(detail.description).toBeUndefined();
     });
 
     it('should remove all frameworks by setting to empty array', async () => {
       const fw = await helper.createTestFramework('Test Framework');
-      const uri = await helper.createTestIndustry('Test Industry', 'Desc', [fw]);
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry', 'Desc', [fw]);
+      const shortId = iri.split('#')[1];
 
       await request(app)
         .patch(`${baseUrl}/${shortId}`)
         .send({ reportsUsing: [] })
         .expect(200);
 
-      const detail = await helper.getIndustryDetail(uri);
+      const detail = await helper.getIndustryDetail(iri);
       expect(detail.frameworks).toHaveLength(0);
     });
   });
 
   describe('Data Validation', () => {
     it('should reject empty request body', async () => {
-      const uri = await helper.createTestIndustry('Test Industry');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -155,8 +155,8 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
     });
 
     it('should reject empty label', async () => {
-      const uri = await helper.createTestIndustry('Test Industry');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -167,8 +167,8 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
     });
 
     it('should reject label exceeding maximum length', async () => {
-      const uri = await helper.createTestIndustry('Test Industry');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -179,8 +179,8 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
     });
 
     it('should reject description exceeding maximum length', async () => {
-      const uri = await helper.createTestIndustry('Test Industry');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -191,12 +191,12 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
     });
 
     it('should reject invalid framework URIs', async () => {
-      const uri = await helper.createTestIndustry('Test Industry');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
-        .send({ reportsUsing: ['invalid-uri'] })
+        .send({ reportsUsing: ['invalid-iri'] })
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
@@ -205,8 +205,8 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
 
   describe('Update Verification', () => {
     it('should verify update by querying after PATCH', async () => {
-      const uri = await helper.createTestIndustry('Original Name');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Original Name');
+      const shortId = iri.split('#')[1];
 
       // Update
       await request(app)
@@ -223,8 +223,8 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
     });
 
     it('should have updated_at timestamp after update', async () => {
-      const uri = await helper.createTestIndustry('Test Industry');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -247,8 +247,8 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
     });
 
     it('should ignore unknown fields in request', async () => {
-      const uri = await helper.createTestIndustry('Test Industry');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -265,8 +265,8 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
 
   describe('Special Characters in Updates', () => {
     it('should handle special characters in updated label', async () => {
-      const uri = await helper.createTestIndustry('Original');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Original');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -277,8 +277,8 @@ describe('Industry API - PATCH /api/kg/industries/:id (Update)', () => {
     });
 
     it('should handle multiline description in update', async () => {
-      const uri = await helper.createTestIndustry('Test Industry');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestIndustry('Test Industry');
+      const shortId = iri.split('#')[1];
 
       const multiline = 'Line 1\nLine 2\nLine 3';
 

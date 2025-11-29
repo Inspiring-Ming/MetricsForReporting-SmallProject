@@ -30,7 +30,7 @@ describe('Metric API - DELETE /api/kg/metrics/:id (Delete)', () => {
         .delete(`${baseUrl}/${encodeURIComponent(metricUri)}`)
         .expect(200);
 
-      expect(response.body.uri).toBe(metricUri);
+      expect(response.body.iri).toBe(metricUri);
       expect(response.body.deleted).toBe(true);
       expect(response.body).toHaveProperty('deleted_at');
 
@@ -62,7 +62,7 @@ describe('Metric API - DELETE /api/kg/metrics/:id (Delete)', () => {
       expect(response.body.deleted).toBe(true);
       const exists = await helper.metricExists(metricUri);
       expect(exists).toBe(false);
-      
+
       // Category should still exist
       const categoryExists = await helper.categoryExists(category);
       expect(categoryExists).toBe(true);
@@ -107,7 +107,7 @@ describe('Metric API - DELETE /api/kg/metrics/:id (Delete)', () => {
         .expect(409);
 
       expect(response.body.error.message).toMatch(/used.*input.*model/i);
-      
+
       const exists = await helper.metricExists(metricUri);
       expect(exists).toBe(true);
     });
@@ -127,7 +127,7 @@ describe('Metric API - DELETE /api/kg/metrics/:id (Delete)', () => {
   describe('Error Cases', () => {
     it('should return 404 for non-existent metric', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistent';
-      
+
       const response = await request(app)
         .delete(`${baseUrl}/${encodeURIComponent(nonExistentUri)}`)
         .expect(404);
@@ -138,10 +138,10 @@ describe('Metric API - DELETE /api/kg/metrics/:id (Delete)', () => {
     it('should return 400 for invalid URI format', async () => {
       // Use a truly invalid URI format with special characters
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent('invalid uri with spaces')}`)
+        .delete(`${baseUrl}/${encodeURIComponent('invalid iri with spaces')}`)
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
   });
 
@@ -205,7 +205,7 @@ describe('Metric API - DELETE /api/kg/metrics/:id (Delete)', () => {
       const datasource2 = await helper.createTestDatasource('Datasource 2');
       const category1 = await helper.createTestCategory('Category 1');
       const category2 = await helper.createTestCategory('Category 2');
-      
+
       await helper.addDatasourceToMetric(metricUri, datasource1);
       await helper.addDatasourceToMetric(metricUri, datasource2);
       await helper.addMetricsToCategory(category1, [metricUri]);
@@ -241,7 +241,7 @@ describe('Metric API - DELETE /api/kg/metrics/:id (Delete)', () => {
     it('should safely delete metric without affecting other metrics', async () => {
       const metric2 = await helper.createTestMetric('Other Metric');
       const category = await helper.createTestCategory('Shared Category');
-      
+
       await helper.addMetricsToCategory(category, [metricUri, metric2]);
 
       await request(app)
@@ -250,7 +250,7 @@ describe('Metric API - DELETE /api/kg/metrics/:id (Delete)', () => {
 
       const metric2Exists = await helper.metricExists(metric2);
       expect(metric2Exists).toBe(true);
-      
+
       const categoryMetrics = await helper.getCategoryMetrics(category);
       expect(categoryMetrics).toContain(metric2);
       expect(categoryMetrics).not.toContain(metricUri);

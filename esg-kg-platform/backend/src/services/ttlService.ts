@@ -21,7 +21,7 @@ export class TTLService {
 
     try {
       const targetGraph = request.graph || config.DEFAULT_GRAPH;
-      
+
       await this.graphDBRepository.uploadTTLFile(
         request.ttl,
         targetGraph,
@@ -61,7 +61,7 @@ export class TTLService {
     // 基本的 TTL 语法检查
     const hasPrefixes = /@prefix/.test(request.ttl);
     const hasTriples = /\s+\.\s*$/m.test(request.ttl);
-    
+
     if (!hasPrefixes && !hasTriples) {
       console.warn('TTL content may not be valid: no prefixes or triples detected');
     }
@@ -80,13 +80,13 @@ export class TTLService {
   /**
    * 验证 URI 格式
    */
-  private isValidURI(uri: string): boolean {
+  private isValidURI(iri: string): boolean {
     try {
-      new URL(uri);
+      new URL(iri);
       return true;
     } catch {
       // 检查是否为相对 URI 或其他有效格式
-      return /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(uri);
+      return /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(iri);
     }
   }
 
@@ -103,7 +103,7 @@ export class TTLService {
   checkSizeLimit(ttl: string, maxSizeMB: number = 2): void {
     const sizeBytes = this.estimateTTLSize(ttl);
     const sizeMB = sizeBytes / (1024 * 1024);
-    
+
     if (sizeMB > maxSizeMB) {
       throw new ValidationError(
         `TTL file is too large: ${sizeMB.toFixed(2)}MB (max: ${maxSizeMB}MB)`,

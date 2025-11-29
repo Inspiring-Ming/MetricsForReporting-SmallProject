@@ -14,7 +14,7 @@ import {
 import { asyncHandler } from '../../middlewares/errorHandler';
 
 /**
- * Industry Controller - 处理行业相关的 HTTP 请求
+ * Industry Controller - Handles industry-related HTTP requests
  */
 @Route('api/kg/industries')
 @Tags('Industries')
@@ -26,14 +26,14 @@ export class IndustryController {
   }
 
   /**
-   * 获取行业列表（支持分页和搜索）
+   * Get industry list (supports pagination and search)
    * 
-   * @param page 页码（从1开始，默认1）
-   * @param size 每页数量（默认10，最大100）
-   * @param search 搜索关键词（模糊匹配 label）
-   * @param sort 排序字段（默认 label）
-   * @param order 排序顺序（默认 asc）
-   * @returns 行业列表及分页信息
+   * @param page Page number (starting from 1, default 1)
+   * @param size Items per page (default 10, max 100)
+   * @param search Search keyword (fuzzy match on label)
+   * @param sort Sort field (default label)
+   * @param order Sort order (default asc)
+   * @returns Industry list and pagination information
    */
   @Get('/')
   @SuccessResponse('200', 'Success')
@@ -62,10 +62,10 @@ export class IndustryController {
   });
 
   /**
-   * 获取行业详情
+   * Get industry details
    * 
-   * @param id 行业 ID（可以是 URI、命名空间格式或简短 ID）
-   * @returns 行业详情
+   * @param id Industry ID (can be URI, namespace format or short ID)
+   * @returns Industry details
    */
   @Get('{id}')
   @SuccessResponse('200', 'Success')
@@ -86,10 +86,10 @@ export class IndustryController {
   });
 
   /**
-   * 创建新行业
+   * Create a new industry
    * 
-   * @param requestBody 创建行业的请求数据
-   * @returns 创建的行业信息
+   * @param requestBody Request data for creating an industry
+   * @returns Created industry information
    */
   @Post('/')
   @SuccessResponse('201', 'Created')
@@ -107,11 +107,11 @@ export class IndustryController {
   });
 
   /**
-   * 部分更新行业
+   * Partial update of industry
    * 
-   * @param id 行业 ID
-   * @param requestBody 更新行业的请求数据
-   * @returns 更新后的行业信息
+   * @param id Industry ID
+   * @param requestBody Request data for updating the industry
+   * @returns Updated industry information
    */
   @Patch('{id}')
   @SuccessResponse('200', 'Success')
@@ -134,11 +134,11 @@ export class IndustryController {
   });
 
   /**
-   * 删除行业
+   * Delete an industry
    * 
-   * @param id 行业 ID
-   * @param force 是否强制删除（忽略 reportsUsing 关联检查）
-   * @returns 删除结果
+   * @param id Industry ID
+   * @param force Whether to force delete (ignore reportsUsing association checks)
+   * @returns Delete result
    */
   @Delete('{id}')
   @SuccessResponse('200', 'Success')

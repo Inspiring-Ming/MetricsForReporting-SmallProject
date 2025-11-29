@@ -21,7 +21,7 @@ import { asyncHandler } from '../../middlewares/errorHandler';
 import { ValidationError } from '../../types/errors';
 
 /**
- * DatasetVariable Controller - 处理数据集变量相关的 HTTP 请求
+ * DatasetVariable Controller - Handles dataset variable-related HTTP requests
  */
 @Route('api/kg/dataset-variables')
 @Tags('Dataset Variables')
@@ -33,18 +33,18 @@ export class DatasetVariableController {
   }
 
   /**
-   * 获取数据集变量列表（支持分页、搜索和筛选）
+   * Get dataset variable list (supports pagination, search and filtering)
    * 
-   * @param page 页码（从1开始，默认1）
-   * @param size 每页数量（默认20，最大100）
-   * @param search 搜索关键词（模糊匹配 label）
-   * @param datasource 按数据源筛选（可选，URI或ID）
-   * @param metric 按指标筛选（可选，URI或ID）
-   * @param minConfidenceScore 最小置信度分数（可选，0-100）
-   * @param isUnitCompatible 按单位兼容性筛选（可选）
-   * @param sort 排序字段（默认 label）
-   * @param order 排序顺序（默认 asc）
-   * @returns 数据集变量列表及分页信息
+   * @param page Page number (starting from 1, default 1)
+   * @param size Items per page (default 20, max 100)
+   * @param search Search keyword (fuzzy match on label)
+   * @param datasource Filter by data source (optional, URI or ID)
+   * @param metric Filter by metric (optional, URI or ID)
+   * @param minConfidenceScore Minimum confidence score (optional, 0-100)
+   * @param isUnitCompatible Filter by unit compatibility (optional)
+   * @param sort Sort field (default label)
+   * @param order Sort order (default asc)
+   * @returns Dataset variable list and pagination information
    */
   @Get('/')
   @SuccessResponse('200', 'Success')
@@ -83,8 +83,8 @@ export class DatasetVariableController {
       search: req.query.search as string,
       datasource: req.query.datasource as string,
       metric: req.query.metric as string,
-      minConfidenceScore: req.query.minConfidenceScore 
-        ? parseInt(req.query.minConfidenceScore as string, 10) 
+      minConfidenceScore: req.query.minConfidenceScore
+        ? parseInt(req.query.minConfidenceScore as string, 10)
         : undefined,
       isUnitCompatible: req.query.isUnitCompatible as string,
       sort: req.query.sort as 'label' | 'confidenceScore' | 'createdAt',
@@ -95,10 +95,10 @@ export class DatasetVariableController {
   });
 
   /**
-   * 获取数据集变量详情
+   * Get dataset variable details
    * 
-   * @param id 数据集变量 ID（URI 格式或简短 ID）
-   * @returns 数据集变量详情（包含关联的数据源和使用它的指标）
+   * @param id Dataset variable ID (URI format or short ID)
+   * @returns Dataset variable details (including associated data sources and metrics using it)
    */
   @Get('{id}')
   @SuccessResponse('200', 'Success')
@@ -114,25 +114,25 @@ export class DatasetVariableController {
   // Express 兼容方法
   getDatasetVariableById = asyncHandler(async (req: Request, res: Response) => {
     let { id } = req.params;
-    
+
     // 解码 URI（如果是完整的 URI 格式）
     if (id) {
       id = decodeURIComponent(id);
     }
-    
+
     if (!id || !id.trim()) {
       throw new ValidationError('Dataset variable ID is required');
     }
-    
+
     const result = await this.service.getDatasetVariableById(id);
     res.json(result);
   });
 
   /**
-   * 创建新的数据集变量
+   * Create a new dataset variable
    * 
-   * @param requestBody 创建数据集变量的请求数据
-   * @returns 创建的数据集变量信息
+   * @param requestBody Request data for creating a dataset variable
+   * @returns Created dataset variable information
    */
   @Post('/')
   @SuccessResponse('201', 'Created')
@@ -147,17 +147,17 @@ export class DatasetVariableController {
   // Express 兼容方法
   createDatasetVariable = asyncHandler(async (req: Request, res: Response) => {
     const data: CreateDatasetVariableRequest = req.body;
-    
+
     const result = await this.service.createDatasetVariable(data);
     res.status(201).json(result);
   });
 
   /**
-   * 更新数据集变量（部分更新）
+   * Update dataset variable (partial update)
    * 
-   * @param id 数据集变量 ID（URI 格式或简短 ID）
-   * @param requestBody 更新数据集变量的请求数据
-   * @returns 更新的数据集变量信息
+   * @param id Dataset variable ID (URI format or short ID)
+   * @param requestBody Request data for updating the dataset variable
+   * @returns Updated dataset variable information
    */
   @Patch('{id}')
   @SuccessResponse('200', 'Success')
@@ -174,27 +174,27 @@ export class DatasetVariableController {
   // Express 兼容方法
   updateDatasetVariable = asyncHandler(async (req: Request, res: Response) => {
     let { id } = req.params;
-    
+
     // 解码 URI（如果是完整的 URI 格式）
     if (id) {
       id = decodeURIComponent(id);
     }
-    
+
     if (!id || !id.trim()) {
       throw new ValidationError('Dataset variable ID is required');
     }
-    
+
     const data: UpdateDatasetVariableRequest = req.body;
     const result = await this.service.updateDatasetVariable(id, data);
     res.json(result);
   });
 
   /**
-   * 删除数据集变量
+   * Delete a dataset variable
    * 
-   * @param id 数据集变量 ID（URI 格式或简短 ID）
-   * @param force 强制删除（忽略依赖检查，默认 false）
-   * @returns 删除结果
+   * @param id Dataset variable ID (URI format or short ID)
+   * @param force Force delete (ignore dependency checks, default false)
+   * @returns Delete result
    */
   @Delete('{id}')
   @SuccessResponse('200', 'Success')
@@ -211,26 +211,26 @@ export class DatasetVariableController {
   // Express 兼容方法
   deleteDatasetVariable = asyncHandler(async (req: Request, res: Response) => {
     let { id } = req.params;
-    
+
     // 解码 URI（如果是完整的 URI 格式）
     if (id) {
       id = decodeURIComponent(id);
     }
-    
+
     if (!id || !id.trim()) {
       throw new ValidationError('Dataset variable ID is required');
     }
-    
+
     const force = req.query.force === 'true';
     const result = await this.service.deleteDatasetVariable(id, { force });
     res.json(result);
   });
 
   /**
-   * 获取数据集变量的所有数据源
+   * Get all data sources for a dataset variable
    * 
-   * @param id 数据集变量 ID（URI 格式或简短 ID）
-   * @returns 数据源列表
+   * @param id Dataset variable ID (URI format or short ID)
+   * @returns List of data sources
    * @example request
    * ```
    * GET /api/kg/dataset-variables/POLICY_ACCOUNT_HOLDERS_AFFECTED/datasources
@@ -268,27 +268,28 @@ export class DatasetVariableController {
   // Express 兼容方法
   getVariableDatasources = asyncHandler(async (req: Request, res: Response) => {
     let { id } = req.params;
-    
+
     // 解码 URI（如果是完整的 URI 格式）
     if (id) {
       id = decodeURIComponent(id);
     }
-    
+
     if (!id || !id.trim()) {
       throw new ValidationError('Dataset variable ID is required');
     }
-    
+
     const result = await this.service.getVariableDatasources(id);
     res.json(result);
   });
 
   /**
-   * 为数据集变量添加数据源关联
+   * Add data source association to dataset variable
    * 
-   * @param id 数据集变量 ID（URI 格式或简短 ID）
-   * @param requestBody 添加数据源的请求数据
-   * @returns 添加结果
-   * @example request
+   * @param id Dataset variable ID (URI format or short ID)
+   * @param requestBody Request data for adding data source
+   * @returns Add result
+   * 
+   * Example request:
    * ```
    * POST /api/kg/dataset-variables/POLICY_ACCOUNT_HOLDERS_AFFECTED/datasources
    * Content-Type: application/json
@@ -297,11 +298,11 @@ export class DatasetVariableController {
    *   "datasourceUri": "http://example.org/esg#NewDataSource"
    * }
    * ```
-   * @example response
+   * Example response:
    * ```json
    * {
-   *   "variable_uri": "http://example.org/esg#POLICY_ACCOUNT_HOLDERS_AFFECTED",
-   *   "datasource_uri": "http://example.org/esg#NewDataSource",
+   *   "variable_iri": "http://example.org/esg#POLICY_ACCOUNT_HOLDERS_AFFECTED",
+   *   "datasource_iri": "http://example.org/esg#NewDataSource",
    *   "added_at": "2024-11-20T12:00:00.000Z"
    * }
    * ```
@@ -321,31 +322,33 @@ export class DatasetVariableController {
   // Express 兼容方法
   addDatasourceToVariable = asyncHandler(async (req: Request, res: Response) => {
     let { id } = req.params;
-    
+
     // 解码 URI（如果是完整的 URI 格式）
     if (id) {
       id = decodeURIComponent(id);
     }
-    
+
     if (!id || !id.trim()) {
       throw new ValidationError('Dataset variable ID is required');
     }
-    
+
     const data: AddDatasourceToVariableRequest = req.body;
     const result = await this.service.addDatasourceToVariable(id, data);
     res.json(result);
   });
 
   /**
-   * 移除数据集变量的数据源关联
+   * Remove data source association from dataset variable
    * 
-   * @param id 数据集变量 ID（短 ID 或完整 URI）
-   * @param dsId 数据源 ID（短 ID 或完整 URI）
-   * @returns 移除操作的确认信息
+   * @param id Dataset variable ID (short ID or full URI)
+   * @param dsId Data source ID (short ID or full URI)
+   * @returns Confirmation of removal operation
    * 
-   * @example
+   * Example:
+   * ```
    * DELETE /api/kg/dataset-variables/SemiconductorRevenue/datasources/WRDSFinancialData
    * DELETE /api/kg/dataset-variables/http%3A%2F%2Fexample.org%2Fesg%23SemiconductorRevenue/datasources/WRDSFinancialData
+   * ```
    */
   @Delete('{id}/datasources/{dsId}')
   @SuccessResponse('200', 'Success')
@@ -361,7 +364,7 @@ export class DatasetVariableController {
   // Express 兼容方法
   removeVariableDatasource = asyncHandler(async (req: Request, res: Response) => {
     let { id, dsId } = req.params;
-    
+
     // 解码 URI（如果是完整的 URI 格式）
     if (id) {
       id = decodeURIComponent(id);
@@ -369,23 +372,23 @@ export class DatasetVariableController {
     if (dsId) {
       dsId = decodeURIComponent(dsId);
     }
-    
+
     if (!id || !id.trim()) {
       throw new ValidationError('Dataset variable ID is required');
     }
     if (!dsId || !dsId.trim()) {
       throw new ValidationError('Datasource ID is required');
     }
-    
+
     const result = await this.service.removeVariableDatasource(id, dsId);
     res.json(result);
   });
 
   /**
-   * 获取数据集变量的质量信息
+   * Get quality information for a dataset variable
    * 
-   * @param id 数据集变量 ID（短 ID 或完整 URI）
-   * @returns 质量信息（confidenceScore、isUnitCompatible、alignmentReason）
+   * @param id Dataset variable ID (short ID or full URI)
+   * @returns Quality information (confidenceScore, isUnitCompatible, alignmentReason)
    * 
    * @example
    * GET /api/kg/dataset-variables/POLICY_ACCOUNT_HOLDERS_AFFECTED/quality
@@ -404,25 +407,25 @@ export class DatasetVariableController {
   // Express 兼容方法
   getVariableQuality = asyncHandler(async (req: Request, res: Response) => {
     let { id } = req.params;
-    
+
     // 解码 URI（如果是完整的 URI 格式）
     if (id) {
       id = decodeURIComponent(id);
     }
-    
+
     if (!id || !id.trim()) {
       throw new ValidationError('Dataset variable ID is required');
     }
-    
+
     const result = await this.service.getVariableQuality(id);
     res.json(result);
   });
 
   /**
-   * 获取使用此数据集变量的所有指标
+   * Get all metrics using this dataset variable
    * 
-   * @param id 数据集变量 ID（短 ID 或完整 URI）
-   * @returns 指标列表
+   * @param id Dataset variable ID (short ID or full URI)
+   * @returns List of metrics
    * 
    * @example
    * GET /api/kg/dataset-variables/CO2DIRECTSCOPE1/metrics
@@ -441,16 +444,16 @@ export class DatasetVariableController {
   // Express 兼容方法
   getVariableMetrics = asyncHandler(async (req: Request, res: Response) => {
     let { id } = req.params;
-    
+
     // 解码 URI（如果是完整的 URI 格式）
     if (id) {
       id = decodeURIComponent(id);
     }
-    
+
     if (!id || !id.trim()) {
       throw new ValidationError('Dataset variable ID is required');
     }
-    
+
     const result = await this.service.getVariableMetrics(id);
     res.json(result);
   });

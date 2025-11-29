@@ -9,5 +9,5 @@ backend/data/Raw_data_with_industry.csv
 esg-kg-platform/graphDB/data/**
 
 
-.DS_Store
+**/.DS_Store
 backend/.env

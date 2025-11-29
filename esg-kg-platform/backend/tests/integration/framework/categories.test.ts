@@ -81,7 +81,7 @@ describe('Framework Categories API', () => {
         .send({ categories: [category] })
         .expect(201);
 
-      expect(response.body).toHaveProperty('framework_uri');
+      expect(response.body).toHaveProperty('framework_iri');
       expect(response.body).toHaveProperty('added_categories');
       expect(response.body.added_categories).toHaveLength(1);
       expect(response.body).toHaveProperty('added_at');
@@ -194,8 +194,8 @@ describe('Framework Categories API', () => {
         .delete(`${baseUrl}/${shortId}/categories/${catShortId}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('framework_uri');
-      expect(response.body).toHaveProperty('removed_category_uri');
+      expect(response.body).toHaveProperty('framework_iri');
+      expect(response.body).toHaveProperty('removed_category_iri');
       expect(response.body).toHaveProperty('removed_at');
     });
 
@@ -278,7 +278,7 @@ describe('Framework Categories API', () => {
       const category = await helper.createTestCategory('Shared Category');
       const fw1 = await helper.createTestFramework('Framework 1');
       const fw2 = await helper.createTestFramework('Framework 2');
-      
+
       await helper.addCategoriesToFramework(fw1, [category]);
       await helper.addCategoriesToFramework(fw2, [category]);
 
@@ -293,7 +293,7 @@ describe('Framework Categories API', () => {
       const category = await helper.createTestCategory('Shared Category');
       const fw1 = await helper.createTestFramework('Framework 1');
       const fw2 = await helper.createTestFramework('Framework 2');
-      
+
       await helper.addCategoriesToFramework(fw1, [category]);
       await helper.addCategoriesToFramework(fw2, [category]);
 

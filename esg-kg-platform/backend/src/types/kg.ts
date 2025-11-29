@@ -125,6 +125,22 @@ export type ModelDTO = Pick<Model, 'iri' | 'label' | 'calculationType' | 'formul
   implementation?: ImplementationDTO | null; // esg:executesWith
 };
 
+/** 模型详情DTO - 包含更多详细信息 */
+export interface ModelDetailDTO extends ModelDTO {
+  description?: string;
+  inputMetrics?: Array<{
+    iri: string;
+    label: string;
+  }>;
+  implementation?: {
+    iri: string;
+    label: string;
+    language?: string;
+  };
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 /** 指标DTO - 指标的传输格式 */
 export type MetricDTO = Pick<Metric, 'iri' | 'label' | 'hasType' | 'hasMetricType' | 'hasUnit' | 'hasCalculationMethod'>;
 
@@ -258,6 +274,7 @@ export interface GetCategoriesRequest {
   page?: number;                        // 页码（从1开始）
   size?: number;                        // 每页数量
   search?: string;                      // 搜索关键词（label模糊匹配）
+  industry?: string;                    // 按行业筛选（可选）
   framework?: string;                   // 按框架筛选（可选）
   sort?: 'label' | 'createdAt';         // 排序字段
   order?: 'asc' | 'desc';               // 排序顺序
@@ -344,6 +361,7 @@ export interface PatchMetricRequest {
   dataType?: MetricType;                // 数据类型（可选）
   calculationMethod?: CalculationMethod;// 计算方法（可选）
   hasType?: MetricRole;                 // 指标类型（可选）
+  model?: string;                       // 关联的计算模型 URI 或 label（可选，仅用于 calculation_model 类型）
   industry?: string;                    // 所属行业 URI（可选）
   category?: string;                    // 所属分类 URI（可选）
   framework?: string;                   // 所属框架 URI（可选）
@@ -412,6 +430,84 @@ export interface CreateModelRequest {
   description?: string;                 // 模型描述（可选）
   formula?: string;                     // 公式（可选）
   mathematical_expression?: string;     // 数学表达式（可选）
+}
+
+/** 更新模型请求 */
+export interface UpdateModelRequest {
+  label?: string;                       // 模型名称（可选）
+  calculation_type?: string;            // 计算类型（可选）
+  input_metrics?: string[];             // 输入指标（可选）
+  implementation?: string;              // 实现（可选）
+  description?: string;                 // 描述（可选）
+  formula?: string;                     // 公式（可选）
+  mathematical_expression?: string;     // 数学表达式（可选）
+}
+
+/** 删除模型请求 */
+export interface DeleteModelRequest {
+  force?: boolean;                      // 强制删除（忽略依赖检查，默认 false）
+}
+
+/** 模型列表查询请求 */
+export interface GetModelsRequest {
+  page?: number;                        // 页码（从1开始）
+  size?: number;                        // 每页数量
+  search?: string;                      // 搜索关键词（label模糊匹配）
+  calculationType?: string;             // 按计算类型筛选（可选）
+  sort?: 'label' | 'createdAt';         // 排序字段
+  order?: 'asc' | 'desc';               // 排序顺序
+}
+
+/** 更新模型请求 */
+export interface UpdateModelRequest {
+  label?: string;                       // 模型名称（可选）
+  calculation_type?: string;            // 计算类型（可选）
+  input_metrics?: string[];             // 输入指标（可选）
+  implementation?: string;              // 实现（可选）
+  description?: string;                 // 描述（可选）
+  formula?: string;                     // 公式（可选）
+  mathematical_expression?: string;     // 数学表达式（可选）
+}
+
+/** 删除模型请求 */
+export interface DeleteModelRequest {
+  force?: boolean;                      // 强制删除（忽略依赖检查，默认 false）
+}
+
+/** 模型列表查询请求 */
+export interface GetModelsRequest {
+  page?: number;                        // 页码（从1开始）
+  size?: number;                        // 每页数量
+  search?: string;                      // 搜索关键词（label模糊匹配）
+  calculationType?: string;             // 按计算类型筛选（可选）
+  sort?: 'label' | 'createdAt';         // 排序字段
+  order?: 'asc' | 'desc';               // 排序顺序
+}
+
+/** 更新模型请求 */
+export interface UpdateModelRequest {
+  label?: string;                       // 模型名称（可选）
+  calculation_type?: string;            // 计算类型（可选）
+  input_metrics?: string[];             // 输入指标（可选）
+  implementation?: string;              // 实现（可选）
+  description?: string;                 // 描述（可选）
+  formula?: string;                     // 公式（可选）
+  mathematical_expression?: string;     // 数学表达式（可选）
+}
+
+/** 删除模型请求 */
+export interface DeleteModelRequest {
+  force?: boolean;                      // 强制删除（忽略依赖检查，默认 false）
+}
+
+/** 模型列表查询请求 */
+export interface GetModelsRequest {
+  page?: number;                        // 页码（从1开始）
+  size?: number;                        // 每页数量
+  search?: string;                      // 搜索关键词（label模糊匹配）
+  calculationType?: string;             // 按计算类型筛选（可选）
+  sort?: 'label' | 'createdAt';         // 排序字段
+  order?: 'asc' | 'desc';               // 排序顺序
 }
 
 
@@ -553,7 +649,7 @@ export interface IndustryDetailResponse {
 
 /** 创建行业响应 */
 export interface CreateIndustryResponse {
-  uri: string;
+  iri: string;
   label: string;
   description?: string;
   created_at: string;
@@ -561,7 +657,7 @@ export interface CreateIndustryResponse {
 
 /** 更新行业响应 */
 export interface UpdateIndustryResponse {
-  uri: string;
+  iri: string;
   label: string;
   description?: string;
   updated_at: string;
@@ -569,7 +665,7 @@ export interface UpdateIndustryResponse {
 
 /** 删除行业响应 */
 export interface DeleteIndustryResponse {
-  uri: string;
+  iri: string;
   deleted: boolean;
   deleted_at: string;
 }
@@ -586,7 +682,7 @@ export interface FrameworkDetailResponse {
 
 /** 创建报告框架响应 */
 export interface CreateFrameworkResponse {
-  uri: string;
+  iri: string;
   label: string;
   sourceDocument?: string;
   created_at: string;
@@ -594,7 +690,7 @@ export interface CreateFrameworkResponse {
 
 /** 更新报告框架响应 */
 export interface UpdateFrameworkResponse {
-  uri: string;
+  iri: string;
   label: string;
   sourceDocument?: string;
   updated_at: string;
@@ -602,7 +698,7 @@ export interface UpdateFrameworkResponse {
 
 /** 删除报告框架响应 */
 export interface DeleteFrameworkResponse {
-  uri: string;
+  iri: string;
   deleted: boolean;
   deleted_at: string;
 }
@@ -614,15 +710,15 @@ export interface FrameworkCategoriesResponse {
 
 /** 添加分类到框架响应 */
 export interface AddCategoriesToFrameworkResponse {
-  framework_uri: string;
+  framework_iri: string;
   added_categories: CategoryDTO[];
   added_at: string;
 }
 
 /** 从框架删除分类响应 */
 export interface RemoveCategoryFromFrameworkResponse {
-  framework_uri: string;
-  removed_category_uri: string;
+  framework_iri: string;
+  removed_category_iri: string;
   removed_at: string;
 }
 
@@ -638,21 +734,21 @@ export interface CategoryDetailResponse {
 
 /** 创建分类响应 */
 export interface CreateCategoryResponse {
-  uri: string;
+  iri: string;
   label: string;
   created_at: string;
 }
 
 /** 更新分类响应 */
 export interface UpdateCategoryResponse {
-  uri: string;
+  iri: string;
   label: string;
   updated_at: string;
 }
 
 /** 删除分类响应 */
 export interface DeleteCategoryResponse {
-  uri: string;
+  iri: string;
   deleted: boolean;
   deleted_at: string;
 }
@@ -664,15 +760,15 @@ export interface CategoryMetricsResponse {
 
 /** 添加指标到分类响应 */
 export interface AddMetricsToCategoryResponse {
-  category_uri: string;
+  category_iri: string;
   added_metrics: MetricDTO[];
   added_at: string;
 }
 
 /** 从分类删除指标响应 */
 export interface RemoveMetricFromCategoryResponse {
-  category_uri: string;
-  removed_metric_uri: string;
+  category_iri: string;
+  removed_metric_iri: string;
   removed_at: string;
 }
 
@@ -700,7 +796,7 @@ export interface MetricsResponse extends PaginationInfo {
 
 /** 创建指标响应 */
 export interface CreateMetricResponse {
-  uri: string;
+  iri: string;
   label: string;
   code?: string;
   calculationMethod: CalculationMethod;
@@ -709,51 +805,64 @@ export interface CreateMetricResponse {
 
 /** 更新指标响应 */
 export interface UpdateMetricResponse {
-  uri: string;
+  iri: string;
   label: string;
   calculationMethod: CalculationMethod;
   updated_at: string;
 }
 
+/** 更新指标模型关联响应（包含模型详情） */
+export interface UpdateMetricModelResponse {
+  metric_uri: string;
+  metric_label: string;
+  calculation_method: string;
+  model?: {
+    uri: string;
+    label: string;
+  } | null;
+  updated_at: string;
+}
+
+
 /** 删除指标响应 */
 export interface DeleteMetricResponse {
-  uri: string;
+  iri: string;
   deleted: boolean;
   deleted_at: string;
 }
 
 /** 添加数据源关联响应 */
 export interface AddMetricDatasourceResponse {
-  metric_uri: string;
-  datasource_uri: string;
+  metric_iri: string;
+  datasource_iri: string;
   added_at: string;
 }
 
 /** 删除数据源关联响应 */
 export interface RemoveMetricDatasourceResponse {
-  metric_uri: string;
-  datasource_uri: string;
+  metric_iri: string;
+  datasource_iri: string;
   removed_at: string;
 }
 
 /** 添加输入指标响应 */
 export interface AddMetricInputResponse {
-  metric_uri: string;
-  input_metric_uri: string;
+  metric_iri: string;
+  input_metric_iri: string;
   added_at: string;
 }
 
 /** 删除输入指标响应 */
 export interface RemoveMetricInputResponse {
-  metric_uri: string;
-  input_metric_uri: string;
+  metric_iri: string;
+  input_metric_iri: string;
   removed_at: string;
 }
 
 /** 批量创建指标响应 */
 export interface BatchCreateMetricsResponse {
   created: Array<{
-    uri: string;
+    iri: string;
     label: string;
   }>;
   failed: Array<{
@@ -768,7 +877,7 @@ export interface BatchCreateMetricsResponse {
 export interface BatchDeleteMetricsResponse {
   deleted: string[];                    // 成功删除的指标 URI 列表
   failed: Array<{
-    uri: string;
+    iri: string;
     error: string;
   }>;
   total_deleted: number;
@@ -836,6 +945,35 @@ export interface MetricModelsResponse {
   total: number;
 }
 
+/** 指标的计算模型列表详情响应 (GET /api/kg/metrics/:id/models) */
+export interface MetricModelsDetailResponse {
+  metricId: string;
+  metricLabel: string;
+  calculationMethod: 'direct_measurement' | 'calculation_model';
+  usage: 'output' | 'input';           // 查询用途：output=该指标由哪些模型计算，input=哪些模型依赖该指标作为输入
+  models: Array<{
+    iri: string;
+    label: string;
+    calculationType?: string;
+    formula?: string;
+    mathematicalExpression?: string;
+    implementation?: {
+      iri: string;
+      label?: string;
+      language?: string;
+    };
+    inputMetrics?: Array<{
+      iri: string;
+      label: string;
+    }>;
+    outputMetric?: {                   // 仅当 usage=input 时有值，表示该模型计算的指标
+      iri: string;
+      label?: string;
+    };
+  }>;
+  total: number;
+}
+
 /** 指标输入列表响应 (GET /api/kg/metrics/:id/inputs) */
 export interface MetricInputsResponse {
   metricId: string;
@@ -895,7 +1033,7 @@ export type MetricDatasetsResponse = DirectMeasurementResponse | CalculationMode
 
 /** 创建实现响应 */
 export interface CreateImplementationResponse {
-  uri: string;
+  iri: string;
   label: string;
   language: string;
   file_path: string;
@@ -904,26 +1042,144 @@ export interface CreateImplementationResponse {
 
 /** 创建模型响应 */
 export interface CreateModelResponse {
-  uri: string;
+  iri: string;
   label: string;
   calculation_type: string;
   input_metrics: Array<{
-    uri: string;
+    iri: string;
     label: string;
   }>;
   implementation: {
-    uri: string;
+    iri: string;
     label: string;
   };
   created_at: string;
 }
 
+/** 更新模型响应 */
+export interface UpdateModelResponse {
+  iri: string;
+  label: string;
+  inputMetrics?: Array<{
+    iri: string;
+    label: string;
+  }>;
+  updated_at: string;
+}
 
+/** 删除模型响应 */
+export interface DeleteModelResponse {
+  iri: string;
+  deleted: boolean;
+  deleted_at: string;
+}
+
+/** 模型列表响应 */
+export interface ModelsResponse extends PaginationInfo {
+  result: ModelDTO[];
+}
+
+/** 模型详情响应 */
+export interface ModelDetailResponse {
+  result: ModelDetailDTO;
+}
+
+/** 模型输入指标列表响应 (GET /api/kg/models/:id/metrics/inputs) */
+export interface ModelMetricsInputsResponse {
+  modelId: string;
+  modelLabel: string;
+  inputs: Array<{
+    iri: string;
+    label: string;
+    hasCalculationMethod?: 'direct_measurement' | 'calculation_model';
+    hasUnit?: string;
+    hasMetricType?: string;
+  }>;
+  total: number;
+}
+
+/** 模型输出指标响应 (GET /api/kg/models/:id/metrics/output) */
+export interface ModelMetricsOutputResponse {
+  modelId: string;
+  modelLabel: string;
+  output: {
+    iri: string;
+    label: string;
+    hasCalculationMethod: 'calculation_model';
+    hasUnit?: string;
+    hasMetricType?: string;
+  } | null;
+}
+
+/** 更新模型输入指标请求 (PUT /api/kg/models/:id/metrics/inputs) */
+export interface UpdateModelMetricsInputsRequest {
+  inputs: string[];  // Array of metric URIs or labels
+}
+
+/** 添加单个输入指标到模型请求 (POST /api/kg/models/:id/metrics/inputs/:metricId) */
+export interface AddModelInputMetricRequest {
+  // No request body needed, metricId is in path
+}
+
+/** 删除模型的单个输入指标请求 (DELETE /api/kg/models/:id/metrics/inputs/:metricId) */
+export interface RemoveModelInputMetricRequest {
+  // No request body needed, metricId is in path
+}
+
+/** 更新模型输入指标响应 */
+export interface UpdateModelMetricsInputsResponse {
+  modelId: string;
+  inputs: Array<{
+    iri: string;
+    label: string;
+  }>;
+  updated_at: string;
+}
+
+/** 添加输入指标响应 */
+export interface AddModelInputMetricResponse {
+  model_iri: string;
+  metric_iri: string;
+  added_at: string;
+}
+
+/** 删除输入指标响应 */
+export interface RemoveModelInputMetricResponse {
+  model_iri: string;
+  metric_iri: string;
+  removed_at: string;
+}
+
+/** 模型实现列表响应 (GET /api/kg/models/:id/implementations) */
+export interface ModelImplementationsResponse {
+  modelId: string;
+  modelLabel: string;
+  implementations: Array<{
+    iri: string;
+    label: string;
+    language?: string;
+    filePath?: string;
+    functionName?: string;
+  }>;
+  total: number;
+}
+
+/** 添加实现到模型请求 (POST /api/kg/models/:id/implementations) */
+export interface AddModelImplementationRequest {
+  implementationId: string;  // Implementation URI or label
+}
+
+/** 添加实现到模型响应 */
+export interface AddModelImplementationResponse {
+  model_iri: string;
+  implementation_iri: string;
+  added_at: string;
+}
 
 /** 指标计算方法详情响应 (GET /api/kg/metrics/:id/calculation-method) */
 export interface MetricCalculationMethodResponse {
   metric_label: string;
-  metric_uri: string;
+  metric_iri: string;
   calculation_method: 'direct_measurement' | 'calculation_model';
   attributes?: Record<string, any>;
   data_sources?: Array<{
@@ -934,7 +1190,7 @@ export interface MetricCalculationMethodResponse {
   }>;
   model?: {
     label: string;
-    uri: string;
+    iri: string;
     calculationType?: string;
     formula?: string;
     mathematicalExpression?: string;
@@ -942,7 +1198,7 @@ export interface MetricCalculationMethodResponse {
   };
   implementation?: {
     label: string;
-    uri: string;
+    iri: string;
     language?: string;
     filePath?: string;
     functionName?: string;
@@ -961,7 +1217,7 @@ export interface ImplementationDetailResponse {
     description?: string;
     inputParameters?: string;
     relatedModels?: Array<{
-      uri: string;
+      iri: string;
       label: string;
       calculationType?: string;
     }>;
@@ -972,7 +1228,7 @@ export interface ImplementationDetailResponse {
 
 /** 更新实现响应 */
 export interface UpdateImplementationResponse {
-  uri: string;
+  iri: string;
   label: string;
   language?: string;
   file_path?: string;
@@ -981,7 +1237,7 @@ export interface UpdateImplementationResponse {
 
 /** 删除实现响应 */
 export interface DeleteImplementationResponse {
-  uri: string;
+  iri: string;
   deleted: boolean;
   deleted_at: string;
 }
@@ -1002,21 +1258,21 @@ export interface DatasetVariableDetailResponse {
 
 /** 创建数据集变量响应 */
 export interface CreateDatasetVariableResponse {
-  uri: string;
+  iri: string;
   label: string;
   created_at: string;
 }
 
 /** 更新数据集变量响应 */
 export interface UpdateDatasetVariableResponse {
-  uri: string;
+  iri: string;
   label: string;
   updated_at: string;
 }
 
 /** 删除数据集变量响应 */
 export interface DeleteDatasetVariableResponse {
-  uri: string;
+  iri: string;
   deleted: boolean;
   deleted_at: string;
 }
@@ -1031,15 +1287,15 @@ export interface VariableDatasourcesResponse {
 
 /** 添加数据源到数据集变量响应 */
 export interface AddDatasourceToVariableResponse {
-  variable_uri: string;
-  datasource_uri: string;
+  variable_iri: string;
+  datasource_iri: string;
   added_at: string;
 }
 
 /** 移除数据集变量数据源关联响应 */
 export interface RemoveVariableDatasourceResponse {
-  variable_uri: string;
-  datasource_uri: string;
+  variable_iri: string;
+  datasource_iri: string;
   removed_at: string;
 }
 
@@ -1112,21 +1368,21 @@ export interface DatasourceDetailResponse {
 
 /** 创建数据源响应 */
 export interface CreateDatasourceResponse {
-  uri: string;
+  iri: string;
   label: string;
   created_at: string;
 }
 
 /** 更新数据源响应 */
 export interface UpdateDatasourceResponse {
-  uri: string;
+  iri: string;
   label: string;
   updated_at: string;
 }
 
 /** 删除数据源响应 */
 export interface DeleteDatasourceResponse {
-  uri: string;
+  iri: string;
   deleted: boolean;
   deleted_at: string;
 }
@@ -1190,10 +1446,10 @@ export interface AllImplementations extends KGResponse<Array<{
   label: string;
   language: string;
   description: string;
-}>> {}
+}>> { }
 
 /** @deprecated 使用 ListResponse 替代 */
-export interface ImplementationsByCalculationType extends KGResponse<ImplementationByCalculationType[]> {}
+export interface ImplementationsByCalculationType extends KGResponse<ImplementationByCalculationType[]> { }
 
 /** @deprecated 使用 ListResponse 替代 */
-export interface AllCalculationTypes extends KGResponse<CalculationType[]> {}
+export interface AllCalculationTypes extends KGResponse<CalculationType[]> { }

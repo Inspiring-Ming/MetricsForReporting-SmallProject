@@ -18,7 +18,7 @@ import {
 import { asyncHandler } from '../../middlewares/errorHandler';
 
 /**
- * Framework Controller - 处理报告框架相关的 HTTP 请求
+ * Framework Controller - Handles reporting framework-related HTTP requests
  */
 @Route('api/kg/frameworks')
 @Tags('Frameworks')
@@ -30,15 +30,15 @@ export class FrameworkController {
   }
 
   /**
-   * 获取报告框架列表（支持分页和搜索）
+   * Get reporting framework list (supports pagination and search)
    * 
-   * @param page 页码（从1开始，默认1）
-   * @param size 每页数量（默认10，最大100）
-   * @param search 搜索关键词（模糊匹配 label）
-   * @param industry 按行业筛选（可选）
-   * @param sort 排序字段（默认 label）
-   * @param order 排序顺序（默认 asc）
-   * @returns 报告框架列表及分页信息
+   * @param page Page number (starting from 1, default 1)
+   * @param size Items per page (default 10, max 100)
+   * @param search Search keyword (fuzzy match on label)
+   * @param industry Filter by industry (optional)
+   * @param sort Sort field (default label)
+   * @param order Sort order (default asc)
+   * @returns Reporting framework list and pagination information
    */
   @Get('/')
   @SuccessResponse('200', 'Success')
@@ -69,10 +69,10 @@ export class FrameworkController {
   });
 
   /**
-   * 获取报告框架详情
+   * Get reporting framework details
    * 
-   * @param id 框架 ID（可以是 URI、命名空间格式或简短 ID）
-   * @returns 框架详情
+   * @param id Framework ID (can be URI, namespace format or short ID)
+   * @returns Framework details
    */
   @Get('{id}')
   @SuccessResponse('200', 'Success')
@@ -93,10 +93,10 @@ export class FrameworkController {
   });
 
   /**
-   * 创建新报告框架
+   * Create a new reporting framework
    * 
-   * @param requestBody 创建框架的请求数据
-   * @returns 创建的框架信息
+   * @param requestBody Request data for creating a framework
+   * @returns Created framework information
    */
   @Post('/')
   @SuccessResponse('201', 'Created')
@@ -114,11 +114,11 @@ export class FrameworkController {
   });
 
   /**
-   * 部分更新报告框架
+   * Partial update of reporting framework
    * 
-   * @param id 框架 ID
-   * @param requestBody 更新框架的请求数据
-   * @returns 更新后的框架信息
+   * @param id Framework ID
+   * @param requestBody Request data for updating the framework
+   * @returns Updated framework information
    */
   @Patch('{id}')
   @SuccessResponse('200', 'Success')
@@ -141,11 +141,11 @@ export class FrameworkController {
   });
 
   /**
-   * 删除报告框架
+   * Delete a reporting framework
    * 
-   * @param id 框架 ID
-   * @param force 是否强制删除（忽略行业引用关联检查）
-   * @returns 删除结果
+   * @param id Framework ID
+   * @param force Whether to force delete (ignore industry reference association checks)
+   * @returns Delete result
    */
   @Delete('{id}')
   @SuccessResponse('200', 'Success')
@@ -168,10 +168,10 @@ export class FrameworkController {
   });
 
   /**
-   * 获取框架的分类列表
+   * Get categories list for a framework
    * 
-   * @param id 框架 ID
-   * @returns 框架包含的分类列表
+   * @param id Framework ID
+   * @returns List of categories contained in the framework
    */
   @Get('{id}/categories')
   @SuccessResponse('200', 'Success')
@@ -192,11 +192,11 @@ export class FrameworkController {
   });
 
   /**
-   * 添加分类到框架
+   * Add categories to a framework
    * 
-   * @param id 框架 ID
-   * @param requestBody 要添加的分类 URIs
-   * @returns 添加的分类信息
+   * @param id Framework ID
+   * @param requestBody Category URIs to add
+   * @returns Added categories information
    */
   @Post('{id}/categories')
   @SuccessResponse('201', 'Created')
@@ -219,11 +219,11 @@ export class FrameworkController {
   });
 
   /**
-   * 从框架删除分类
+   * Remove a category from a framework
    * 
-   * @param id 框架 ID
-   * @param cid 分类 ID
-   * @returns 删除结果
+   * @param id Framework ID
+   * @param cid Category ID
+   * @returns Delete result
    */
   @Delete('{id}/categories/{cid}')
   @SuccessResponse('200', 'Success')

@@ -18,28 +18,29 @@ import {
 import { asyncHandler } from '../../middlewares/errorHandler';
 
 /**
- * Category Controller - 处理分类相关的 HTTP 请求
+ * Category Controller - Handles category-related HTTP requests
  */
 @Route('api/kg/categories')
 @Tags('Categories')
 export class CategoryController extends Controller {
   private categoryService: CategoryService;
 
-  constructor() {
+  constructor(categoryService?: CategoryService) {
     super();
-    this.categoryService = new CategoryService();
+    this.categoryService = categoryService || new CategoryService();
   }
 
   /**
-   * 获取分类列表（支持分页和搜索）
+   * Get category list (supports pagination and search)
    * 
-   * @param page 页码（从1开始，默认1）
-   * @param size 每页数量（默认20，最大100）
-   * @param search 搜索关键词（模糊匹配 label）
-   * @param framework 按框架筛选（可选）
-   * @param sort 排序字段（默认 label）
-   * @param order 排序顺序（默认 asc）
-   * @returns 分类列表及分页信息
+   * @param page Page number (starting from 1, default 1)
+   * @param size Items per page (default 20, max 100)
+   * @param search Search keyword (fuzzy match on label)
+   * @param industry Filter by industry (optional)
+   * @param framework Filter by framework (optional)
+   * @param sort Sort field (default label)
+   * @param order Sort order (default asc)
+   * @returns Category list and pagination information
    */
   @Get('/')
   @SuccessResponse('200', 'Success')
@@ -49,11 +50,12 @@ export class CategoryController extends Controller {
     @Query() page?: number,
     @Query() size?: number,
     @Query() search?: string,
+    @Query() industry?: string,
     @Query() framework?: string,
     @Query() sort?: 'label' | 'createdAt',
     @Query() order?: 'asc' | 'desc'
   ): Promise<CategoriesResponse> {
-    const params: GetCategoriesRequest = { page, size, search, framework, sort, order };
+    const params: GetCategoriesRequest = { page, size, search, industry, framework, sort, order };
     return await this.categoryService.getCategories(params);
   }
 
@@ -63,6 +65,7 @@ export class CategoryController extends Controller {
       page: req.query.page ? parseInt(req.query.page as string) : undefined,
       size: req.query.size ? parseInt(req.query.size as string) : undefined,
       search: req.query.search as string,
+      industry: req.query.industry as string,
       framework: req.query.framework as string,
       sort: req.query.sort as 'label' | 'createdAt',
       order: req.query.order as 'asc' | 'desc'
@@ -72,10 +75,10 @@ export class CategoryController extends Controller {
   });
 
   /**
-   * 获取分类详情
+   * Get category details
    * 
-   * @param id 分类 ID（URI 格式）
-   * @returns 分类详情（包含关联的指标和使用此分类的框架）
+   * @param id Category ID (URI format)
+   * @returns Category details (including associated metrics and frameworks using this category)
    */
   @Get('{id}')
   @SuccessResponse('200', 'Success')
@@ -99,10 +102,10 @@ export class CategoryController extends Controller {
   });
 
   /**
-   * 创建新分类
+   * Create a new category
    * 
-   * @param requestBody 创建分类的请求数据
-   * @returns 创建的分类信息
+   * @param requestBody Request data for creating a category
+   * @returns Created category information
    */
   @Post('/')
   @SuccessResponse('201', 'Created')
@@ -122,11 +125,11 @@ export class CategoryController extends Controller {
   });
 
   /**
-   * 更新分类信息
+   * Update category information
    * 
-   * @param id 分类 ID（URI 格式）
-   * @param requestBody 更新分类的请求数据（支持部分更新）
-   * @returns 更新后的分类信息
+   * @param id Category ID (URI format)
+   * @param requestBody Request data for updating the category (supports partial update)
+   * @returns Updated category information
    */
   @Patch('{id}')
   @SuccessResponse('200', 'Success')
@@ -152,11 +155,11 @@ export class CategoryController extends Controller {
   });
 
   /**
-   * 删除分类
+   * Delete a category
    * 
-   * @param id 分类 ID（URI 格式）
-   * @param force 强制删除（即使被框架引用也删除，默认 false）
-   * @returns 删除结果
+   * @param id Category ID (URI format)
+   * @param force Force delete (delete even if referenced by frameworks, default false)
+   * @returns Delete result
    */
   @Delete('{id}')
   @SuccessResponse('200', 'Success')
@@ -183,10 +186,10 @@ export class CategoryController extends Controller {
   });
 
   /**
-   * 获取分类的指标列表
+   * Get metrics list for a category
    * 
-   * @param id 分类 ID（URI 格式）
-   * @returns 分类包含的所有指标
+   * @param id Category ID (URI format)
+   * @returns All metrics contained in the category
    */
   @Get('{id}/metrics')
   @SuccessResponse('200', 'Success')
@@ -210,11 +213,11 @@ export class CategoryController extends Controller {
   });
 
   /**
-   * 为分类添加指标
+   * Add metrics to a category
    * 
-   * @param id 分类 ID（URI 格式）
-   * @param requestBody 要添加的指标 URI 列表
-   * @returns 添加后的指标列表
+   * @param id Category ID (URI format)
+   * @param requestBody List of metric URIs to add
+   * @returns List of metrics after addition
    */
   @Post('{id}/metrics')
   @SuccessResponse('200', 'Success')
@@ -239,11 +242,11 @@ export class CategoryController extends Controller {
   });
 
   /**
-   * 从分类中移除指标
+   * Remove a metric from a category
    * 
-   * @param id 分类 ID（URI 格式）
-   * @param mid 指标 ID（URI 格式）
-   * @returns 移除结果
+   * @param id Category ID (URI format)
+   * @param mid Metric ID (URI format)
+   * @returns Remove result
    */
   @Delete('{id}/metrics/{mid}')
   @SuccessResponse('200', 'Success')

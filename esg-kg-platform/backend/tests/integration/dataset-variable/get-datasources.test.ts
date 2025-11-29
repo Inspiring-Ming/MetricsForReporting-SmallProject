@@ -36,8 +36,8 @@ describe('DatasetVariable API - GET /api/kg/dataset-variables/:id/datasources', 
         })
         .expect(201);
 
-      const datasource1Uri = ds1Response.body.uri;
-      const datasource2Uri = ds2Response.body.uri;
+      const datasource1Uri = ds1Response.body.iri;
+      const datasource2Uri = ds2Response.body.iri;
 
       // Create dataset variable with datasources
       const varResponse = await request(app)
@@ -48,7 +48,7 @@ describe('DatasetVariable API - GET /api/kg/dataset-variables/:id/datasources', 
         })
         .expect(201);
 
-      const variableUri = varResponse.body.uri;
+      const variableUri = varResponse.body.iri;
       const shortId = variableUri.split('#')[1];
 
       // Get datasources for the variable
@@ -62,7 +62,7 @@ describe('DatasetVariable API - GET /api/kg/dataset-variables/:id/datasources', 
       expect(response.body).toHaveProperty('total', 2);
 
       expect(response.body.datasources).toHaveLength(2);
-      
+
       const datasourceLabels = response.body.datasources.map((ds: any) => ds.label);
       expect(datasourceLabels).toContain('Financial Dataset');
       expect(datasourceLabels).toContain('Environmental Dataset');
@@ -86,7 +86,7 @@ describe('DatasetVariable API - GET /api/kg/dataset-variables/:id/datasources', 
         })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       // Get datasources
       const response = await request(app)
@@ -109,11 +109,11 @@ describe('DatasetVariable API - GET /api/kg/dataset-variables/:id/datasources', 
         .post(baseUrl)
         .send({
           label: 'Test Variable',
-          sources: [dsResponse.body.uri]
+          sources: [dsResponse.body.iri]
         })
         .expect(201);
 
-      const fullUri = varResponse.body.uri;
+      const fullUri = varResponse.body.iri;
       const encodedUri = encodeURIComponent(fullUri);
 
       // Get by full URI
@@ -151,11 +151,11 @@ describe('DatasetVariable API - GET /api/kg/dataset-variables/:id/datasources', 
         .post(baseUrl)
         .send({
           label: 'Test Variable',
-          sources: [dsResponse.body.uri]
+          sources: [dsResponse.body.iri]
         })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       // Get datasources
       const response = await request(app)
@@ -163,7 +163,7 @@ describe('DatasetVariable API - GET /api/kg/dataset-variables/:id/datasources', 
         .expect(200);
 
       expect(response.body.datasources[0]).toMatchObject({
-        iri: dsResponse.body.uri,
+        iri: dsResponse.body.iri,
         label: 'Complete Dataset',
         fileName: 'complete.csv',
         description: 'A complete dataset',
@@ -182,11 +182,11 @@ describe('DatasetVariable API - GET /api/kg/dataset-variables/:id/datasources', 
         .post(baseUrl)
         .send({
           label: 'Single Source Variable',
-          sources: [dsResponse.body.uri]
+          sources: [dsResponse.body.iri]
         })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       const response = await request(app)
         .get(`${baseUrl}/${shortId}/datasources`)
@@ -204,7 +204,7 @@ describe('DatasetVariable API - GET /api/kg/dataset-variables/:id/datasources', 
           .post('/api/kg/datasources')
           .send({ label: `Datasource ${i}` })
           .expect(201);
-        datasourceUris.push(dsResponse.body.uri);
+        datasourceUris.push(dsResponse.body.iri);
       }
 
       // Create variable with all datasources
@@ -216,7 +216,7 @@ describe('DatasetVariable API - GET /api/kg/dataset-variables/:id/datasources', 
         })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       const response = await request(app)
         .get(`${baseUrl}/${shortId}/datasources`)
@@ -242,7 +242,7 @@ describe('DatasetVariable API - GET /api/kg/dataset-variables/:id/datasources', 
         .send({ label: 'Test_Variable_Name' })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       await request(app)
         .get(`${baseUrl}/${shortId}/datasources`)
@@ -257,7 +257,7 @@ describe('DatasetVariable API - GET /api/kg/dataset-variables/:id/datasources', 
         .send({ label: 'Test Variable' })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       const response = await request(app)
         .get(`${baseUrl}/${shortId}/datasources`)

@@ -26,7 +26,7 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         })
         .expect(201);
 
-      const datasourceUri = dsResponse.body.uri;
+      const datasourceUri = dsResponse.body.iri;
 
       // Create dataset variable without datasources
       const varResponse = await request(app)
@@ -34,7 +34,7 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ label: 'Test Variable' })
         .expect(201);
 
-      const variableUri = varResponse.body.uri;
+      const variableUri = varResponse.body.iri;
       const shortId = variableUri.split('#')[1];
 
       // Add datasource to variable
@@ -43,8 +43,8 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ datasourceUri })
         .expect(200);
 
-      expect(response.body).toHaveProperty('variable_uri', variableUri);
-      expect(response.body).toHaveProperty('datasource_uri', datasourceUri);
+      expect(response.body).toHaveProperty('variable_iri', variableUri);
+      expect(response.body).toHaveProperty('datasource_iri', datasourceUri);
       expect(response.body).toHaveProperty('added_at');
       expect(response.body.added_at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
 
@@ -64,7 +64,7 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ label: 'Test Datasource' })
         .expect(201);
 
-      const datasourceUri = dsResponse.body.uri;
+      const datasourceUri = dsResponse.body.iri;
       const datasourceShortId = datasourceUri.split('#')[1];
 
       // Create variable
@@ -73,7 +73,7 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ label: 'Test Variable' })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       // Add datasource using short ID
       const response = await request(app)
@@ -81,7 +81,7 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ datasourceUri: datasourceShortId })
         .expect(200);
 
-      expect(response.body.datasource_uri).toContain(datasourceShortId);
+      expect(response.body.datasource_iri).toContain(datasourceShortId);
 
       // Verify
       const getResponse = await request(app)
@@ -114,22 +114,22 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ label: 'Test Variable' })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       // Add datasources one by one
       await request(app)
         .post(`${baseUrl}/${shortId}/datasources`)
-        .send({ datasourceUri: ds1Response.body.uri })
+        .send({ datasourceUri: ds1Response.body.iri })
         .expect(200);
 
       await request(app)
         .post(`${baseUrl}/${shortId}/datasources`)
-        .send({ datasourceUri: ds2Response.body.uri })
+        .send({ datasourceUri: ds2Response.body.iri })
         .expect(200);
 
       await request(app)
         .post(`${baseUrl}/${shortId}/datasources`)
-        .send({ datasourceUri: ds3Response.body.uri })
+        .send({ datasourceUri: ds3Response.body.iri })
         .expect(200);
 
       // Verify all datasources are associated
@@ -152,15 +152,15 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ label: 'Test Variable' })
         .expect(201);
 
-      const fullUri = varResponse.body.uri;
+      const fullUri = varResponse.body.iri;
       const encodedUri = encodeURIComponent(fullUri);
 
       const response = await request(app)
         .post(`${baseUrl}/${encodedUri}/datasources`)
-        .send({ datasourceUri: dsResponse.body.uri })
+        .send({ datasourceUri: dsResponse.body.iri })
         .expect(200);
 
-      expect(response.body.variable_uri).toBe(fullUri);
+      expect(response.body.variable_iri).toBe(fullUri);
     });
   });
 
@@ -171,7 +171,7 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ label: 'Test Variable' })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       const response = await request(app)
         .post(`${baseUrl}/${shortId}/datasources`)
@@ -188,7 +188,7 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ label: 'Test Variable' })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       const response = await request(app)
         .post(`${baseUrl}/${shortId}/datasources`)
@@ -204,7 +204,7 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ label: 'Test Variable' })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       const response = await request(app)
         .post(`${baseUrl}/${shortId}/datasources`)
@@ -225,18 +225,18 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ label: 'Test Variable' })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       // First add should succeed
       await request(app)
         .post(`${baseUrl}/${shortId}/datasources`)
-        .send({ datasourceUri: dsResponse.body.uri })
+        .send({ datasourceUri: dsResponse.body.iri })
         .expect(200);
 
       // Second add should fail
       const response = await request(app)
         .post(`${baseUrl}/${shortId}/datasources`)
-        .send({ datasourceUri: dsResponse.body.uri })
+        .send({ datasourceUri: dsResponse.body.iri })
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
@@ -253,7 +253,7 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
 
       const response = await request(app)
         .post(`${baseUrl}/nonexistent/datasources`)
-        .send({ datasourceUri: dsResponse.body.uri })
+        .send({ datasourceUri: dsResponse.body.iri })
         .expect(404);
 
       expect(response.body).toHaveProperty('error');
@@ -266,7 +266,7 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ label: 'Test Variable' })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       const response = await request(app)
         .post(`${baseUrl}/${shortId}/datasources`)
@@ -285,7 +285,7 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
 
       const response = await request(app)
         .post(`${baseUrl}/ /datasources`)
-        .send({ datasourceUri: dsResponse.body.uri })
+        .send({ datasourceUri: dsResponse.body.iri })
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
@@ -311,18 +311,18 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ label: 'Variable 2' })
         .expect(201);
 
-      const var1Id = var1Response.body.uri.split('#')[1];
-      const var2Id = var2Response.body.uri.split('#')[1];
+      const var1Id = var1Response.body.iri.split('#')[1];
+      const var2Id = var2Response.body.iri.split('#')[1];
 
       // Add same datasource to both variables
       await request(app)
         .post(`${baseUrl}/${var1Id}/datasources`)
-        .send({ datasourceUri: dsResponse.body.uri })
+        .send({ datasourceUri: dsResponse.body.iri })
         .expect(200);
 
       await request(app)
         .post(`${baseUrl}/${var2Id}/datasources`)
-        .send({ datasourceUri: dsResponse.body.uri })
+        .send({ datasourceUri: dsResponse.body.iri })
         .expect(200);
 
       // Verify both associations exist
@@ -351,24 +351,24 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ label: 'Test Variable' })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       const response = await request(app)
         .post(`${baseUrl}/${shortId}/datasources`)
-        .send({ datasourceUri: dsResponse.body.uri })
+        .send({ datasourceUri: dsResponse.body.iri })
         .expect(200);
 
-      expect(response.body).toHaveProperty('variable_uri');
-      expect(response.body).toHaveProperty('datasource_uri');
+      expect(response.body).toHaveProperty('variable_iri');
+      expect(response.body).toHaveProperty('datasource_iri');
       expect(response.body).toHaveProperty('added_at');
 
-      expect(typeof response.body.variable_uri).toBe('string');
-      expect(typeof response.body.datasource_uri).toBe('string');
+      expect(typeof response.body.variable_iri).toBe('string');
+      expect(typeof response.body.datasource_iri).toBe('string');
       expect(typeof response.body.added_at).toBe('string');
 
       // Verify URIs are valid
-      expect(response.body.variable_uri).toContain('http://example.org/esg#');
-      expect(response.body.datasource_uri).toContain('http://example.org/esg#');
+      expect(response.body.variable_iri).toContain('http://example.org/esg#');
+      expect(response.body.datasource_iri).toContain('http://example.org/esg#');
 
       // Verify timestamp is valid ISO format
       const timestamp = new Date(response.body.added_at);
@@ -395,12 +395,12 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .send({ label: 'Test Variable' })
         .expect(201);
 
-      const shortId = varResponse.body.uri.split('#')[1];
+      const shortId = varResponse.body.iri.split('#')[1];
 
       // Add datasource
       await request(app)
         .post(`${baseUrl}/${shortId}/datasources`)
-        .send({ datasourceUri: dsResponse.body.uri })
+        .send({ datasourceUri: dsResponse.body.iri })
         .expect(200);
 
       // Get datasources and verify all fields
@@ -409,7 +409,7 @@ describe('DatasetVariable API - POST /api/kg/dataset-variables/:id/datasources',
         .expect(200);
 
       expect(getResponse.body.datasources[0]).toMatchObject({
-        iri: dsResponse.body.uri,
+        iri: dsResponse.body.iri,
         label: 'Complete Datasource',
         fileName: 'complete.csv',
         description: 'A complete datasource',

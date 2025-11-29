@@ -7,29 +7,32 @@ export enum ErrorCode {
   VALIDATION_ERROR = 'VALIDATION_ERROR',
   NOT_FOUND = 'NOT_FOUND',
   INTERNAL_SERVER_ERROR = 'INTERNAL_SERVER_ERROR',
-  
+
   // GraphDB 相关错误
   GRAPHDB_CONNECTION_ERROR = 'GRAPHDB_CONNECTION_ERROR',
   GRAPHDB_QUERY_ERROR = 'GRAPHDB_QUERY_ERROR',
   GRAPHDB_WRITE_ERROR = 'GRAPHDB_WRITE_ERROR',
-  
+
   // SPARQL 相关错误
   SPARQL_SYNTAX_ERROR = 'SPARQL_SYNTAX_ERROR',
   SPARQL_EXECUTION_ERROR = 'SPARQL_EXECUTION_ERROR',
-  
+
   // SHACL 相关错误
   SHACL_VALIDATION_ERROR = 'SHACL_VALIDATION_ERROR',
-  
+
   // Wizard 相关错误
   WIZARD_PAYLOAD_ERROR = 'WIZARD_PAYLOAD_ERROR',
   WIZARD_TRIPLE_BUILD_ERROR = 'WIZARD_TRIPLE_BUILD_ERROR',
-  
+
   // TTL 相关错误
   TTL_PARSE_ERROR = 'TTL_PARSE_ERROR',
   TTL_UPLOAD_ERROR = 'TTL_UPLOAD_ERROR',
-  
+
   // 删除冲突错误
-  DELETE_CONFLICT = 'DELETE_CONFLICT'
+  DELETE_CONFLICT = 'DELETE_CONFLICT',
+
+  // 资源冲突
+  CONFLICT = 'CONFLICT'
 }
 
 export class AppError extends Error {
@@ -46,15 +49,15 @@ export class AppError extends Error {
     details?: any
   ) {
     super(message);
-    
+
     this.code = code;
     this.statusCode = statusCode;
     this.isOperational = isOperational;
     this.details = details;
-    
+
     // 设置错误名称为类名
     this.name = this.constructor.name;
-    
+
     // 维护 stack trace
     Error.captureStackTrace(this, this.constructor);
   }
@@ -117,5 +120,11 @@ export class TTLError extends AppError {
 export class DeleteConflictError extends AppError {
   constructor(message: string, details?: any) {
     super(ErrorCode.DELETE_CONFLICT, message, 409, true, details);
+  }
+}
+
+export class ConflictError extends AppError {
+  constructor(message: string, details?: any) {
+    super(ErrorCode.CONFLICT, message, 409, true, details);
   }
 }

@@ -54,7 +54,7 @@ describe('Metric API - GET /api/kg/metrics/:id/lineage', () => {
       const ds1 = await helper.createTestDatasource('DataSource 1');
       const ds2 = await helper.createTestDatasource('DataSource 2');
       const ds3 = await helper.createTestDatasource('DataSource 3');
-      
+
       await helper.addDatasourceToMetric(metricUri, ds1);
       await helper.addDatasourceToMetric(metricUri, ds2);
       await helper.addDatasourceToMetric(metricUri, ds3);
@@ -65,7 +65,7 @@ describe('Metric API - GET /api/kg/metrics/:id/lineage', () => {
 
       expect(response.body.lineageType).toBe('direct_measurement');
       expect(response.body.obtainedFrom).toBeDefined();
-      
+
       // The obtainedFrom returns DatasetVariables, not direct datasources
       // Since we're using hasDataSource (simplified model), it may return empty
       const datasources = response.body.obtainedFrom;
@@ -84,7 +84,7 @@ describe('Metric API - GET /api/kg/metrics/:id/lineage', () => {
 
       // Create a calculation metric and link to model
       const calcMetricUri = await helper.createTestMetric('Calculated Metric');
-      
+
       // Update the metric to be calculation_model type and link to model
       const updateQuery = `
         PREFIX esg: <http://example.org/esg#>
@@ -119,7 +119,7 @@ describe('Metric API - GET /api/kg/metrics/:id/lineage', () => {
 
       // Create a calculation metric
       const calcMetricUri = await helper.createTestMetric('Simple Calc Metric');
-      
+
       const updateQuery = `
         PREFIX esg: <http://example.org/esg#>
         
@@ -147,10 +147,10 @@ describe('Metric API - GET /api/kg/metrics/:id/lineage', () => {
       // Create a chain of metrics: base -> intermediate -> final
       const base1 = await helper.createTestMetric('Base Metric 1');
       const base2 = await helper.createTestMetric('Base Metric 2');
-      
+
       const model1 = await helper.createTestModel('Intermediate Model', [base1, base2]);
       const intermediate = await helper.createTestMetric('Intermediate Metric');
-      
+
       let updateQuery = `
         PREFIX esg: <http://example.org/esg#>
         
@@ -167,7 +167,7 @@ describe('Metric API - GET /api/kg/metrics/:id/lineage', () => {
 
       const model2 = await helper.createTestModel('Final Model', [intermediate]);
       const finalMetric = await helper.createTestMetric('Final Metric');
-      
+
       updateQuery = `
         PREFIX esg: <http://example.org/esg#>
         
@@ -195,7 +195,7 @@ describe('Metric API - GET /api/kg/metrics/:id/lineage', () => {
   describe('Error Cases', () => {
     it('should return 404 for non-existent metric', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistentMetric';
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(nonExistentUri)}/lineage`)
         .expect(404);
@@ -207,7 +207,7 @@ describe('Metric API - GET /api/kg/metrics/:id/lineage', () => {
     it('should return 400 for invalid URI format', async () => {
       // Use a truly invalid URI format with special characters
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent('invalid uri with spaces')}/lineage`)
+        .get(`${baseUrl}/${encodeURIComponent('invalid iri with spaces')}/lineage`)
         .expect(400);
 
       expect(response.body.error).toBeDefined();
@@ -225,7 +225,7 @@ describe('Metric API - GET /api/kg/metrics/:id/lineage', () => {
   describe('Different ID Formats', () => {
     it('should accept full URI format', async () => {
       const metricUri = await helper.createTestMetric('URI Format Test');
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(metricUri)}/lineage`)
         .expect(200);
@@ -236,7 +236,7 @@ describe('Metric API - GET /api/kg/metrics/:id/lineage', () => {
     it('should accept encoded URI', async () => {
       const metricUri = await helper.createTestMetric('Encoded URI Test');
       const encodedUri = encodeURIComponent(metricUri);
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodedUri}/lineage`)
         .expect(200);
@@ -248,7 +248,7 @@ describe('Metric API - GET /api/kg/metrics/:id/lineage', () => {
   describe('Response Structure', () => {
     it('should have correct structure for direct measurement', async () => {
       const metricUri = await helper.createTestMetric('Structure Test Direct');
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(metricUri)}/lineage`)
         .expect(200);
@@ -258,7 +258,7 @@ describe('Metric API - GET /api/kg/metrics/:id/lineage', () => {
       expect(response.body).toHaveProperty('obtainedFrom');
       expect(response.body).not.toHaveProperty('model');
       expect(response.body).not.toHaveProperty('inputs');
-      
+
       expect(response.body.metric).toHaveProperty('iri');
       expect(response.body.metric).toHaveProperty('label');
       expect(response.body.metric).toHaveProperty('hasCalculationMethod');
@@ -267,7 +267,7 @@ describe('Metric API - GET /api/kg/metrics/:id/lineage', () => {
     it('should have correct structure for calculation model', async () => {
       const modelUri = await helper.createTestModel('Structure Test Model', []);
       const metricUri = await helper.createTestMetric('Structure Test Calc');
-      
+
       const updateQuery = `
         PREFIX esg: <http://example.org/esg#>
         

@@ -81,7 +81,7 @@ export class HealthService {
     return response.results.bindings.map((binding: any) => ({
       id: binding.id?.value || '',
       title: binding.title?.value || binding.id?.value || '',
-      uri: binding.uri?.value || '',
+      iri: binding.iri?.value || '',
       type: binding.type?.value || '',
       sesameType: binding.sesameType?.value || '',
       location: binding.location?.value || '',
@@ -105,7 +105,7 @@ export class HealthService {
     environment: string;
   } {
     const memUsage = process.memoryUsage();
-    
+
     return {
       nodeVersion: process.version,
       platform: process.platform,

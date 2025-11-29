@@ -36,8 +36,8 @@ describe('Metric API - POST /api/kg/metrics/:id/datasources (Add Datasource)', (
         })
         .expect(200);
 
-      expect(response.body).toHaveProperty('metric_uri', metricUri);
-      expect(response.body).toHaveProperty('datasource_uri', datasourceUri);
+      expect(response.body).toHaveProperty('metric_iri', metricUri);
+      expect(response.body).toHaveProperty('datasource_iri', datasourceUri);
       expect(response.body).toHaveProperty('added_at');
 
       // Verify the association was created
@@ -57,10 +57,10 @@ describe('Metric API - POST /api/kg/metrics/:id/datasources (Add Datasource)', (
         })
         .expect(200);
 
-      expect(response.body.datasource_uri).toBe(datasourceUri);
-      // dataset_variable_uri may not be returned in response
-      if (response.body.dataset_variable_uri) {
-        expect(response.body.dataset_variable_uri).toBe(datasetVariableUri);
+      expect(response.body.datasource_iri).toBe(datasourceUri);
+      // dataset_variable_iri may not be returned in response
+      if (response.body.dataset_variable_iri) {
+        expect(response.body.dataset_variable_iri).toBe(datasetVariableUri);
       }
     });
 
@@ -75,7 +75,7 @@ describe('Metric API - POST /api/kg/metrics/:id/datasources (Add Datasource)', (
         })
         .expect(200);
 
-      expect(response.body.datasource_uri).toBe(datasourceUri);
+      expect(response.body.datasource_iri).toBe(datasourceUri);
       // disclosure_level may not be returned in response
       if (response.body.disclosure_level) {
         expect(response.body.disclosure_level).toBe(1);
@@ -93,7 +93,7 @@ describe('Metric API - POST /api/kg/metrics/:id/datasources (Add Datasource)', (
         })
         .expect(200);
 
-      expect(response.body.datasource_uri).toBe(datasourceUri);
+      expect(response.body.datasource_iri).toBe(datasourceUri);
       // priority may not be returned in response
       if (response.body.priority) {
         expect(response.body.priority).toBe(10);
@@ -114,7 +114,7 @@ describe('Metric API - POST /api/kg/metrics/:id/datasources (Add Datasource)', (
         })
         .expect(200);
 
-      expect(response.body.datasource_uri).toBe(datasourceUri);
+      expect(response.body.datasource_iri).toBe(datasourceUri);
       // Optional fields may not be returned in response
       // Just verify the datasource was added successfully
     });
@@ -152,7 +152,7 @@ describe('Metric API - POST /api/kg/metrics/:id/datasources (Add Datasource)', (
       // API may or may not support short ID format
       expect([200, 400]).toContain(response.status);
       if (response.status === 200) {
-        expect(response.body).toHaveProperty('datasource_uri');
+        expect(response.body).toHaveProperty('datasource_iri');
       }
     });
   });
@@ -188,11 +188,11 @@ describe('Metric API - POST /api/kg/metrics/:id/datasources (Add Datasource)', (
       const response = await request(app)
         .post(`${baseUrl}/${encodeURIComponent(metricUri)}/datasources`)
         .send({
-          datasourceUri: 'invalid uri with spaces'
+          datasourceUri: 'invalid iri with spaces'
         })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
 
     it('should handle non-existent datasource', async () => {
@@ -265,13 +265,13 @@ describe('Metric API - POST /api/kg/metrics/:id/datasources (Add Datasource)', (
       const datasourceUri = await helper.createTestDatasource('Datasource');
 
       const response = await request(app)
-        .post(`${baseUrl}/${encodeURIComponent('invalid metric uri')}/datasources`)
+        .post(`${baseUrl}/${encodeURIComponent('invalid metric iri')}/datasources`)
         .send({
           datasourceUri
         })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
 
     it('should handle adding datasource to calculation_model metric', async () => {
@@ -359,7 +359,7 @@ describe('Metric API - POST /api/kg/metrics/:id/datasources (Add Datasource)', (
         .send({ datasourceUri })
         .expect(200);
 
-      expect(response.body.metric_uri).toBe(metricWithSpace);
+      expect(response.body.metric_iri).toBe(metricWithSpace);
     });
 
     it('should handle datasource with special characters', async () => {
@@ -373,7 +373,7 @@ describe('Metric API - POST /api/kg/metrics/:id/datasources (Add Datasource)', (
         .send({ datasourceUri: datasourceWithChars })
         .expect(200);
 
-      expect(response.body.datasource_uri).toBe(datasourceWithChars);
+      expect(response.body.datasource_iri).toBe(datasourceWithChars);
     });
 
     it('should handle disclosureLevel boundary values', async () => {
@@ -465,8 +465,8 @@ describe('Metric API - POST /api/kg/metrics/:id/datasources (Add Datasource)', (
         .send({ datasourceUri })
         .expect(200);
 
-      expect(response.body).toHaveProperty('metric_uri');
-      expect(response.body).toHaveProperty('datasource_uri');
+      expect(response.body).toHaveProperty('metric_iri');
+      expect(response.body).toHaveProperty('datasource_iri');
       expect(response.body).toHaveProperty('added_at');
     });
 

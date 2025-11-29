@@ -575,11 +575,27 @@ export class GraphDBTestHelper {
     return result.results.bindings.map((b: any) => b.model.value);
   }
 
-  async createTestModel(label: string, inputMetrics: string[] = []): Promise<string> {
+  async createTestModel(label: string, inputMetrics: string[] = [], options?: {
+    calculationType?: string;
+    formula?: string;
+    mathematicalExpression?: string;
+  }): Promise<string> {
     const normalizedLabel = label.toLowerCase().replace(/\s+/g, '');
     const uri = `http://example.org/esg#${normalizedLabel}`;
     
     let insertData = `<${uri}> a esg:Model ; rdfs:label "${this.escapeSparql(label)}" .`;
+    
+    if (options?.calculationType) {
+      insertData += `\n<${uri}> esg:hasCalculationType "${this.escapeSparql(options.calculationType)}" .`;
+    }
+    
+    if (options?.formula) {
+      insertData += `\n<${uri}> esg:hasFormula "${this.escapeSparql(options.formula)}" .`;
+    }
+    
+    if (options?.mathematicalExpression) {
+      insertData += `\n<${uri}> esg:hasMathematicalExpression "${this.escapeSparql(options.mathematicalExpression)}" .`;
+    }
     
     inputMetrics.forEach(metricUri => {
       insertData += `\n<${uri}> esg:requiresInputFrom <${metricUri}> .`;
@@ -594,6 +610,16 @@ export class GraphDBTestHelper {
     
     await this.graphDB.executeSparqlQuery(query);
     return uri;
+  }
+
+  async linkMetricToModel(metricUri: string, modelUri: string): Promise<void> {
+    const query = `
+      ${this.prefix}
+      INSERT DATA {
+        <${metricUri}> esg:isCalculatedBy <${modelUri}> .
+      }
+    `;
+    await this.graphDB.executeSparqlQuery(query);
   }
 
   async cleanModels(): Promise<void> {
@@ -615,6 +641,15 @@ export class GraphDBTestHelper {
       }
     `;
     await this.graphDB.executeSparqlQuery(query);
+  }
+
+  async modelExists(uri: string): Promise<boolean> {
+    const query = `
+      ${this.prefix}
+      ASK { <${uri}> a esg:Model . }
+    `;
+    const result = await this.graphDB.executeSparqlQuery(query);
+    return result.boolean;
   }
 
   async createTestDatasource(label: string): Promise<string> {
@@ -804,6 +839,97 @@ export class GraphDBTestHelper {
     `;
     const result = await this.graphDB.executeSparqlQuery(query);
     return result.results.bindings.map((b: any) => b.datasource.value);
+  }
+
+  // ==================== Implementations ====================
+
+  async createTestImplementation(
+    label: string,
+    options?: {
+      language?: string;
+      filePath?: string;
+      functionName?: string;
+    }
+  ): Promise<string> {
+    const normalizedLabel = label.toLowerCase().replace(/\s+/g, '_');
+    const timestamp = Date.now();
+    const uri = `http://example.org/esg#${normalizedLabel}_${timestamp}`;
+    
+    let insertData = `<${uri}> a esg:Implementation ; rdfs:label "${this.escapeSparql(label)}" .`;
+    
+    if (options?.language) {
+      insertData += `\n<${uri}> esg:hasLanguage "${this.escapeSparql(options.language)}" .`;
+    }
+    
+    if (options?.filePath) {
+      insertData += `\n<${uri}> esg:hasFilePath "${this.escapeSparql(options.filePath)}" .`;
+    }
+    
+    if (options?.functionName) {
+      insertData += `\n<${uri}> esg:hasFunction "${this.escapeSparql(options.functionName)}" .`;
+    }
+
+    const query = `
+      ${this.prefix}
+      INSERT DATA {
+        ${insertData}
+      }
+    `;
+    
+    await this.graphDB.executeSparqlQuery(query);
+    return uri;
+  }
+
+  async cleanImplementations(): Promise<void> {
+    const query = `
+      ${this.prefix}
+      DELETE {
+        ?impl ?p ?o .
+        ?s ?p2 ?impl .
+      }
+      WHERE {
+        ?impl a esg:Implementation .
+        {
+          ?impl ?p ?o .
+        }
+        UNION
+        {
+          ?s ?p2 ?impl .
+        }
+      }
+    `;
+    await this.graphDB.executeSparqlQuery(query);
+  }
+
+  async linkImplementationToModel(modelUri: string, implementationUri: string): Promise<void> {
+    const query = `
+      ${this.prefix}
+      INSERT DATA {
+        <${modelUri}> esg:executesWith <${implementationUri}> .
+      }
+    `;
+    await this.graphDB.executeSparqlQuery(query);
+  }
+
+  async getModelImplementations(modelUri: string): Promise<string[]> {
+    const query = `
+      ${this.prefix}
+      SELECT ?implementation
+      WHERE {
+        <${modelUri}> esg:executesWith ?implementation .
+      }
+    `;
+    const result = await this.graphDB.executeSparqlQuery(query);
+    return result.results.bindings.map((b: any) => b.implementation.value);
+  }
+
+  async implementationExists(uri: string): Promise<boolean> {
+    const query = `
+      ${this.prefix}
+      ASK { <${uri}> a esg:Implementation . }
+    `;
+    const result = await this.graphDB.executeSparqlQuery(query);
+    return result.boolean;
   }
 
   // ==================== Clean All Data ====================

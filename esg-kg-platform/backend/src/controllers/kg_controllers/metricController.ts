@@ -10,6 +10,7 @@ import {
   BestDataSourceResponse,
   MetricDataSourcesResponse,
   MetricModelsResponse,
+  MetricModelsDetailResponse,
   MetricInputsResponse,
 
   MetricCalculationMethodResponse,
@@ -33,7 +34,7 @@ import {
 import { asyncHandler } from '../../middlewares/errorHandler';
 
 /**
- * Metric Controller - 处理指标相关的 HTTP 请求
+ * Metric Controller - Handles metric-related HTTP requests
  */
 @Route('api/kg/metrics')
 @Tags('Metrics')
@@ -45,18 +46,18 @@ export class MetricController {
   }
 
   /**
-   * 获取指标列表（支持多种过滤条件）
+   * Get metric list (supports multiple filter conditions)
    * 
-   * @param page 页码（从1开始，默认1）
-   * @param size 每页数量（默认10，最大100）
-   * @param search 搜索关键词（模糊匹配 label）
-   * @param industry 按行业筛选（可选）
-   * @param category 按分类筛选（可选）
-   * @param framework 按报告框架筛选（可选）
-   * @param calculationMethod 按计算方法筛选：direct_measurement 或 calculation_model（可选）
-   * @param sort 排序字段（默认 label）
-   * @param order 排序顺序（默认 asc）
-   * @returns 指标列表及分页信息
+   * @param page Page number (starting from 1, default 1)
+   * @param size Items per page (default 10, max 100)
+   * @param search Search keyword (fuzzy match on label)
+   * @param industry Filter by industry (optional)
+   * @param category Filter by category (optional)
+   * @param framework Filter by reporting framework (optional)
+   * @param calculationMethod Filter by calculation method: direct_measurement or calculation_model (optional)
+   * @param sort Sort field (default label)
+   * @param order Sort order (default asc)
+   * @returns Metric list and pagination information
    */
   @Get('/')
   @SuccessResponse('200', 'Success')
@@ -95,10 +96,10 @@ export class MetricController {
   });
 
   /**
-   * 创建新指标
+   * Create a new metric
    * 
-   * @param requestBody 创建指标的请求数据
-   * @returns 创建的指标信息
+   * @param requestBody Request data for creating a metric
+   * @returns Created metric information
    */
   @Post('/')
   @SuccessResponse('201', 'Created')
@@ -115,11 +116,11 @@ export class MetricController {
   });
 
   /**
-   * 获取指标详情（包含所有属性）
+   * Get metric details (including all attributes)
    * 
-   * @param id 指标 ID（可以是 URI、命名空间格式、label 或简短 ID）
-   * @returns 指标详情及其所有属性
-   * @example id "GHG_Emissions_Scope1" or "esg:GHG_Emissions_Scope1"
+   * @param id Metric ID (can be URI, namespace format, label or short ID)
+   * @returns Metric details and all its attributes
+   * @example id "GHG_Emissions_Scope1"
    */
   @Get('{id}')
   @SuccessResponse('200', 'Success')
@@ -140,11 +141,11 @@ export class MetricController {
   });
 
   /**
-   * 完整更新指标（替换所有属性）
+   * Full update of metric (replace all attributes)
    * 
-   * @param id 指标 ID
-   * @param requestBody 更新指标的请求数据（所有字段都需要提供）
-   * @returns 更新后的指标信息
+   * @param id Metric ID
+   * @param requestBody Request data for updating the metric (all fields must be provided)
+   * @returns Updated metric information
    */
   @Put('{id}')
   @SuccessResponse('200', 'Success')
@@ -166,11 +167,11 @@ export class MetricController {
   });
 
   /**
-   * 部分更新指标（仅更新提供的字段）
+   * Partial update of metric (only update provided fields)
    * 
-   * @param id 指标 ID
-   * @param requestBody 更新指标的请求数据（所有字段都是可选的）
-   * @returns 更新后的指标信息
+   * @param id Metric ID
+   * @param requestBody Request data for updating the metric (all fields are optional)
+   * @returns Updated metric information
    */
   @Patch('{id}')
   @SuccessResponse('200', 'Success')
@@ -192,12 +193,12 @@ export class MetricController {
   });
 
   /**
-   * 删除指标
+   * Delete a metric
    * 
-   * @param id 指标 ID
-   * @param cascade 是否级联删除相关数据（默认 false）
-   * @param force 强制删除（忽略依赖检查，默认 false）
-   * @returns 删除结果
+   * @param id Metric ID
+   * @param cascade Whether to cascade delete related data (default false)
+   * @param force Force delete (ignore dependency checks, default false)
+   * @returns Delete result
    */
   @Delete('{id}')
   @SuccessResponse('200', 'Success')
@@ -222,15 +223,15 @@ export class MetricController {
   });
 
   /**
-   * 获取指标的数据血缘关系
+   * Get metric data lineage
    * 
-   * 根据指标的计算方法（直接测量或计算模型），返回相应的数据来源：
-   * - 直接测量：返回数据集变量和数据源
-   * - 计算模型：返回模型、输入指标和实现信息
+   * Based on the metric's calculation method (direct measurement or calculation model), returns corresponding data sources:
+   * - Direct measurement: returns dataset variables and data sources
+   * - Calculation model: returns model, input metrics and implementation information
    * 
-   * @param id 指标 ID（可以是 URI、命名空间格式、label 或简短 ID）
-   * @returns 指标的数据血缘信息
-   * @example id "GHG_Emissions_Scope1" or "esg:GHG_Emissions_Scope1"
+   * @param id Metric ID (can be URI, namespace format, label or short ID)
+   * @returns Metric data lineage information
+   * @example id "GHG_Emissions_Scope1"
    */
   @Get('{id}/lineage')
   @SuccessResponse('200', 'Success')
@@ -255,15 +256,15 @@ export class MetricController {
    *             Use GET /api/kg/metrics/:id/lineage instead.
    *             Renamed from /datasets to /lineage for better semantic clarity.
    * 
-   * 获取指标的数据血缘关系
+   * Get metric data lineage
    * 
-   * 根据指标的计算方法（直接测量或计算模型），返回相应的数据来源：
-   * - 直接测量：返回数据集变量和数据源
-   * - 计算模型：返回模型、输入指标和实现信息
+   * Based on the metric's calculation method (direct measurement or calculation model), returns corresponding data sources:
+   * - Direct measurement: returns dataset variables and data sources
+   * - Calculation model: returns model, input metrics and implementation information
    * 
-   * @param id 指标 ID（可以是 URI、命名空间格式、label 或简短 ID）
-   * @returns 指标的数据血缘信息
-   * @example id "GHG_Emissions_Scope1" or "esg:GHG_Emissions_Scope1"
+   * @param id Metric ID (can be URI, namespace format, label or short ID)
+   * @returns Metric data lineage information
+   * @example id "GHG_Emissions_Scope1"
    */
   @Get('{id}/datasets')
   @SuccessResponse('200', 'Success')
@@ -292,16 +293,16 @@ export class MetricController {
   });
 
   /**
-   * 获取指标的最佳数据源
+   * Get the best data source for a metric
    * 
-   * 根据 IFRS 披露层次选择最佳数据源：
-   * 1. Corporate Disclosure (最高优先级)
+   * Selects the best data source based on IFRS disclosure hierarchy:
+   * 1. Corporate Disclosure (highest priority)
    * 2. Sustainability Reports
    * 3. Other sources
    * 
-   * @param id 指标 ID（可以是 URI、命名空间格式、label 或简短 ID）
-   * @returns 指标的最佳数据源信息
-   * @example id "GHG_Emissions_Scope1" or "esg:GHG_Emissions_Scope1"
+   * @param id Metric ID (can be URI, namespace format, label or short ID)
+   * @returns Best data source information for the metric
+   * @example id "GHG_Emissions_Scope1"
    */
   @Get('{id}/best-datasource')
   @SuccessResponse('200', 'Success')
@@ -322,16 +323,16 @@ export class MetricController {
   });
 
   /**
-   * 获取指标的所有数据源（非仅最佳数据源）
+   * Get all data sources for a metric (not just the best one)
    * 
-   * 返回与指标关联的所有数据源列表。
-   * 仅适用于直接测量（direct_measurement）的指标。
-   * 对于计算模型指标，返回空列表。
+   * Returns a list of all data sources associated with the metric.
+   * Only applicable to direct measurement metrics.
+   * For calculation model metrics, returns an empty list.
    * 
-   * @param id 指标 ID（可以是 URI、命名空间格式、label 或简短 ID）
-   * @param includeVariables 是否包含关联的数据集变量信息（默认 false）
-   * @returns 指标的所有数据源列表
-   * @example id "GHG_Emissions_Scope1" or "esg:GHG_Emissions_Scope1"
+   * @param id Metric ID (can be URI, namespace format, label or short ID)
+   * @param includeVariables Whether to include associated dataset variable information (default false)
+   * @returns List of all data sources for the metric
+   * @example id "GHG_Emissions_Scope1"
    */
   @Get('{id}/datasources')
   @SuccessResponse('200', 'Success')
@@ -354,14 +355,14 @@ export class MetricController {
   });
 
   /**
-   * 获取使用该指标作为输入的所有模型（反向依赖查询）
+   * Get all models that use this metric as input (reverse dependency query)
    * 
-   * 返回所有将该指标作为输入（requiresInputFrom）的模型。
-   * 这是一个反向依赖查询，用于了解该指标在哪些计算模型中被使用。
+   * Returns all models that use this metric as input (requiresInputFrom).
+   * This is a reverse dependency query to understand which calculation models use this metric.
    * 
-   * @param id 指标 ID（可以是 URI、命名空间格式、label 或简短 ID）
-   * @returns 使用该指标的模型列表
-   * @example id "GHG_Emissions_Scope1" or "esg:GHG_Emissions_Scope1"
+   * @param id Metric ID (can be URI, namespace format, label or short ID)
+   * @returns List of models using this metric
+   * @example id "GHG_Emissions_Scope1"
    */
   @Get('{id}/models')
   @SuccessResponse('200', 'Success')
@@ -382,15 +383,15 @@ export class MetricController {
   });
 
   /**
-   * 获取指标计算所需的输入指标列表
+   * Get the list of input metrics required for metric calculation
    * 
-   * 返回该指标计算所需的所有输入指标。
-   * 仅适用于 calculation_model 类型的指标。
-   * 对于 direct_measurement 类型的指标，返回空输入列表。
+   * Returns all input metrics required for calculating this metric.
+   * Only applicable to calculation_model type metrics.
+   * For direct_measurement type metrics, returns an empty input list.
    * 
-   * @param id 指标 ID（可以是 URI、命名空间格式、label 或简短 ID）
-   * @returns 输入指标列表
-   * @example id "GHG_Emissions_Total" or "esg:GHG_Emissions_Total"
+   * @param id Metric ID (can be URI, namespace format, label or short ID)
+   * @returns List of input metrics
+   * @example id "GHG_Emissions_Total"
    */
   @Get('{id}/inputs')
   @SuccessResponse('200', 'Success')
@@ -411,11 +412,11 @@ export class MetricController {
   });
 
   /**
-   * 为指标添加数据源关联
+   * Add data source association to metric
    * 
-   * @param id 指标 ID
-   * @param requestBody 添加数据源的请求数据
-   * @returns 添加结果
+   * @param id Metric ID
+   * @param requestBody Request data for adding data source
+   * @returns Add result
    */
   @Post('{id}/datasources')
   @SuccessResponse('200', 'Success')
@@ -437,11 +438,11 @@ export class MetricController {
   });
 
   /**
-   * 删除指标的数据源关联
+   * Remove data source association from metric
    * 
-   * @param id 指标 ID
-   * @param datasourceId 数据源 ID
-   * @returns 删除结果
+   * @param id Metric ID
+   * @param datasourceId Data source ID
+   * @returns Delete result
    */
   @Delete('{id}/datasources/{datasourceId}')
   @SuccessResponse('200', 'Success')
@@ -466,11 +467,11 @@ export class MetricController {
   });
 
   /**
-   * 为计算模型指标添加输入指标
+   * Add input metric to calculation model metric
    * 
-   * @param id 指标 ID
-   * @param requestBody 添加输入指标的请求数据
-   * @returns 添加结果
+   * @param id Metric ID
+   * @param requestBody Request data for adding input metric
+   * @returns Add result
    */
   @Post('{id}/inputs')
   @SuccessResponse('200', 'Success')
@@ -492,11 +493,11 @@ export class MetricController {
   });
 
   /**
-   * 删除计算模型指标的输入指标关联
+   * Remove input metric association from calculation model metric
    * 
-   * @param id 指标 ID
-   * @param inputMetricId 输入指标 ID
-   * @returns 删除结果
+   * @param id Metric ID
+   * @param inputMetricId Input metric ID
+   * @returns Delete result
    */
   @Delete('{id}/inputs/{inputMetricId}')
   @SuccessResponse('200', 'Success')
@@ -521,10 +522,10 @@ export class MetricController {
   });
 
   /**
-   * 批量创建指标
+   * Batch create metrics
    * 
-   * @param requestBody 批量创建请求数据
-   * @returns 创建结果（包含成功和失败列表）
+   * @param requestBody Batch creation request data
+   * @returns Creation result (including success and failure lists)
    */
   @Post('batch')
   @SuccessResponse('200', 'Success')
@@ -541,10 +542,10 @@ export class MetricController {
   });
 
   /**
-   * 批量删除指标
+   * Batch delete metrics
    * 
-   * @param requestBody 批量删除请求数据
-   * @returns 删除结果（包含成功和失败列表）
+   * @param requestBody Batch deletion request data
+   * @returns Deletion result (including success and failure lists)
    */
   @Delete('batch')
   @SuccessResponse('200', 'Success')
@@ -561,15 +562,15 @@ export class MetricController {
   });
 
   /**
-   * 获取指标的计算方法详情（CQ5）
+   * Get metric calculation method details (CQ5)
    * 
-   * 根据指标的计算方法（直接测量或计算模型），返回相应的信息：
-   * - 直接测量：返回数据源信息
-   * - 计算模型：返回模型、公式和实现信息
+   * Based on the metric's calculation method (direct measurement or calculation model), returns corresponding information:
+   * - Direct measurement: returns data source information
+   * - Calculation model: returns model, formula and implementation information
    * 
-   * @param id 指标 ID（可以是 URI、命名空间格式、label 或简短 ID）
-   * @returns 指标的计算方法详细信息
-   * @example id "GHG_Emissions_Scope1" or "esg:GHG_Emissions_Scope1"
+   * @param id Metric ID (can be URI, namespace format, label or short ID)
+   * @returns Detailed calculation method information for the metric
+   * @example id "GHG_Emissions_Scope1"
    */
   @Get('{id}/calculation-method')
   @SuccessResponse('200', 'Success')
@@ -593,10 +594,10 @@ export class MetricController {
    * @deprecated This endpoint is deprecated and will be removed in v2.0.0 (June 2026)
    * @deprecationReason Use GET /api/kg/metrics/:id instead. This endpoint returns the same data.
    * 
-   * 获取指标属性
+   * Get metric attributes
    * 
-   * @param metric_label 指标 label
-   * @returns 指标的所有属性
+   * @param metric_label Metric label
+   * @returns All attributes of the metric
    */
   @Get('attributes')
   @SuccessResponse('200', 'Success')
@@ -637,10 +638,10 @@ export class MetricController {
    *                    but in practice they map 1:1 to Metrics. This caused API confusion and
    *                    duplicate code maintenance. Use GET /api/kg/metrics/:id instead.
    * 
-   * 获取数据点属性（数据点即指标）
+   * Get data point attributes (data points are metrics)
    * 
-   * @param metric 指标 ID
-   * @returns 指标的所有属性
+   * @param metric Metric ID
+   * @returns All attributes of the metric
    */
   @Get('datapoints/attributes')
   @SuccessResponse('200', 'Success')
@@ -673,5 +674,40 @@ export class MetricController {
       metric,
       attributes: result.result.attributes || {}
     });
+  });
+
+  /**
+   * Get models related to a metric
+   * 
+   * This endpoint supports two query modes via the `usage` parameter:
+   * - usage=output (default): Returns models that CALCULATE this metric (via esg:isCalculatedBy)
+   * - usage=input: Returns models that USE this metric as input (via esg:requiresInputFrom)
+   * 
+   * For direct_measurement metrics with usage=output, returns an empty list.
+   * 
+   * @param id Metric identifier (IRI, label, or short ID)
+   * @param usage Query mode: 'output' (default) or 'input'
+   * @returns List of models with their details
+   * @example GET /api/kg/metrics/Revenue/models - Returns models that calculate Revenue
+   * @example GET /api/kg/metrics/Revenue/models?usage=input - Returns models that use Revenue as input
+   */
+  @Get('/:id/models')
+  @SuccessResponse('200', 'Success')
+  public async getMetricModelsDetailWithTsoa(
+    @Path() id: string,
+    @Query() usage?: 'output' | 'input'
+  ): Promise<MetricModelsDetailResponse> {
+    return await this.metricService.getMetricModelsDetail(id, usage || 'output');
+  }
+
+  // Express compatible method
+  getMetricModelsDetail = asyncHandler(async (req: Request, res: Response) => {
+    const { id } = req.params;
+    if (!id) {
+      throw new Error('Metric ID is required');
+    }
+    const usage = (req.query.usage as 'output' | 'input') || 'output';
+    const result = await this.metricService.getMetricModelsDetail(id, usage);
+    res.json(result);
   });
 }

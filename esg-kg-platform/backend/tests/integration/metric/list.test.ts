@@ -65,7 +65,7 @@ describe('Metric API - GET /api/kg/metrics (List)', () => {
 
       expect(response.body.result).toHaveLength(1);
       const metric = response.body.result[0];
-      expect(metric).toHaveProperty('uri');
+      expect(metric).toHaveProperty('iri');
       expect(metric).toHaveProperty('label', 'Test Metric');
       expect(metric).toHaveProperty('code', 'TEST_METRIC');
       expect(metric).toHaveProperty('unit', 'kg CO2e');
@@ -215,7 +215,7 @@ describe('Metric API - GET /api/kg/metrics (List)', () => {
       frameworkA = await helper.createTestFramework('GRI');
       categoryA = await helper.createTestCategory('Tech Environmental');
 
-      industryB = await helper.createTestIndustry('Manufacturing');
+      industryB = await helper.createTestIndustry('Manufactiring');
       frameworkB = await helper.createTestFramework('SASB');
       categoryB = await helper.createTestCategory('Mfg Environmental');
 
@@ -252,7 +252,7 @@ describe('Metric API - GET /api/kg/metrics (List)', () => {
     it('should return empty for non-existent industry', async () => {
       const response = await request(app)
         .get(baseUrl)
-        .query({ 
+        .query({
           industry: 'http://example.org/esg#nonexistent',
           framework: frameworkA,
           category: categoryA
@@ -347,14 +347,14 @@ describe('Metric API - GET /api/kg/metrics (List)', () => {
 
   describe('Filter by Calculation Method', () => {
     beforeEach(async () => {
-      await helper.createTestMetric('Direct Metric 1', { 
-        calculationMethod: 'direct_measurement' 
+      await helper.createTestMetric('Direct Metric 1', {
+        calculationMethod: 'direct_measurement'
       });
-      await helper.createTestMetric('Direct Metric 2', { 
-        calculationMethod: 'direct_measurement' 
+      await helper.createTestMetric('Direct Metric 2', {
+        calculationMethod: 'direct_measurement'
       });
-      await helper.createTestMetric('Calculated Metric 1', { 
-        calculationMethod: 'calculation_model' 
+      await helper.createTestMetric('Calculated Metric 1', {
+        calculationMethod: 'calculation_model'
       });
     });
 
@@ -436,7 +436,7 @@ describe('Metric API - GET /api/kg/metrics (List)', () => {
     it('should filter by multiple criteria (industry + category + framework)', async () => {
       const response = await request(app)
         .get(baseUrl)
-        .query({ 
+        .query({
           industry,
           category,
           framework
@@ -453,7 +453,7 @@ describe('Metric API - GET /api/kg/metrics (List)', () => {
     it('should combine search with filters', async () => {
       const response = await request(app)
         .get(baseUrl)
-        .query({ 
+        .query({
           search: 'match',
           industry,
           framework,
@@ -483,7 +483,7 @@ describe('Metric API - GET /api/kg/metrics (List)', () => {
 
       const response = await request(app)
         .get(baseUrl)
-        .query({ 
+        .query({
           industry,
           framework,
           category,
@@ -704,7 +704,7 @@ describe('Metric API - GET /api/kg/metrics (List)', () => {
         .expect(200);
 
       const metric = response.body.result[0];
-      expect(metric).toHaveProperty('uri');
+      expect(metric).toHaveProperty('iri');
       expect(metric).toHaveProperty('label');
       expect(metric).toHaveProperty('calculationMethod');
     });

@@ -1,11 +1,11 @@
 import { GraphDBRepository } from './graphDBRepository';
-import { 
-  Industry, 
-  IndustryDTO, 
-  IndustryDetailDTO, 
+import {
+  Industry,
+  IndustryDTO,
+  IndustryDetailDTO,
   GetIndustriesRequest,
   CreateIndustryRequest,
-  UpdateIndustryRequest 
+  UpdateIndustryRequest
 } from '../types/kg';
 import { GraphDBQueryError, NotFoundError, ValidationError, DeleteConflictError } from '../types/errors';
 
@@ -32,8 +32,8 @@ export class IndustryRepository {
     const offset = (page - 1) * size;
 
     // 构建搜索过滤条件
-    const searchFilter = search 
-      ? `FILTER(CONTAINS(LCASE(?label), LCASE("${this.escapeSparql(search)}")))` 
+    const searchFilter = search
+      ? `FILTER(CONTAINS(LCASE(?label), LCASE("${this.escapeSparql(search)}")))`
       : '';
 
     // 构建排序条件
@@ -145,7 +145,7 @@ export class IndustryRepository {
   /**
    * 创建新行业
    */
-  async createIndustry(data: CreateIndustryRequest): Promise<{ uri: string, label: string }> {
+  async createIndustry(data: CreateIndustryRequest): Promise<{ iri: string, label: string }> {
     const { label, description, reportsUsing } = data;
 
     if (!label || label.trim().length === 0) {
@@ -197,7 +197,7 @@ export class IndustryRepository {
 
       await this.graphDB.executeSparqlQuery(insertQuery);
 
-      return { uri: industryUri, label };
+      return { iri: industryUri, label };
     } catch (error) {
       if (error instanceof ValidationError) {
         throw error;
@@ -209,7 +209,7 @@ export class IndustryRepository {
   /**
    * 部分更新行业
    */
-  async updateIndustry(id: string, data: UpdateIndustryRequest): Promise<{ uri: string, label: string }> {
+  async updateIndustry(id: string, data: UpdateIndustryRequest): Promise<{ iri: string, label: string }> {
     const industryUri = this.resolveIndustryUri(id);
     const { label, description, reportsUsing } = data;
 
@@ -276,7 +276,7 @@ export class IndustryRepository {
       const industry = await this.getIndustryById(id);
       const finalLabel = label || industry.label || '';
 
-      return { uri: industryUri, label: finalLabel };
+      return { iri: industryUri, label: finalLabel };
     } catch (error) {
       if (error instanceof NotFoundError || error instanceof ValidationError) {
         throw error;
@@ -290,7 +290,7 @@ export class IndustryRepository {
    * @param id - 行业标识符
    * @param force - 是否强制删除（忽略关联检查）
    */
-  async deleteIndustry(id: string, force: boolean = false): Promise<{ uri: string, deleted: boolean }> {
+  async deleteIndustry(id: string, force: boolean = false): Promise<{ iri: string, deleted: boolean }> {
     const industryUri = this.resolveIndustryUri(id);
 
     // 检查行业是否存在
@@ -313,9 +313,9 @@ export class IndustryRepository {
             <${industryUri}> esg:reportsUsing ?framework .
           }
         `;
-        
+
         const hasRelations = await this.graphDB.executeSparqlQuery(hasRelationsQuery);
-        
+
         if (hasRelations.boolean) {
           // 获取关联的框架信息用于错误提示
           const relationsQuery = `
@@ -326,15 +326,15 @@ export class IndustryRepository {
               OPTIONAL { ?framework rdfs:label ?label . }
             }
           `;
-          
+
           const relationsResult = await this.graphDB.executeSparqlQuery(relationsQuery);
-          const frameworks = relationsResult.results.bindings.map((b: any) => 
+          const frameworks = relationsResult.results.bindings.map((b: any) =>
             b.label?.value || b.framework.value
           );
-          
+
           throw new DeleteConflictError(
             `Cannot delete industry: it has associated reporting frameworks. Use force=true to delete anyway.`,
-            { 
+            {
               industryUri,
               associatedFrameworks: frameworks,
               frameworkCount: frameworks.length
@@ -363,7 +363,7 @@ export class IndustryRepository {
 
       await this.graphDB.executeSparqlQuery(deleteQuery);
 
-      return { uri: industryUri, deleted: true };
+      return { iri: industryUri, deleted: true };
     } catch (error) {
       if (error instanceof NotFoundError || error instanceof DeleteConflictError) {
         throw error;
@@ -380,12 +380,12 @@ export class IndustryRepository {
     if (id.startsWith('http://') || id.startsWith('https://')) {
       return id;
     }
-    
+
     // 如果是命名空间格式 (esg:xxx)，转换为完整 URI
     if (id.includes(':')) {
       return id.replace('esg:', 'http://example.org/esg#');
     }
-    
+
     // 否则假定是一个简短 ID，添加命名空间前缀
     return `http://example.org/esg#${id}`;
   }

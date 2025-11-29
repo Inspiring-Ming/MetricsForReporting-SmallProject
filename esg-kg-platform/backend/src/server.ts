@@ -20,6 +20,8 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from '../swagger.json';
 
 // 配置和路由
 import { config, validateConfig } from './config';
@@ -59,6 +61,9 @@ const createApp = (): express.Application => {
     });
   }
 
+  // Swagger API 文档
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
   // API 路由
   app.use('/api', createApiRoutes());
 
@@ -69,6 +74,7 @@ const createApp = (): express.Application => {
       message: 'ESG Knowledge Graph Platform API',
       version: process.env.npm_package_version || '1.0.0',
       timestamp: new Date().toISOString(),
+      documentation: '/api-docs',
       endpoints: {
         health: '/api/health',
         repositories: '/api/repositories',
@@ -120,7 +126,7 @@ const startServer = async (): Promise<void> => {
       console.log(`🌐 Server: http://localhost:${config.PORT}`);
       console.log(`📊 GraphDB: ${config.GRAPHDB_URL}`);
       console.log(`🗄️  Repository: ${config.GRAPHDB_REPO}`);
-      console.log(`📋 API Docs: http://localhost:${config.PORT}/api`);
+      console.log(`📋 API Docs: http://localhost:${config.PORT}/api-docs`);
       console.log('=====================================');
       console.log('');
     });

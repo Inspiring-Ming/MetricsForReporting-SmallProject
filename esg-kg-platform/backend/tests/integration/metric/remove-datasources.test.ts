@@ -35,8 +35,8 @@ describe('Metric API - DELETE /api/kg/metrics/:id/datasources/:datasourceId (Rem
         .delete(`${baseUrl}/${encodeURIComponent(metricUri)}/datasources/${datasourceId}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('metric_uri', metricUri);
-      expect(response.body).toHaveProperty('datasource_uri', datasourceUri);
+      expect(response.body).toHaveProperty('metric_iri', metricUri);
+      expect(response.body).toHaveProperty('datasource_iri', datasourceUri);
       expect(response.body).toHaveProperty('removed_at');
 
       // Verify the association was removed
@@ -53,8 +53,8 @@ describe('Metric API - DELETE /api/kg/metrics/:id/datasources/:datasourceId (Rem
         .delete(`${baseUrl}/${encodeURIComponent(metricUri)}/datasources/${shortId}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('metric_uri');
-      expect(response.body).toHaveProperty('datasource_uri');
+      expect(response.body).toHaveProperty('metric_iri');
+      expect(response.body).toHaveProperty('datasource_iri');
       expect(response.body).toHaveProperty('removed_at');
     });
 
@@ -105,8 +105,8 @@ describe('Metric API - DELETE /api/kg/metrics/:id/datasources/:datasourceId (Rem
         .delete(`${baseUrl}/${encodeURIComponent(metricUri)}/datasources/${encodeURIComponent(datasourceUri)}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('metric_uri', metricUri);
-      expect(response.body).toHaveProperty('datasource_uri', datasourceUri);
+      expect(response.body).toHaveProperty('metric_iri', metricUri);
+      expect(response.body).toHaveProperty('datasource_iri', datasourceUri);
     });
 
     it('should return 200 for non-existent datasource (idempotent)', async () => {
@@ -116,16 +116,16 @@ describe('Metric API - DELETE /api/kg/metrics/:id/datasources/:datasourceId (Rem
         .delete(`${baseUrl}/${encodeURIComponent(metricUri)}/datasources/${encodeURIComponent(nonExistentDatasource)}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('metric_uri', metricUri);
-      expect(response.body).toHaveProperty('datasource_uri', nonExistentDatasource);
+      expect(response.body).toHaveProperty('metric_iri', metricUri);
+      expect(response.body).toHaveProperty('datasource_iri', nonExistentDatasource);
     });
 
     it('should return 400 for invalid datasource URI format', async () => {
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(metricUri)}/datasources/${encodeURIComponent('invalid uri')}`)
+        .delete(`${baseUrl}/${encodeURIComponent(metricUri)}/datasources/${encodeURIComponent('invalid iri')}`)
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
   });
 
@@ -138,18 +138,18 @@ describe('Metric API - DELETE /api/kg/metrics/:id/datasources/:datasourceId (Rem
         .delete(`${baseUrl}/${encodeURIComponent(nonExistentMetric)}/datasources/${encodeURIComponent(datasourceUri)}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('metric_uri', nonExistentMetric);
-      expect(response.body).toHaveProperty('datasource_uri', datasourceUri);
+      expect(response.body).toHaveProperty('metric_iri', nonExistentMetric);
+      expect(response.body).toHaveProperty('datasource_iri', datasourceUri);
     });
 
     it('should return 400 for invalid metric URI format', async () => {
       const datasourceUri = await helper.createTestDatasource('Datasource');
 
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent('invalid metric uri')}/datasources/${encodeURIComponent(datasourceUri)}`)
+        .delete(`${baseUrl}/${encodeURIComponent('invalid metric iri')}/datasources/${encodeURIComponent(datasourceUri)}`)
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
 
     it('should handle deletion from calculation_model metric (returns 200)', async () => {
@@ -162,8 +162,8 @@ describe('Metric API - DELETE /api/kg/metrics/:id/datasources/:datasourceId (Rem
         .delete(`${baseUrl}/${encodeURIComponent(calculatedMetric)}/datasources/${encodeURIComponent(datasourceUri)}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('metric_uri', calculatedMetric);
-      expect(response.body).toHaveProperty('datasource_uri', datasourceUri);
+      expect(response.body).toHaveProperty('metric_iri', calculatedMetric);
+      expect(response.body).toHaveProperty('datasource_iri', datasourceUri);
     });
   });
 
@@ -188,8 +188,8 @@ describe('Metric API - DELETE /api/kg/metrics/:id/datasources/:datasourceId (Rem
         .delete(`${baseUrl}/${encodeURIComponent(metricUri)}/datasources/${encodeURIComponent(datasourceUri)}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('metric_uri', metricUri);
-      expect(response.body).toHaveProperty('datasource_uri', datasourceUri);
+      expect(response.body).toHaveProperty('metric_iri', metricUri);
+      expect(response.body).toHaveProperty('datasource_iri', datasourceUri);
     });
   });
 
@@ -205,8 +205,8 @@ describe('Metric API - DELETE /api/kg/metrics/:id/datasources/:datasourceId (Rem
         .delete(`${baseUrl}/${encodeURIComponent(metricWithSpace)}/datasources/${encodeURIComponent(datasourceWithSpace)}`)
         .expect(200);
 
-      expect(response.body.metric_uri).toBe(metricWithSpace);
-      expect(response.body.datasource_uri).toBe(datasourceWithSpace);
+      expect(response.body.metric_iri).toBe(metricWithSpace);
+      expect(response.body.datasource_iri).toBe(datasourceWithSpace);
     });
 
     it('should handle datasource with special characters', async () => {
@@ -220,7 +220,7 @@ describe('Metric API - DELETE /api/kg/metrics/:id/datasources/:datasourceId (Rem
         .delete(`${baseUrl}/${encodeURIComponent(metricUri)}/datasources/${encodeURIComponent(datasourceWithChars)}`)
         .expect(200);
 
-      expect(response.body.datasource_uri).toBe(datasourceWithChars);
+      expect(response.body.datasource_iri).toBe(datasourceWithChars);
     });
 
     it('should handle rapid successive deletions', async () => {
@@ -229,7 +229,7 @@ describe('Metric API - DELETE /api/kg/metrics/:id/datasources/:datasourceId (Rem
       });
       const ds1 = await helper.createTestDatasource('DS1');
       const ds2 = await helper.createTestDatasource('DS2');
-      
+
       await helper.addDatasourceToMetric(metricUri, ds1);
       await helper.addDatasourceToMetric(metricUri, ds2);
 
@@ -257,7 +257,7 @@ describe('Metric API - DELETE /api/kg/metrics/:id/datasources/:datasourceId (Rem
     it('should verify deletion via helper method', async () => {
       const datasource1 = await helper.createTestDatasource('DS1');
       const datasource2 = await helper.createTestDatasource('DS2');
-      
+
       await helper.addDatasourceToMetric(metricUri, datasource1);
       await helper.addDatasourceToMetric(metricUri, datasource2);
 
@@ -325,8 +325,8 @@ describe('Metric API - DELETE /api/kg/metrics/:id/datasources/:datasourceId (Rem
         .delete(`${baseUrl}/${encodeURIComponent(metricUri)}/datasources/${encodeURIComponent(datasourceUri)}`)
         .expect(200);
 
-      expect(response.body).toHaveProperty('metric_uri');
-      expect(response.body).toHaveProperty('datasource_uri');
+      expect(response.body).toHaveProperty('metric_iri');
+      expect(response.body).toHaveProperty('datasource_iri');
       expect(response.body).toHaveProperty('removed_at');
     });
 

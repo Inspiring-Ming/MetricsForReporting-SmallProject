@@ -110,7 +110,7 @@ describe('Industry API - GET /api/kg/industries (List)', () => {
     beforeEach(async () => {
       await helper.createTestIndustry('Commercial Banks', 'Banking sector');
       await helper.createTestIndustry('Technology Sector', 'Tech companies');
-      await helper.createTestIndustry('Semiconductors', 'Chip manufacturing');
+      await helper.createTestIndustry('Semiconductors', 'Chip manufactiring');
       await helper.createTestIndustry('Oil & Gas', 'Energy sector');
     });
 

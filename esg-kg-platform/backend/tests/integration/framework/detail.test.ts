@@ -19,31 +19,31 @@ describe('Framework API - GET /api/kg/frameworks/:id (Detail)', () => {
 
   describe('Normal Query', () => {
     it('should get framework detail by full URI', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
+      const iri = await helper.createTestFramework('Test Framework');
 
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
-      expect(response.body.result).toHaveProperty('iri', uri);
+      expect(response.body.result).toHaveProperty('iri', iri);
       expect(response.body.result).toHaveProperty('label', 'Test Framework');
     });
 
     it('should get framework detail by short ID', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .get(`${baseUrl}/${shortId}`)
         .expect(200);
 
-      expect(response.body.result).toHaveProperty('iri', uri);
+      expect(response.body.result).toHaveProperty('iri', iri);
       expect(response.body.result).toHaveProperty('label', 'Test Framework');
     });
 
     it('should get framework detail by namespace format', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Test Framework');
+      const shortId = iri.split('#')[1];
       const namespaceId = `esg:${shortId}`;
 
       const response = await request(app)
@@ -54,10 +54,10 @@ describe('Framework API - GET /api/kg/frameworks/:id (Detail)', () => {
     });
 
     it('should return complete information structure', async () => {
-      const uri = await helper.createTestFramework('Complete Framework');
+      const iri = await helper.createTestFramework('Complete Framework');
 
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       expect(response.body).toHaveProperty('result');
@@ -68,10 +68,10 @@ describe('Framework API - GET /api/kg/frameworks/:id (Detail)', () => {
 
   describe('Categories Association', () => {
     it('should return undefined categories when no categories associated', async () => {
-      const uri = await helper.createTestFramework('Framework Without Categories');
+      const iri = await helper.createTestFramework('Framework Without Categories');
 
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       expect(response.body.result.categories).toBeUndefined();
@@ -79,11 +79,11 @@ describe('Framework API - GET /api/kg/frameworks/:id (Detail)', () => {
 
     it('should return single associated category', async () => {
       const category = await helper.createTestCategory('Test Category');
-      const uri = await helper.createTestFramework('Test Framework');
-      await helper.addCategoriesToFramework(uri, [category]);
+      const iri = await helper.createTestFramework('Test Framework');
+      await helper.addCategoriesToFramework(iri, [category]);
 
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       expect(response.body.result.categories).toHaveLength(1);
@@ -96,11 +96,11 @@ describe('Framework API - GET /api/kg/frameworks/:id (Detail)', () => {
       const cat2 = await helper.createTestCategory('Category 2');
       const cat3 = await helper.createTestCategory('Category 3');
 
-      const uri = await helper.createTestFramework('Test Framework');
-      await helper.addCategoriesToFramework(uri, [cat1, cat2, cat3]);
+      const iri = await helper.createTestFramework('Test Framework');
+      await helper.addCategoriesToFramework(iri, [cat1, cat2, cat3]);
 
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       expect(response.body.result.categories).toHaveLength(3);
@@ -108,11 +108,11 @@ describe('Framework API - GET /api/kg/frameworks/:id (Detail)', () => {
 
     it('should include category iri and label', async () => {
       const category = await helper.createTestCategory('Verified Category');
-      const uri = await helper.createTestFramework('Test Framework');
-      await helper.addCategoriesToFramework(uri, [category]);
+      const iri = await helper.createTestFramework('Test Framework');
+      await helper.addCategoriesToFramework(iri, [category]);
 
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(iri)}`)
         .expect(200);
 
       const cat = response.body.result.categories[0];
@@ -134,7 +134,7 @@ describe('Framework API - GET /api/kg/frameworks/:id (Detail)', () => {
 
     it('should return 404 for invalid URI', async () => {
       const response = await request(app)
-        .get(`${baseUrl}/http://invalid.uri/test`)
+        .get(`${baseUrl}/http://invalid.iri/test`)
         .expect(404);
 
       expect(response.body).toHaveProperty('error');
@@ -143,8 +143,8 @@ describe('Framework API - GET /api/kg/frameworks/:id (Detail)', () => {
 
   describe('URI Format Support', () => {
     it('should support URL encoded full URI', async () => {
-      const uri = await helper.createTestFramework('Test Framework');
-      const encodedUri = encodeURIComponent(uri);
+      const iri = await helper.createTestFramework('Test Framework');
+      const encodedUri = encodeURIComponent(iri);
 
       const response = await request(app)
         .get(`${baseUrl}/${encodedUri}`)
@@ -154,8 +154,8 @@ describe('Framework API - GET /api/kg/frameworks/:id (Detail)', () => {
     });
 
     it('should support short ID format', async () => {
-      const uri = await helper.createTestFramework('Short ID Test');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Short ID Test');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .get(`${baseUrl}/${shortId}`)
@@ -165,8 +165,8 @@ describe('Framework API - GET /api/kg/frameworks/:id (Detail)', () => {
     });
 
     it('should support namespace format (esg:id)', async () => {
-      const uri = await helper.createTestFramework('Namespace Test');
-      const shortId = uri.split('#')[1];
+      const iri = await helper.createTestFramework('Namespace Test');
+      const shortId = iri.split('#')[1];
 
       const response = await request(app)
         .get(`${baseUrl}/esg:${shortId}`)

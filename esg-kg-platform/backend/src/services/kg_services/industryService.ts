@@ -78,17 +78,17 @@ export class IndustryService {
 
     // 验证报告框架 URIs 格式
     if (data.reportsUsing) {
-      for (const uri of data.reportsUsing) {
-        if (!this.isValidUri(uri)) {
-          throw new ValidationError(`Invalid framework URI: ${uri}`);
+      for (const iri of data.reportsUsing) {
+        if (!this.isValidUri(iri)) {
+          throw new ValidationError(`Invalid framework URI: ${iri}`);
         }
       }
     }
 
-    const { uri, label } = await this.industryRepo.createIndustry(data);
+    const { iri, label } = await this.industryRepo.createIndustry(data);
 
     return {
-      uri,
+      iri,
       label,
       description: data.description,
       created_at: new Date().toISOString()
@@ -107,7 +107,7 @@ export class IndustryService {
     const hasLabel = data.label !== undefined;
     const hasDescription = data.description !== undefined;
     const hasReportsUsing = data.reportsUsing !== undefined;
-    
+
     if (!hasLabel && !hasDescription && !hasReportsUsing) {
       throw new ValidationError('At least one field must be provided for update');
     }
@@ -128,17 +128,17 @@ export class IndustryService {
 
     // 验证报告框架 URIs 格式
     if (data.reportsUsing) {
-      for (const uri of data.reportsUsing) {
-        if (!this.isValidUri(uri)) {
-          throw new ValidationError(`Invalid framework URI: ${uri}`);
+      for (const iri of data.reportsUsing) {
+        if (!this.isValidUri(iri)) {
+          throw new ValidationError(`Invalid framework URI: ${iri}`);
         }
       }
     }
 
-    const { uri, label } = await this.industryRepo.updateIndustry(id, data);
+    const { iri, label } = await this.industryRepo.updateIndustry(id, data);
 
     return {
-      uri,
+      iri,
       label,
       description: data.description,
       updated_at: new Date().toISOString()
@@ -155,10 +155,10 @@ export class IndustryService {
       throw new ValidationError('Industry ID is required');
     }
 
-    const { uri, deleted } = await this.industryRepo.deleteIndustry(id, force);
+    const { iri, deleted } = await this.industryRepo.deleteIndustry(id, force);
 
     return {
-      uri,
+      iri,
       deleted,
       deleted_at: new Date().toISOString()
     };
@@ -167,12 +167,12 @@ export class IndustryService {
   /**
    * 辅助方法：验证 URI 格式
    */
-  private isValidUri(uri: string): boolean {
+  private isValidUri(iri: string): boolean {
     try {
       // 检查是否是有效的 URL 或命名空间格式
-      return uri.startsWith('http://') || 
-             uri.startsWith('https://') || 
-             /^[a-zA-Z0-9]+:[a-zA-Z0-9]+$/.test(uri);
+      return iri.startsWith('http://') ||
+        iri.startsWith('https://') ||
+        /^[a-zA-Z0-9]+:[a-zA-Z0-9]+$/.test(iri);
     } catch {
       return false;
     }

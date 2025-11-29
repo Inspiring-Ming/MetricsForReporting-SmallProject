@@ -30,7 +30,7 @@ describe('Metric API - GET /api/kg/metrics/:id/calculation-method', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('metric_label');
-      expect(response.body).toHaveProperty('metric_uri');
+      expect(response.body).toHaveProperty('metric_iri');
       expect(response.body).toHaveProperty('calculation_method');
       expect(response.body).toHaveProperty('attributes');
       expect(response.body.calculation_method).toBe('direct_measurement');
@@ -60,7 +60,7 @@ describe('Metric API - GET /api/kg/metrics/:id/calculation-method', () => {
         .expect(200);
 
       expect(response.body.calculation_method).toBe('direct_measurement');
-      expect(response.body.metric_uri).toBe(metricUri);
+      expect(response.body.metric_iri).toBe(metricUri);
     });
   });
 
@@ -69,9 +69,9 @@ describe('Metric API - GET /api/kg/metrics/:id/calculation-method', () => {
       const input1 = await helper.createTestMetric('Input 1');
       const input2 = await helper.createTestMetric('Input 2');
       const model = await helper.createTestModel('Calculation Model', [input1, input2]);
-      
+
       const calcMetric = await helper.createTestMetric('Calculated Metric');
-      
+
       const updateQuery = `
         PREFIX esg: <http://example.org/esg#>
         
@@ -92,14 +92,14 @@ describe('Metric API - GET /api/kg/metrics/:id/calculation-method', () => {
 
       expect(response.body.calculation_method).toBe('calculation_model');
       expect(response.body).toHaveProperty('metric_label');
-      expect(response.body).toHaveProperty('metric_uri');
+      expect(response.body).toHaveProperty('metric_iri');
     });
 
     it('should include model information for calculation model', async () => {
       const input = await helper.createTestMetric('Model Input');
       const model = await helper.createTestModel('Test Model', [input]);
       const calcMetric = await helper.createTestMetric('Calc Metric');
-      
+
       const updateQuery = `
         PREFIX esg: <http://example.org/esg#>
         
@@ -122,14 +122,14 @@ describe('Metric API - GET /api/kg/metrics/:id/calculation-method', () => {
       // Model may be included depending on implementation
       if (response.body.model) {
         expect(response.body.model).toHaveProperty('label');
-        expect(response.body.model).toHaveProperty('uri');
+        expect(response.body.model).toHaveProperty('iri');
       }
     });
 
     it('should not include data_sources for calculation model', async () => {
       const model = await helper.createTestModel('Simple Model', []);
       const calcMetric = await helper.createTestMetric('Calc Only');
-      
+
       const updateQuery = `
         PREFIX esg: <http://example.org/esg#>
         
@@ -162,12 +162,12 @@ describe('Metric API - GET /api/kg/metrics/:id/calculation-method', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('metric_label');
-      expect(response.body).toHaveProperty('metric_uri');
+      expect(response.body).toHaveProperty('metric_iri');
       expect(response.body).toHaveProperty('calculation_method');
       expect(response.body).toHaveProperty('attributes');
-      
+
       expect(typeof response.body.metric_label).toBe('string');
-      expect(typeof response.body.metric_uri).toBe('string');
+      expect(typeof response.body.metric_iri).toBe('string');
       expect(typeof response.body.calculation_method).toBe('string');
       expect(typeof response.body.attributes).toBe('object');
     });
@@ -175,7 +175,7 @@ describe('Metric API - GET /api/kg/metrics/:id/calculation-method', () => {
     it('should have required fields for calculation model', async () => {
       const model = await helper.createTestModel('Model', []);
       const metric = await helper.createTestMetric('Structure Test Calc');
-      
+
       const updateQuery = `
         PREFIX esg: <http://example.org/esg#>
         
@@ -195,7 +195,7 @@ describe('Metric API - GET /api/kg/metrics/:id/calculation-method', () => {
         .expect(200);
 
       expect(response.body).toHaveProperty('metric_label');
-      expect(response.body).toHaveProperty('metric_uri');
+      expect(response.body).toHaveProperty('metric_iri');
       expect(response.body).toHaveProperty('calculation_method');
       expect(response.body).toHaveProperty('attributes');
     });
@@ -204,7 +204,7 @@ describe('Metric API - GET /api/kg/metrics/:id/calculation-method', () => {
   describe('Error Cases', () => {
     it('should return 404 for non-existent metric', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistent';
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(nonExistentUri)}/calculation-method`)
         .expect(404);
@@ -214,7 +214,7 @@ describe('Metric API - GET /api/kg/metrics/:id/calculation-method', () => {
 
     it('should return 400 for invalid URI format', async () => {
       const response = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent('invalid uri')}/calculation-method`)
+        .get(`${baseUrl}/${encodeURIComponent('invalid iri')}/calculation-method`)
         .expect(400);
 
       expect(response.body.error).toBeDefined();
@@ -232,23 +232,23 @@ describe('Metric API - GET /api/kg/metrics/:id/calculation-method', () => {
   describe('Different ID Formats', () => {
     it('should accept full URI format', async () => {
       const metricUri = await helper.createTestMetric('URI Test');
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(metricUri)}/calculation-method`)
         .expect(200);
 
-      expect(response.body.metric_uri).toBe(metricUri);
+      expect(response.body.metric_iri).toBe(metricUri);
     });
 
     it('should accept encoded URI', async () => {
       const metricUri = await helper.createTestMetric('Encoded Test');
       const encodedUri = encodeURIComponent(metricUri);
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodedUri}/calculation-method`)
         .expect(200);
 
-      expect(response.body.metric_uri).toBe(metricUri);
+      expect(response.body.metric_iri).toBe(metricUri);
     });
   });
 
@@ -256,22 +256,22 @@ describe('Metric API - GET /api/kg/metrics/:id/calculation-method', () => {
     it('should handle metric with special characters', async () => {
       // Use underscores and hyphens which are safe for SPARQL
       const metric = await helper.createTestMetric('Metric_With-Special_Chars');
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(metric)}/calculation-method`)
         .expect(200);
 
-      expect(response.body.metric_uri).toBe(metric);
+      expect(response.body.metric_iri).toBe(metric);
     });
 
     it('should handle metric with Unicode characters', async () => {
       const metric = await helper.createTestMetric('指标测试 📊');
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(metric)}/calculation-method`)
         .expect(200);
 
-      expect(response.body.metric_uri).toBe(metric);
+      expect(response.body.metric_iri).toBe(metric);
     });
 
     it('should return consistent results for multiple requests', async () => {
@@ -286,7 +286,7 @@ describe('Metric API - GET /api/kg/metrics/:id/calculation-method', () => {
         .expect(200);
 
       expect(response1.body.calculation_method).toBe(response2.body.calculation_method);
-      expect(response1.body.metric_uri).toBe(response2.body.metric_uri);
+      expect(response1.body.metric_iri).toBe(response2.body.metric_iri);
     });
   });
 

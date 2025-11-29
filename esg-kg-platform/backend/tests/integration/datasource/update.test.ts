@@ -27,7 +27,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         })
         .expect(201);
 
-      const datasourceUri = createResponse.body.uri;
+      const datasourceUri = createResponse.body.iri;
       const shortId = datasourceUri.split('#')[1];
 
       // Update only the label
@@ -36,7 +36,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         .send({ label: 'Updated Name' })
         .expect(200);
 
-      expect(updateResponse.body).toHaveProperty('uri', datasourceUri);
+      expect(updateResponse.body).toHaveProperty('iri', datasourceUri);
       expect(updateResponse.body).toHaveProperty('label', 'Updated Name');
       expect(updateResponse.body).toHaveProperty('updated_at');
 
@@ -59,7 +59,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       const updateResponse = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -85,7 +85,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -108,7 +108,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -131,7 +131,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -158,7 +158,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       const updateResponse = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -193,7 +193,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -229,7 +229,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -254,7 +254,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -282,7 +282,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         .send({ label: 'Test Dataset' })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -290,7 +290,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('At least one field');
+      expect(response.body.error.message).toContain('At least one field');
     });
 
     it('should reject negative recordCount', async () => {
@@ -299,7 +299,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         .send({ label: 'Test Dataset' })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -307,7 +307,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         .expect(400);
 
       expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('non-negative');
+      expect(response.body.error.message).toContain('non-negative');
     });
 
     it('should reject invalid data types', async () => {
@@ -316,7 +316,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         .send({ label: 'Test Dataset' })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       const response = await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -332,7 +332,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         .send({ label: 'Test Dataset', recordCount: 100 })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -363,7 +363,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         .send({ label: 'Test Dataset' })
         .expect(201);
 
-      const fullUri = createResponse.body.uri;
+      const fullUri = createResponse.body.iri;
       const encodedUri = encodeURIComponent(fullUri);
 
       await request(app)
@@ -384,7 +384,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         .send({ label: 'Original' })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       await request(app)
         .patch(`${baseUrl}/${shortId}`)
@@ -406,7 +406,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         .send({ label: 'Original' })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       // First update
       await request(app)
@@ -442,7 +442,7 @@ describe('Datasource API - PATCH /api/kg/datasources/:id (Update)', () => {
         })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       // Update with same values
       const response = await request(app)

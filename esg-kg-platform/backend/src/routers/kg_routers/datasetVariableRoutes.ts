@@ -267,7 +267,7 @@ export const createDatasetVariableRoutes = (): Router => {
    * 
    * 错误示例 (400 Bad Request - URI格式错误):
    * {
-   *   "error": "Invalid datasource URI format"
+   *   "error": "Invalid datasource IRI format"
    * }
    */
   router.delete('/:id/datasources/:dsId', controller.removeVariableDatasource);

@@ -17,7 +17,7 @@ import { asyncHandler } from '../../middlewares/errorHandler';
 import { ValidationError } from '../../types/errors';
 
 /**
- * Datasource Controller - 处理数据源相关的 HTTP 请求
+ * Datasource Controller - Handles data source-related HTTP requests
  */
 @Route('api/kg/datasources')
 @Tags('Datasources')
@@ -29,19 +29,20 @@ export class DatasourceController {
   }
 
   /**
-   * 获取数据源列表（支持分页、搜索和排序）
+   * Get data source list (supports pagination, search and sorting)
    * 
-   * @param page 页码（从1开始，默认1）
-   * @param size 每页数量（默认20，最大100）
-   * @param search 搜索关键词（模糊匹配 label 或 fileName）
-   * @param sort 排序字段（默认 label）
-   * @param order 排序顺序（默认 asc）
-   * @returns 数据源列表及分页信息
-   * @example request
+   * @param page Page number (starting from 1, default 1)
+   * @param size Items per page (default 20, max 100)
+   * @param search Search keyword (fuzzy match on label or fileName)
+   * @param sort Sort field (default label)
+   * @param order Sort order (default asc)
+   * @returns Data source list and pagination information
+   * 
+   * Example request:
    * ```
    * GET /api/kg/datasources?page=1&size=20&search=carbon&sort=label&order=asc
    * ```
-   * @example response
+   * Example response:
    * ```json
    * {
    *   "result": [
@@ -96,10 +97,10 @@ export class DatasourceController {
   });
 
   /**
-   * 获取数据源详情
+   * Get data source details
    * 
-   * @param id 数据源 ID（URI 格式或简短 ID）
-   * @returns 数据源详情（包含使用它的数据集变量）
+   * @param id Data source ID (URI format or short ID)
+   * @returns Data source details (including dataset variables using it)
    * @example request
    * ```
    * GET /api/kg/datasources/SemiconductorWRDSFinancialDataset
@@ -138,25 +139,25 @@ export class DatasourceController {
   // Express 兼容方法
   getDatasourceById = asyncHandler(async (req: Request, res: Response) => {
     let { id } = req.params;
-    
+
     // 解码 URI
     if (id) {
       id = decodeURIComponent(id);
     }
-    
+
     if (!id || !id.trim()) {
       throw new ValidationError('Datasource ID is required');
     }
-    
+
     const result = await this.service.getDatasourceById(id);
     res.json(result);
   });
 
   /**
-   * 创建数据源
+   * Create a data source
    * 
-   * @param data 数据源信息
-   * @returns 创建的数据源信息
+   * @param data Data source information
+   * @returns Created data source information
    * @example request
    * ```json
    * {
@@ -170,7 +171,7 @@ export class DatasourceController {
    * @example response
    * ```json
    * {
-   *   "uri": "http://example.org/esg#New_Carbon_Dataset_1700000000000",
+   *   "iri": "http://example.org/esg#New_Carbon_Dataset_1700000000000",
    *   "label": "New Carbon Dataset",
    *   "created_at": "2024-11-20T10:30:00.000Z"
    * }
@@ -194,11 +195,11 @@ export class DatasourceController {
   });
 
   /**
-   * 更新数据源（部分更新）
+   * Update a data source (partial update)
    * 
-   * @param id 数据源 ID（URI 格式或简短 ID）
-   * @param data 需要更新的字段
-   * @returns 更新后的数据源信息
+   * @param id Data source ID (URI format or short ID)
+   * @param data Fields to update
+   * @returns Updated data source information
    * @example request
    * ```
    * PATCH /api/kg/datasources/SemiconductorWRDSFinancialDataset
@@ -212,7 +213,7 @@ export class DatasourceController {
    * @example response
    * ```json
    * {
-   *   "uri": "http://example.org/esg#SemiconductorWRDSFinancialDataset",
+   *   "iri": "http://example.org/esg#SemiconductorWRDSFinancialDataset",
    *   "label": "Semiconductor WRDS Financial Dataset",
    *   "updated_at": "2024-11-20T10:45:00.000Z"
    * }
@@ -233,27 +234,27 @@ export class DatasourceController {
   // Express 兼容方法
   updateDatasource = asyncHandler(async (req: Request, res: Response) => {
     let { id } = req.params;
-    
+
     // 解码 URI
     if (id) {
       id = decodeURIComponent(id);
     }
-    
+
     if (!id || !id.trim()) {
       throw new ValidationError('Datasource ID is required');
     }
-    
+
     const data: UpdateDatasourceRequest = req.body;
     const result = await this.service.updateDatasource(id, data);
     res.json(result);
   });
 
   /**
-   * 删除数据源
+   * Delete a data source
    * 
-   * @param id 数据源 ID（URI 格式或简短 ID）
-   * @param force 是否强制删除（忽略依赖检查，默认 false）
-   * @returns 删除结果
+   * @param id Data source ID (URI format or short ID)
+   * @param force Whether to force delete (ignore dependency checks, default false)
+   * @returns Delete result
    * @example request
    * ```
    * DELETE /api/kg/datasources/SemiconductorWRDSFinancialDataset
@@ -261,15 +262,12 @@ export class DatasourceController {
    * @example response
    * ```json
    * {
-   *   "uri": "http://example.org/esg#SemiconductorWRDSFinancialDataset",
+   *   "iri": "http://example.org/esg#SemiconductorWRDSFinancialDataset",
    *   "deleted": true,
    *   "deleted_at": "2024-11-20T10:50:00.000Z"
    * }
    * ```
-   * @example force delete
-   * ```
-   * DELETE /api/kg/datasources/SemiconductorWRDSFinancialDataset?force=true
-   * ```
+   * @example force true
    */
   @Delete('{id}')
   @SuccessResponse('200', 'Success')
@@ -287,29 +285,31 @@ export class DatasourceController {
   // Express 兼容方法
   deleteDatasource = asyncHandler(async (req: Request, res: Response) => {
     let { id } = req.params;
-    
+
     // 解码 URI
     if (id) {
       id = decodeURIComponent(id);
     }
-    
+
     if (!id || !id.trim()) {
       throw new ValidationError('Datasource ID is required');
     }
-    
+
     const force = req.query.force === 'true' || req.query.force === '1';
     const result = await this.service.deleteDatasource(id, force);
     res.json(result);
   });
 
   /**
-   * 获取使用此数据源的所有数据集变量
+   * Get all dataset variables using this data source
    * 
-   * @param id 数据源 ID（短 ID 或完整 URI）
-   * @returns 变量列表
+   * @param id Data source ID (short ID or full URI)
+   * @returns List of variables
    * 
-   * @example
+   * Example:
+   * ```
    * GET /api/kg/datasources/SemiconductorsEurofidaiEnvironmentDataset/variables
+   * ```
    */
   @Get('{id}/variables')
   @SuccessResponse('200', 'Success')
@@ -324,24 +324,24 @@ export class DatasourceController {
   // Express 兼容方法
   getDatasourceVariables = asyncHandler(async (req: Request, res: Response) => {
     let { id } = req.params;
-    
+
     if (id) {
       id = decodeURIComponent(id);
     }
-    
+
     if (!id || !id.trim()) {
       throw new ValidationError('Datasource ID is required');
     }
-    
+
     const result = await this.service.getDatasourceVariables(id);
     res.json(result);
   });
 
   /**
-   * 获取间接使用此数据源的所有指标（通过数据集变量）
+   * Get all metrics indirectly using this data source (through dataset variables)
    * 
-   * @param id 数据源 ID（短 ID 或完整 URI）
-   * @returns 指标列表
+   * @param id Data source ID (short ID or full URI)
+   * @returns List of metrics
    * 
    * @example
    * GET /api/kg/datasources/SemiconductorsEurofidaiEnvironmentDataset/metrics
@@ -359,15 +359,15 @@ export class DatasourceController {
   // Express 兼容方法
   getDatasourceMetrics = asyncHandler(async (req: Request, res: Response) => {
     let { id } = req.params;
-    
+
     if (id) {
       id = decodeURIComponent(id);
     }
-    
+
     if (!id || !id.trim()) {
       throw new ValidationError('Datasource ID is required');
     }
-    
+
     const result = await this.service.getDatasourceMetrics(id);
     res.json(result);
   });

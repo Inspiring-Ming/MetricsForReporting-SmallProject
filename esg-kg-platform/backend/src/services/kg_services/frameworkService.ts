@@ -82,17 +82,17 @@ export class FrameworkService {
 
     // 验证分类 URIs 格式
     if (data.categories) {
-      for (const uri of data.categories) {
-        if (!this.isValidUri(uri)) {
-          throw new ValidationError(`Invalid category URI: ${uri}`);
+      for (const iri of data.categories) {
+        if (!this.isValidUri(iri)) {
+          throw new ValidationError(`Invalid category URI: ${iri}`);
         }
       }
     }
 
-    const { uri, label } = await this.frameworkRepo.createFramework(data);
+    const { iri, label } = await this.frameworkRepo.createFramework(data);
 
     return {
-      uri,
+      iri,
       label,
       sourceDocument: data.sourceDocument,
       created_at: new Date().toISOString()
@@ -111,7 +111,7 @@ export class FrameworkService {
     const hasLabel = data.label !== undefined;
     const hasSourceDocument = data.sourceDocument !== undefined;
     const hasCategories = data.categories !== undefined;
-    
+
     if (!hasLabel && !hasSourceDocument && !hasCategories) {
       throw new ValidationError('At least one field must be provided for update');
     }
@@ -131,17 +131,17 @@ export class FrameworkService {
 
     // 验证分类 URIs 格式
     if (data.categories) {
-      for (const uri of data.categories) {
-        if (!this.isValidUri(uri)) {
-          throw new ValidationError(`Invalid category URI: ${uri}`);
+      for (const iri of data.categories) {
+        if (!this.isValidUri(iri)) {
+          throw new ValidationError(`Invalid category URI: ${iri}`);
         }
       }
     }
 
-    const { uri, label } = await this.frameworkRepo.updateFramework(id, data);
+    const { iri, label } = await this.frameworkRepo.updateFramework(id, data);
 
     return {
-      uri,
+      iri,
       label,
       sourceDocument: data.sourceDocument,
       updated_at: new Date().toISOString()
@@ -158,10 +158,10 @@ export class FrameworkService {
       throw new ValidationError('Framework ID is required');
     }
 
-    const { uri, deleted } = await this.frameworkRepo.deleteFramework(id, force);
+    const { iri, deleted } = await this.frameworkRepo.deleteFramework(id, force);
 
     return {
-      uri,
+      iri,
       deleted,
       deleted_at: new Date().toISOString()
     };
@@ -195,9 +195,9 @@ export class FrameworkService {
     }
 
     // 验证分类 URIs 格式
-    for (const uri of data.categories) {
-      if (!this.isValidUri(uri)) {
-        throw new ValidationError(`Invalid category URI: ${uri}`);
+    for (const iri of data.categories) {
+      if (!this.isValidUri(iri)) {
+        throw new ValidationError(`Invalid category URI: ${iri}`);
       }
     }
 
@@ -207,7 +207,7 @@ export class FrameworkService {
     const frameworkUri = this.resolveFrameworkUri(id);
 
     return {
-      framework_uri: frameworkUri,
+      framework_iri: frameworkUri,
       added_categories: addedCategories,
       added_at: new Date().toISOString()
     };
@@ -225,14 +225,14 @@ export class FrameworkService {
       throw new ValidationError('Category ID is required');
     }
 
-    const { uri } = await this.frameworkRepo.removeCategoryFromFramework(id, categoryId);
+    const { iri } = await this.frameworkRepo.removeCategoryFromFramework(id, categoryId);
 
     // 解析框架 URI
     const frameworkUri = this.resolveFrameworkUri(id);
 
     return {
-      framework_uri: frameworkUri,
-      removed_category_uri: uri,
+      framework_iri: frameworkUri,
+      removed_category_iri: iri,
       removed_at: new Date().toISOString()
     };
   }
@@ -242,21 +242,21 @@ export class FrameworkService {
   /**
    * 验证 URI 格式
    */
-  private isValidUri(uri: string): boolean {
+  private isValidUri(iri: string): boolean {
     try {
       // 检查是否为完整 URI
-      if (uri.startsWith('http://') || uri.startsWith('https://')) {
-        new URL(uri);
+      if (iri.startsWith('http://') || iri.startsWith('https://')) {
+        new URL(iri);
         return true;
       }
-      
+
       // 检查是否为命名空间格式（例如 esg:Something）
-      if (/^[a-zA-Z][a-zA-Z0-9]*:[a-zA-Z0-9_-]+$/.test(uri)) {
+      if (/^[a-zA-Z][a-zA-Z0-9]*:[a-zA-Z0-9_-]+$/.test(iri)) {
         return true;
       }
 
       // 检查是否为简短 ID 格式
-      if (/^[a-zA-Z0-9_-]+$/.test(uri)) {
+      if (/^[a-zA-Z0-9_-]+$/.test(iri)) {
         return true;
       }
 

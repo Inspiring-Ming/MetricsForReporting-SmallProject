@@ -1,9 +1,9 @@
 import { KnowledgeGraphRepository } from '../repositories/knowledgeGraphRepository';
 import { GraphDBRepository } from '../repositories/graphDBRepository';
-import { 
-  FrameworkResult, 
-  CategoryResult, 
-  MetricResult, 
+import {
+  FrameworkResult,
+  CategoryResult,
+  MetricResult,
   MetricUriResult,
   Implementation,
   ImplementationDetails,
@@ -36,7 +36,7 @@ export class KnowledgeGraphService {
    */
   async getReportFrameworks(industry: string): Promise<FrameworkResult> {
     this.validateIndustry(industry);
-    
+
     try {
       const frameworks = await this.kgRepository.getReportFrameworks(industry);
       return { result: frameworks };
@@ -54,7 +54,7 @@ export class KnowledgeGraphService {
   async getCategoriesByIndustryAndFramework(industry: string, framework: string): Promise<CategoryResult> {
     this.validateIndustry(industry);
     this.validateFramework(framework);
-    
+
     try {
       const categories = await this.kgRepository.getCategoriesByIndustryAndFramework(industry, framework);
       return { result: categories };
@@ -73,7 +73,7 @@ export class KnowledgeGraphService {
     this.validateIndustry(industry);
     this.validateFramework(framework);
     this.validateCategoryLabel(category);
-    
+
     try {
       const metrics = await this.kgRepository.getMetricsByIndustryAndCategory(industry, category, framework);
       return { result: metrics };
@@ -92,7 +92,7 @@ export class KnowledgeGraphService {
     this.validateIndustry(industry);
     this.validateFramework(framework);
     this.validateCategoryLabel(category);
-    
+
     try {
       const metricUris = await this.kgRepository.getMetricUrisByIndustryAndCategory(industry, category, framework);
       return { result: metricUris };
@@ -111,7 +111,7 @@ export class KnowledgeGraphService {
     this.validateIndustry(industry);
     this.validateFramework(framework);
     this.validateCategoryLabel(category);
-    
+
     try {
       const metrics = await this.kgRepository.getModelCalculationMetricsByCategory(industry, category, framework);
       return { result: metrics };
@@ -128,7 +128,7 @@ export class KnowledgeGraphService {
    */
   async getMetricAttributes(metricLabel: string): Promise<MetricAttributesMap> {
     this.validateMetricLabel(metricLabel);
-    
+
     try {
       return await this.kgRepository.getMetricAttributes(metricLabel);
     } catch (error) {
@@ -144,7 +144,7 @@ export class KnowledgeGraphService {
    */
   async getDataPointAttributes(metric: string): Promise<MetricAttributesMap> {
     this.validateMetric(metric);
-    
+
     try {
       return await this.kgRepository.getDataPointAttributes(metric);
     } catch (error) {
@@ -160,7 +160,7 @@ export class KnowledgeGraphService {
    */
   async getDataSourceInfo(source: string): Promise<string | undefined> {
     this.validateSource(source);
-    
+
     try {
       return await this.kgRepository.getDataSourceInfo(source);
     } catch (error) {
@@ -176,16 +176,16 @@ export class KnowledgeGraphService {
    */
   async getBestDataSourceForMetric(metricID: string): Promise<DataSourceInfo | null> {
     this.validateMetricID(metricID);
-    
+
     try {
       const result = await this.kgRepository.getBestDataSourceForMetric(metricID);
-      
+
       if (result) {
         console.log(`Selected data source for metric ${metricID}: ${result.dataSourceID} (disclosure type: ${result.disclosureType})`);
       } else {
         console.log(`No data source found for metric ${metricID}`);
       }
-      
+
       return result;
     } catch (error) {
       console.error('Error querying best data source:', error);
@@ -201,7 +201,7 @@ export class KnowledgeGraphService {
    */
   async getImplementationByModel(modelLabel: string): Promise<Implementation> {
     this.validateModelLabel(modelLabel);
-    
+
     try {
       return await this.kgRepository.getImplementationByModel(modelLabel);
     } catch (error) {
@@ -217,7 +217,7 @@ export class KnowledgeGraphService {
    */
   async getImplementationDetails(implementationLabel: string): Promise<ImplementationDetails> {
     this.validateImplementationLabel(implementationLabel);
-    
+
     try {
       return await this.kgRepository.getImplementationDetails(implementationLabel);
     } catch (error) {
@@ -248,7 +248,7 @@ export class KnowledgeGraphService {
    */
   async getImplementationsByCalculationType(calculationType: string): Promise<ImplementationsByCalculationType> {
     this.validateCalculationType(calculationType);
-    
+
     try {
       const implementations = await this.kgRepository.getImplementationsByCalculationType(calculationType);
       return { result: implementations };
@@ -341,13 +341,13 @@ export class KnowledgeGraphService {
    */
   async getMetricMetadata(metricId: string): Promise<MetricMetadataResponse> {
     this.validateMetricId(metricId);
-    
+
     try {
       // 确保metricId是完整的IRI格式
       const metricIri = metricId.startsWith('http') ? metricId : `http://example.org/esg#${metricId}`;
-      
+
       const metadata = await this.kgRepository.getMetricMetadata(metricIri);
-      
+
       return {
         metric: {
           iri: metadata.metric.iri,
@@ -372,11 +372,11 @@ export class KnowledgeGraphService {
    */
   async getMetricDatasets(metricId: string): Promise<MetricDatasetsResponse> {
     this.validateMetricId(metricId);
-    
+
     try {
       // 确保metricId是完整的IRI格式
       const metricIri = metricId.startsWith('http') ? metricId : `http://example.org/esg#${metricId}`;
-      
+
       // 首先获取metric的基本信息以确定计算方法
       const metadata = await this.kgRepository.getMetricMetadata(metricIri);
       const calculationMethod = metadata.metric.hasCalculationMethod;
@@ -384,7 +384,7 @@ export class KnowledgeGraphService {
       if (calculationMethod === 'direct_measurement') {
         // 直接测量路径
         const obtainedFrom = await this.kgRepository.getMetricDirectMeasurementLineage(metricIri);
-        
+
         return {
           metric: {
             iri: metadata.metric.iri,
@@ -399,7 +399,7 @@ export class KnowledgeGraphService {
       } else if (calculationMethod === 'calculation_model') {
         // 计算模型路径
         const modelLineage = await this.kgRepository.getMetricCalculationModelLineage(metricIri);
-        
+
         return {
           metric: {
             iri: metadata.metric.iri,
@@ -446,7 +446,7 @@ export class KnowledgeGraphService {
       // 2. 清空所有数据
       console.log('[KG Reset] Clearing all data...');
       await this.graphDBRepository.clearAllData();
-      
+
       // 验证清空成功
       const triplesAfterClear = await this.graphDBRepository.countTriples();
       if (triplesAfterClear !== 0) {
@@ -460,7 +460,7 @@ export class KnowledgeGraphService {
       // 3. 读取初始 TTL 文件
       console.log(`[KG Reset] Reading initial TTL file from: ${config.INITIAL_TTL_PATH}`);
       const initialTTL = await fs.readFile(config.INITIAL_TTL_PATH, 'utf-8');
-      
+
       if (!initialTTL || initialTTL.trim().length === 0) {
         throw new ValidationError('Initial TTL file is empty');
       }
@@ -492,7 +492,7 @@ export class KnowledgeGraphService {
       if (error instanceof ValidationError || error instanceof GraphDBQueryError) {
         throw error;
       }
-      
+
       // 检查文件不存在错误
       if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
         throw new ValidationError(
@@ -518,15 +518,15 @@ export class KnowledgeGraphService {
    * 创建新的 Implementation
    */
   async createImplementation(
-    name: string, 
-    language: string, 
+    name: string,
+    language: string,
     filePath: string,
     functionName?: string,
     description?: string,
     inputParameters?: string,
     returnType?: string,
     validation?: string
-  ): Promise<{ uri: string; label: string; language: string; file_path: string; created_at: string }> {
+  ): Promise<{ iri: string; label: string; language: string; file_path: string; created_at: string }> {
     // 验证输入
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       throw new ValidationError('Implementation name is required');
@@ -548,8 +548,8 @@ export class KnowledgeGraphService {
 
     try {
       const result = await this.kgRepository.createImplementation(
-        name, 
-        language, 
+        name,
+        language,
         filePath,
         functionName,
         description,
@@ -558,7 +558,7 @@ export class KnowledgeGraphService {
         validation
       );
       return {
-        uri: result.uri,
+        iri: result.iri,
         label: result.label,
         language,
         file_path: filePath,
@@ -587,11 +587,11 @@ export class KnowledgeGraphService {
     formula?: string,
     mathematicalExpression?: string
   ): Promise<{
-    uri: string;
+    iri: string;
     label: string;
     calculation_type: string;
-    input_metrics: Array<{ uri: string; label: string }>;
-    implementation: { uri: string; label: string };
+    input_metrics: Array<{ iri: string; label: string }>;
+    implementation: { iri: string; label: string };
     created_at: string;
   }> {
     // 验证输入
@@ -627,7 +627,7 @@ export class KnowledgeGraphService {
       );
 
       return {
-        uri: result.uri,
+        iri: result.iri,
         label: result.label,
         calculation_type: calculationType,
         input_metrics: result.inputMetrics,

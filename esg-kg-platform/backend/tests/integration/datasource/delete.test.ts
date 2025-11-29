@@ -26,7 +26,7 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
         })
         .expect(201);
 
-      const datasourceUri = createResponse.body.uri;
+      const datasourceUri = createResponse.body.iri;
       const shortId = datasourceUri.split('#')[1];
 
       // Delete the datasource
@@ -36,7 +36,7 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
 
       expect(deleteResponse.body).toMatchObject({
         deleted: true,
-        uri: datasourceUri,
+        iri: datasourceUri,
         deleted_at: expect.any(String)
       });
 
@@ -60,7 +60,7 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
         .send({ label: 'Test Dataset' })
         .expect(201);
 
-      const fullUri = createResponse.body.uri;
+      const fullUri = createResponse.body.iri;
       const encodedUri = encodeURIComponent(fullUri);
 
       const deleteResponse = await request(app)
@@ -88,7 +88,7 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
         })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       await request(app)
         .delete(`${baseUrl}/${shortId}`)
@@ -109,7 +109,7 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
         .send({ label: 'Protected Dataset' })
         .expect(201);
 
-      const datasourceUri = dsResponse.body.uri;
+      const datasourceUri = dsResponse.body.iri;
       const shortId = datasourceUri.split('#')[1];
 
       // Create a dataset variable that uses this datasource
@@ -144,7 +144,7 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
         .send({ label: 'Force Delete Dataset' })
         .expect(201);
 
-      const datasourceUri = dsResponse.body.uri;
+      const datasourceUri = dsResponse.body.iri;
       const shortId = datasourceUri.split('#')[1];
 
       // Create a dataset variable that uses this datasource
@@ -181,7 +181,7 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
         })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       await request(app)
         .delete(`${baseUrl}/${shortId}?force=true`)
@@ -200,7 +200,7 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
         .send({ label: 'Test Dataset' })
         .expect(201);
 
-      const datasourceUri = dsResponse.body.uri;
+      const datasourceUri = dsResponse.body.iri;
       const shortId = datasourceUri.split('#')[1];
 
       // Create a dataset variable dependency
@@ -229,14 +229,14 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
         .send({ label: 'Test Dataset' })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       // Test force=1 (should work)
       const ds1Response = await request(app)
         .post(baseUrl)
         .send({ label: 'Dataset 1' })
         .expect(201);
-      const shortId1 = ds1Response.body.uri.split('#')[1];
+      const shortId1 = ds1Response.body.iri.split('#')[1];
 
       await request(app)
         .delete(`${baseUrl}/${shortId1}?force=1`)
@@ -247,7 +247,7 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
         .post(baseUrl)
         .send({ label: 'Dataset 2' })
         .expect(201);
-      const shortId2 = ds2Response.body.uri.split('#')[1];
+      const shortId2 = ds2Response.body.iri.split('#')[1];
 
       await request(app)
         .delete(`${baseUrl}/${shortId2}?force=true`)
@@ -282,7 +282,7 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
       expect(countBefore).toBe(3);
 
       // Delete one datasource
-      const shortId3 = ds3Response.body.uri.split('#')[1];
+      const shortId3 = ds3Response.body.iri.split('#')[1];
       await request(app)
         .delete(`${baseUrl}/${shortId3}`)
         .expect(200);
@@ -308,7 +308,7 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
         })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       // Delete datasource
       await request(app)
@@ -337,7 +337,7 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
         .send({ label: 'Temporary Dataset' })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       // First deletion
       await request(app)
@@ -356,7 +356,7 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
         .send({ label: 'Special_Dataset_Name' })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       await request(app)
         .delete(`${baseUrl}/${shortId}`)
@@ -383,18 +383,18 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
         .expect(201);
 
       // Delete middle one
-      const shortId2 = ds2.body.uri.split('#')[1];
+      const shortId2 = ds2.body.iri.split('#')[1];
       await request(app)
         .delete(`${baseUrl}/${shortId2}`)
         .expect(200);
 
       // Verify others still exist
-      const shortId1 = ds1.body.uri.split('#')[1];
+      const shortId1 = ds1.body.iri.split('#')[1];
       await request(app)
         .get(`${baseUrl}/${shortId1}`)
         .expect(200);
 
-      const shortId3 = ds3.body.uri.split('#')[1];
+      const shortId3 = ds3.body.iri.split('#')[1];
       await request(app)
         .get(`${baseUrl}/${shortId3}`)
         .expect(200);
@@ -408,17 +408,17 @@ describe('Datasource API - DELETE /api/kg/datasources/:id', () => {
         .send({ label: 'Test Dataset' })
         .expect(201);
 
-      const shortId = createResponse.body.uri.split('#')[1];
+      const shortId = createResponse.body.iri.split('#')[1];
 
       const deleteResponse = await request(app)
         .delete(`${baseUrl}/${shortId}`)
         .expect(200);
 
-      expect(deleteResponse.body).toHaveProperty('uri');
+      expect(deleteResponse.body).toHaveProperty('iri');
       expect(deleteResponse.body).toHaveProperty('deleted', true);
       expect(deleteResponse.body).toHaveProperty('deleted_at');
-      expect(deleteResponse.body.uri).toContain('http://example.org/esg#');
-      
+      expect(deleteResponse.body.iri).toContain('http://example.org/esg#');
+
       // Verify deleted_at is a valid ISO timestamp
       const deletedAt = new Date(deleteResponse.body.deleted_at);
       expect(deletedAt).toBeInstanceOf(Date);

@@ -26,11 +26,11 @@ describe('Datasource API - POST /api/kg/datasources (Create)', () => {
         .send(newDatasource)
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label', 'New Test Dataset');
       expect(response.body).toHaveProperty('created_at');
-      expect(response.body.uri).toContain('http://example.org/esg#');
-      expect(response.body.uri).toContain('New_Test_Dataset');
+      expect(response.body.iri).toContain('http://example.org/esg#');
+      expect(response.body.iri).toContain('New_Test_Dataset');
     });
 
     it('should create datasource with all fields', async () => {
@@ -48,13 +48,13 @@ describe('Datasource API - POST /api/kg/datasources (Create)', () => {
         .send(newDatasource)
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label', 'Complete Dataset');
       expect(response.body).toHaveProperty('created_at');
 
       // Verify datasource was created with all fields
       const detailResponse = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(response.body.uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(response.body.iri)}`)
         .expect(200);
 
       expect(detailResponse.body.result.fileName).toBe('complete_data.csv');
@@ -78,7 +78,7 @@ describe('Datasource API - POST /api/kg/datasources (Create)', () => {
       expect(response.body.label).toBe('Partial Dataset');
 
       const detailResponse = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(response.body.uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(response.body.iri)}`)
         .expect(200);
 
       expect(detailResponse.body.result.fileName).toBe('partial.csv');
@@ -98,7 +98,7 @@ describe('Datasource API - POST /api/kg/datasources (Create)', () => {
         .send({ label: 'Duplicate Name' })
         .expect(201);
 
-      expect(datasource1.body.uri).not.toBe(datasource2.body.uri);
+      expect(datasource1.body.iri).not.toBe(datasource2.body.iri);
       expect(datasource1.body.label).toBe(datasource2.body.label);
     });
   });
@@ -110,11 +110,11 @@ describe('Datasource API - POST /api/kg/datasources (Create)', () => {
         .send({ label: 'Test Dataset' })
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label');
       expect(response.body).toHaveProperty('created_at');
-      
-      expect(typeof response.body.uri).toBe('string');
+
+      expect(typeof response.body.iri).toBe('string');
       expect(typeof response.body.label).toBe('string');
       expect(typeof response.body.created_at).toBe('string');
     });
@@ -132,7 +132,7 @@ describe('Datasource API - POST /api/kg/datasources (Create)', () => {
 
     it('should return recent timestamp', async () => {
       const before = Date.now();
-      
+
       const response = await request(app)
         .post(baseUrl)
         .send({ label: 'Test Dataset' })
@@ -209,7 +209,7 @@ describe('Datasource API - POST /api/kg/datasources (Create)', () => {
         .expect(201);
 
       const detailResponse = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(response.body.uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(response.body.iri)}`)
         .expect(200);
 
       expect(detailResponse.body.result.recordCount).toBe(0);
@@ -284,7 +284,7 @@ describe('Datasource API - POST /api/kg/datasources (Create)', () => {
         .expect(201);
 
       expect(response.body.label).toBe('Dataset With Spaces');
-      expect(response.body.uri).toContain('Dataset_With_Spaces');
+      expect(response.body.iri).toContain('Dataset_With_Spaces');
     });
 
     it('should handle label with special characters', async () => {
@@ -315,7 +315,7 @@ describe('Datasource API - POST /api/kg/datasources (Create)', () => {
         .expect(201);
 
       const detailResponse = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(response.body.uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(response.body.iri)}`)
         .expect(200);
 
       expect(detailResponse.body.result.description).toBe('Dataset with "quoted" text');
@@ -332,7 +332,7 @@ describe('Datasource API - POST /api/kg/datasources (Create)', () => {
         .expect(201);
 
       const detailResponse = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(response.body.uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(response.body.iri)}`)
         .expect(200);
 
       expect(detailResponse.body.result.description).toBe(description);
@@ -351,7 +351,7 @@ describe('Datasource API - POST /api/kg/datasources (Create)', () => {
         .expect(201);
 
       const detailResponse = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(createResponse.body.uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(createResponse.body.iri)}`)
         .expect(200);
 
       expect(detailResponse.body.result.label).toBe('Persistent Dataset');
@@ -419,7 +419,7 @@ describe('Datasource API - POST /api/kg/datasources (Create)', () => {
         .expect(201);
 
       const detailResponse = await request(app)
-        .get(`${baseUrl}/${encodeURIComponent(response.body.uri)}`)
+        .get(`${baseUrl}/${encodeURIComponent(response.body.iri)}`)
         .expect(200);
 
       expect(detailResponse.body.result.description).toBe(longDescription);

@@ -48,7 +48,7 @@ describe('Category API - Metrics Association Management', () => {
 
     it('should return 404 for non-existent category', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistent';
-      
+
       const response = await request(app)
         .get(`${baseUrl}/${encodeURIComponent(nonExistentUri)}/metrics`)
         .expect(404);
@@ -58,10 +58,10 @@ describe('Category API - Metrics Association Management', () => {
 
     it('should return 400 for invalid URI', async () => {
       const response = await request(app)
-        .get(`${baseUrl}/invalid-uri/metrics`)
+        .get(`${baseUrl}/invalid-iri/metrics`)
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
   });
 
@@ -74,7 +74,7 @@ describe('Category API - Metrics Association Management', () => {
         .send({ metrics: [metric] })
         .expect(200);
 
-      expect(response.body.category_uri).toBe(categoryUri);
+      expect(response.body.category_iri).toBe(categoryUri);
       expect(response.body.added_metrics).toHaveLength(1);
       expect(response.body).toHaveProperty('added_at');
 
@@ -93,7 +93,7 @@ describe('Category API - Metrics Association Management', () => {
         .expect(200);
 
       expect(response.body.added_metrics).toHaveLength(3);
-      
+
       const categoryMetrics = await helper.getCategoryMetrics(categoryUri);
       expect(categoryMetrics).toHaveLength(3);
     });
@@ -133,10 +133,10 @@ describe('Category API - Metrics Association Management', () => {
     it('should reject adding invalid metric URI', async () => {
       const response = await request(app)
         .post(`${baseUrl}/${encodeURIComponent(categoryUri)}/metrics`)
-        .send({ metrics: ['invalid-uri'] })
+        .send({ metrics: ['invalid-iri'] })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid metric uri/i);
+      expect(response.body.error.message).toMatch(/invalid metric iri/i);
     });
 
     it('should reject adding non-existent metric', async () => {
@@ -145,13 +145,13 @@ describe('Category API - Metrics Association Management', () => {
         .send({ metrics: ['http://example.org/esg#NonExistentMetric'] })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid metric uri/i);
+      expect(response.body.error.message).toMatch(/invalid metric iri/i);
     });
 
     it('should reject adding metrics to non-existent category', async () => {
       const metric = await helper.createTestMetric('Test Metric');
       const nonExistentUri = 'http://example.org/esg#NonExistent';
-      
+
       const response = await request(app)
         .post(`${baseUrl}/${encodeURIComponent(nonExistentUri)}/metrics`)
         .send({ metrics: [metric] })
@@ -162,7 +162,7 @@ describe('Category API - Metrics Association Management', () => {
 
     it('should handle adding many metrics at once', async () => {
       const metrics = await Promise.all(
-        Array.from({ length: 20 }, (_, i) => 
+        Array.from({ length: 20 }, (_, i) =>
           helper.createTestMetric(`Metric ${i + 1}`)
         )
       );
@@ -191,8 +191,8 @@ describe('Category API - Metrics Association Management', () => {
         .delete(`${baseUrl}/${encodeURIComponent(categoryUri)}/metrics/${encodeURIComponent(metric1)}`)
         .expect(200);
 
-      expect(response.body.category_uri).toBe(categoryUri);
-      expect(response.body.removed_metric_uri).toBe(metric1);
+      expect(response.body.category_iri).toBe(categoryUri);
+      expect(response.body.removed_metric_iri).toBe(metric1);
       expect(response.body).toHaveProperty('removed_at');
 
       const categoryMetrics = await helper.getCategoryMetrics(categoryUri);
@@ -215,7 +215,7 @@ describe('Category API - Metrics Association Management', () => {
 
     it('should return 404 for non-existent metric association', async () => {
       const nonAssociatedMetric = await helper.createTestMetric('Non Associated');
-      
+
       const response = await request(app)
         .delete(`${baseUrl}/${encodeURIComponent(categoryUri)}/metrics/${encodeURIComponent(nonAssociatedMetric)}`)
         .expect(404);
@@ -225,7 +225,7 @@ describe('Category API - Metrics Association Management', () => {
 
     it('should return 404 for non-existent category', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistent';
-      
+
       const response = await request(app)
         .delete(`${baseUrl}/${encodeURIComponent(nonExistentUri)}/metrics/${encodeURIComponent(metric1)}`)
         .expect(404);
@@ -235,18 +235,18 @@ describe('Category API - Metrics Association Management', () => {
 
     it('should return 400 for invalid category URI', async () => {
       const response = await request(app)
-        .delete(`${baseUrl}/invalid-uri/metrics/${encodeURIComponent(metric1)}`)
+        .delete(`${baseUrl}/invalid-iri/metrics/${encodeURIComponent(metric1)}`)
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
 
     it('should return 400 for invalid metric URI', async () => {
       const response = await request(app)
-        .delete(`${baseUrl}/${encodeURIComponent(categoryUri)}/metrics/invalid-uri`)
+        .delete(`${baseUrl}/${encodeURIComponent(categoryUri)}/metrics/invalid-iri`)
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
 
     it('should not affect metric existence after removal', async () => {
@@ -325,7 +325,7 @@ describe('Category API - Metrics Association Management', () => {
   describe('Edge Cases', () => {
     it('should handle metric with special characters in URI', async () => {
       const metric = await helper.createTestMetric('Metric & Co.');
-      
+
       await request(app)
         .post(`${baseUrl}/${encodeURIComponent(categoryUri)}/metrics`)
         .send({ metrics: [metric] })
@@ -337,7 +337,7 @@ describe('Category API - Metrics Association Management', () => {
 
     it('should handle adding duplicate metrics in same request', async () => {
       const metric = await helper.createTestMetric('Test Metric');
-      
+
       const response = await request(app)
         .post(`${baseUrl}/${encodeURIComponent(categoryUri)}/metrics`)
         .send({ metrics: [metric, metric, metric] })

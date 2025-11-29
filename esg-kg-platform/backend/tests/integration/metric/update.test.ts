@@ -32,7 +32,7 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Update)', () => {
         .expect(200);
 
       expect(response.body.label).toBe('Updated Metric');
-      expect(response.body.uri).toBe(metricUri);
+      expect(response.body.iri).toBe(metricUri);
       expect(response.body).toHaveProperty('updated_at');
 
       const detail = await helper.getMetricDetail(metricUri);
@@ -129,7 +129,7 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Update)', () => {
         .send({ disclosureLevel: 2 })
         .expect(200);
 
-      expect(response.body.uri).toBe(metricUri);
+      expect(response.body.iri).toBe(metricUri);
     });
   });
 
@@ -222,7 +222,7 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Update)', () => {
   describe('Error Cases', () => {
     it('should return 404 for non-existent metric', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistent';
-      
+
       const response = await request(app)
         .patch(`${baseUrl}/${encodeURIComponent(nonExistentUri)}`)
         .send({ label: 'New Label' })
@@ -234,11 +234,11 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Update)', () => {
     it('should return 400 for invalid URI format', async () => {
       // Use a truly invalid URI format with special characters that don't match any valid pattern
       const response = await request(app)
-        .patch(`${baseUrl}/${encodeURIComponent('invalid uri with spaces')}`)
+        .patch(`${baseUrl}/${encodeURIComponent('invalid iri with spaces')}`)
         .send({ label: 'New Label' })
         .expect(400);
 
-      expect(response.body.error.message).toMatch(/invalid.*uri/i);
+      expect(response.body.error.message).toMatch(/invalid.*iri/i);
     });
   });
 
@@ -256,10 +256,10 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Update)', () => {
       if (response.status !== 200) {
         console.log('PUT Error Response:', response.body);
       }
-      
+
       expect(response.status).toBe(200);
       expect(response.body.label).toBe('Completely Updated Metric');
-      
+
       const detail = await helper.getMetricDetail(metricUri);
       expect(detail.label).toBe('Completely Updated Metric');
       expect(detail.hasCalculationMethod).toBe('calculation_model');
@@ -279,7 +279,7 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Update)', () => {
       // First, create a metric with multiple properties
       const category = await helper.createTestCategory('Test Category');
       const framework = await helper.createTestFramework('Test Framework');
-      
+
       await request(app)
         .patch(`${baseUrl}/${encodeURIComponent(metricUri)}`)
         .send({
@@ -302,12 +302,12 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Update)', () => {
         .expect(200);
 
       expect(response.body.label).toBe('Replaced Metric');
-      
+
       // Verify that optional fields were reset/removed
       const detail = await helper.getMetricDetail(metricUri);
       expect(detail.label).toBe('Replaced Metric');
       expect(detail.hasCalculationMethod).toBe('direct_measurement');
-      
+
       // Note: Some fields might have defaults, but code and description should be cleared
     });
 
@@ -334,7 +334,7 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Update)', () => {
         .expect(200);
 
       expect(response.body.label).toBe('Complete Metric');
-      
+
       const detail = await helper.getMetricDetail(metricUri);
       expect(detail.label).toBe('Complete Metric');
       expect(detail.hasCalculationMethod).toBe('calculation_model');
@@ -400,7 +400,7 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Update)', () => {
 
     it('should return 404 for PUT on non-existent metric', async () => {
       const nonExistentUri = 'http://example.org/esg#NonExistent';
-      
+
       const response = await request(app)
         .put(`${baseUrl}/${encodeURIComponent(nonExistentUri)}`)
         .send({
@@ -437,7 +437,7 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Update)', () => {
         .expect(200);
 
       expect(response.body.label).toBe('Metric & Co. (2025)');
-      
+
       const detail = await helper.getMetricDetail(metricUri);
       expect(detail.description).toContain('quotes');
     });
@@ -458,7 +458,7 @@ describe('Metric API - PATCH /api/kg/metrics/:id (Update)', () => {
   describe('Edge Cases', () => {
     it('should handle updating to same values', async () => {
       const detail = await helper.getMetricDetail(metricUri);
-      
+
       const response = await request(app)
         .patch(`${baseUrl}/${encodeURIComponent(metricUri)}`)
         .send({ label: detail.label })

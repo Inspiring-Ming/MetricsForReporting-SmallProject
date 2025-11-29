@@ -26,12 +26,12 @@ describe('Industry API - POST /api/kg/industries (Create)', () => {
         .send(newIndustry)
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label', newIndustry.label);
       expect(response.body).toHaveProperty('created_at');
 
       // Verify in database
-      const exists = await helper.industryExists(response.body.uri);
+      const exists = await helper.industryExists(response.body.iri);
       expect(exists).toBe(true);
     });
 
@@ -54,7 +54,7 @@ describe('Industry API - POST /api/kg/industries (Create)', () => {
       expect(response.body.description).toBe(newIndustry.description);
 
       // Verify in database
-      const detail = await helper.getIndustryDetail(response.body.uri);
+      const detail = await helper.getIndustryDetail(response.body.iri);
       expect(detail.label).toBe(newIndustry.label);
       expect(detail.description).toBe(newIndustry.description);
       expect(detail.frameworks).toHaveLength(2);
@@ -66,10 +66,10 @@ describe('Industry API - POST /api/kg/industries (Create)', () => {
         .send({ label: 'New Industry' })
         .expect(201);
 
-      expect(response.body).toHaveProperty('uri');
+      expect(response.body).toHaveProperty('iri');
       expect(response.body).toHaveProperty('label');
       expect(response.body).toHaveProperty('created_at');
-      expect(typeof response.body.uri).toBe('string');
+      expect(typeof response.body.iri).toBe('string');
       expect(typeof response.body.label).toBe('string');
       expect(typeof response.body.created_at).toBe('string');
     });
@@ -271,7 +271,7 @@ describe('Industry API - POST /api/kg/industries (Create)', () => {
         })
         .expect(201);
 
-      const detail = await helper.getIndustryDetail(response.body.uri);
+      const detail = await helper.getIndustryDetail(response.body.iri);
       expect(detail.frameworks).toHaveLength(1);
       expect(detail.frameworks[0]).toBe(framework);
     });
@@ -289,7 +289,7 @@ describe('Industry API - POST /api/kg/industries (Create)', () => {
         })
         .expect(201);
 
-      const detail = await helper.getIndustryDetail(response.body.uri);
+      const detail = await helper.getIndustryDetail(response.body.iri);
       expect(detail.frameworks).toHaveLength(3);
     });
 
@@ -298,7 +298,7 @@ describe('Industry API - POST /api/kg/industries (Create)', () => {
         .post(baseUrl)
         .send({
           label: 'Test Industry',
-          reportsUsing: ['not-a-valid-uri']
+          reportsUsing: ['not-a-valid-iri']
         })
         .expect(400);
 
