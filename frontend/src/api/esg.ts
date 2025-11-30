@@ -5,30 +5,30 @@ import type { Result } from "./callout";
 // ===================== BACKEND RESPONSE TYPES (Internal) ================ //
 // ========================================================================= //
 
-// Pagination info
+/** Pagination info */
 interface PaginationInfo {
   page?: number;
   size?: number;
   total?: number;
 }
 
-// DTO with label
+/** DTO object with label */
 interface LabeledDTO {
   iri?: string;
   label: string;
 }
 
-// Framework backend response (paginated)
+/** Framework backend response (pagination format) */
 interface FrameworkBackendRes extends PaginationInfo {
   result: LabeledDTO[];
 }
 
-// Category backend response (paginated)
+/** Category backend response (pagination format) */
 interface CategoryBackendRes extends PaginationInfo {
   result: LabeledDTO[];
 }
 
-// Metric backend response (paginated)
+/** Metric backend response (pagination format) */
 interface MetricBackendRes extends PaginationInfo {
   result: LabeledDTO[];
 }
@@ -37,20 +37,20 @@ interface MetricBackendRes extends PaginationInfo {
 // ==================== FRONTEND RESPONSE TYPES (Public) ================== //
 // ========================================================================= //
 
-// Response Type - simplified format used by the frontend
+// Response Type - Simple format used by frontend
 export type CompanyInfoRes = { industry: string, company_name: string };
-export type FrameworkRes = { result: string[] };  // simple string array
-export type CategoryRes = { result: string[] };   // simple string array
-export type MetricRes = { result: string[] };     // simple string array
+export type FrameworkRes = { result: string[] };  // Simple string array
+export type CategoryRes = { result: string[] };  // Simple string array
+export type MetricRes = { result: string[] };    // Simple string array
 
 // ========================================================================= //
 // ========================== UTILITY FUNCTIONS ============================ //
 // ========================================================================= //
 
 /**
- * Extract label array from a paginated response (supports string[] or object array)
- * @param response paginated response object
- * @returns label strings
+ * Extract label array from pagination response
+ * @param response Pagination response object
+ * @returns label string array
  */
 function extractLabels<T extends { result: Array<LabeledDTO | string> }>(response: T): string[] {
   const arr = response.result ?? [];
@@ -60,18 +60,18 @@ function extractLabels<T extends { result: Array<LabeledDTO | string> }>(respons
 }
 
 /**
- * Convert backend paginated response to simplified frontend format
+ * Convert backend pagination response to frontend simple format
  */
 function toSimpleFormat<T extends { result: Array<LabeledDTO | string> }>(backendResponse: T): { result: string[] } {
   return { result: extractLabels(backendResponse) };
 }
 
 /**
- * Fetch all pages automatically
+ * Automatically fetch all pages of data
  * @param endpoint API endpoint path
- * @param params query parameters
- * @param pageSize page size, default 100
- * @returns Result type with aggregated data when successful
+ * @param params Query parameters
+ * @param pageSize Page size, default 100
+ * @returns Result type, containing aggregated result of all data on success
  */
 async function fetchAllPages<T extends PaginationInfo & { result: Array<LabeledDTO | string> }>(
   endpoint: string,
@@ -91,26 +91,26 @@ async function fetchAllPages<T extends PaginationInfo & { result: Array<LabeledD
 
     // If request failed
     if (!backendResult.ok) {
-      // If the first page fails, return error immediately
+      // If it's the first page and failed, return error directly
       if (page === 1) {
         return backendResult;
       }
-      // If not the first page, we likely reached the end; stop looping
+      // If not the first page, assume all data fetched, break loop
       break;
     }
 
     const currentPageItems = backendResult.data.result || [];
     allItems.push(...currentPageItems);
 
-    // Save total info if provided
+    // Save total info (if available)
     if (backendResult.data.total !== undefined) {
       total = backendResult.data.total;
     }
 
-    // Determine if all data has been fetched:
-    // 1) current page is empty
-    // 2) fewer items than pageSize (last page)
-    // 3) reached total if provided
+    // Check if all data fetched
+    // 1. Current page data is empty
+    // 2. Current page data less than pageSize (last page)
+    // 3. If total info exists, check if total reached
     if (
       currentPageItems.length === 0 ||
       currentPageItems.length < pageSize ||
@@ -121,14 +121,14 @@ async function fetchAllPages<T extends PaginationInfo & { result: Array<LabeledD
 
     page++;
 
-    // Safety cap: max 100 pages to avoid infinite loops
+    // Safety limit: max 100 pages to avoid infinite loop
     if (page > 100) {
       console.warn(`fetchAllPages: Reached maximum page limit (100) for ${endpoint}`);
       break;
     }
   }
 
-  // Return aggregated data
+  // Return aggregated result
   return {
     ok: true,
     data: {
@@ -148,9 +148,9 @@ async function fetchAllPages<T extends PaginationInfo & { result: Array<LabeledD
 // ===================== METRIC CALCULATION METHOD TYPES =================== //
 // ========================================================================= //
 
-/**
- * Metric calculation method response (new KG API)
- * from GET /api/kg/metrics/:id/calculation-method
+/** 
+ * Metric calculation method response (New KG API)
+ * From GET /api/kg/metrics/:id/calculation-method
  */
 export type MetricCalculationMethod = {
   metric_label: string;
@@ -181,9 +181,9 @@ export type MetricCalculationMethod = {
   };
 };
 
-/**
- * @deprecated Legacy type retained for backward compatibility
- * Use MetricCalculationMethod instead
+/** 
+ * @deprecated Legacy type, kept for backward compatibility
+ * Please use MetricCalculationMethod instead
  */
 export type DirectMeasure = {
   measureMethod: "direct_measurement";
@@ -191,9 +191,9 @@ export type DirectMeasure = {
   source?: string;
 };
 
-/**
- * @deprecated Legacy type retained for backward compatibility
- * Use MetricCalculationMethod instead
+/** 
+ * @deprecated Legacy type, kept for backward compatibility
+ * Please use MetricCalculationMethod instead
  */
 export type CalcModel = {
   measureMethod: "calculation_model";
@@ -203,9 +203,9 @@ export type CalcModel = {
   requiresInputFrom: string[];
 };
 
-/**
- * @deprecated Legacy union retained for backward compatibility
- * Use MetricCalculationMethod instead
+/** 
+ * @deprecated Legacy type, kept for backward compatibility
+ * Please use MetricCalculationMethod instead
  */
 export type MetricMethod = DirectMeasure | CalcModel;
 
@@ -226,13 +226,13 @@ export type ModelExecutaionRes = {
 
 /**
  * Convert new MetricCalculationMethod format to legacy MetricMethod format
- * for backward compatibility
+ * For backward compatibility
  */
 export function convertToLegacyMetricMethod(
   newFormat: MetricCalculationMethod
 ): MetricMethod {
   if (newFormat.calculation_method === 'direct_measurement') {
-    // Take the first data source from data_sources
+    // Extract first data source from data_sources
     const firstDataSource = newFormat.data_sources?.[0];
     return {
       measureMethod: 'direct_measurement',
@@ -246,7 +246,7 @@ export function convertToLegacyMetricMethod(
       isCalculatedBy: newFormat.model?.label || newFormat.model?.iri || '',
       hasCalculationType: newFormat.model?.calculationType || 'calculation_model',
       hasFormula: newFormat.model?.formula,
-      requiresInputFrom: [], // New API does not directly return input metrics list
+      requiresInputFrom: [], // New API does not directly return input metric list
     };
   }
 }
@@ -411,9 +411,8 @@ export function modelExecutionReq(
 // ========================================================================= //
 
 /**
- * Get list of reporting frameworks (compat layer)
- * Internally calls backend paginated API, auto-fetches all pages,
- * and converts to simple string array format
+ * Get report framework list (Compatibility layer)
+ * Internally calls backend pagination API, automatically fetches all pages, and converts to simple string array format
  */
 export async function getReportFrameworkReq(industry: string): Promise<Result<FrameworkRes>> {
   const result = await fetchAllPages<FrameworkBackendRes>("/api/kg/frameworks", { industry });
@@ -429,9 +428,8 @@ export async function getReportFrameworkReq(industry: string): Promise<Result<Fr
 }
 
 /**
- * Get category list (compat layer)
- * Internally calls backend paginated API, auto-fetches all pages,
- * and converts to simple string array format
+ * Get category list (Compatibility layer)
+ * Internally calls backend pagination API, automatically fetches all pages, and converts to simple string array format
  */
 export async function getCategoriesReq(industry: string, framework: string): Promise<Result<CategoryRes>> {
   const result = await fetchAllPages<CategoryBackendRes>("/api/kg/categories", { industry, framework });
@@ -447,9 +445,8 @@ export async function getCategoriesReq(industry: string, framework: string): Pro
 }
 
 /**
- * Get metric list (compat layer)
- * Internally calls backend paginated API, auto-fetches all pages,
- * and converts to simple string array format
+ * Get metric list (Compatibility layer)
+ * Internally calls backend pagination API, automatically fetches all pages, and converts to simple string array format
  */
 export async function getMetricsReq(industry: string, category_label: string, framework: string): Promise<Result<MetricRes>> {
   const result = await fetchAllPages<MetricBackendRes>("/api/kg/metrics", { industry, category_label, framework });
@@ -465,19 +462,18 @@ export async function getMetricsReq(industry: string, category_label: string, fr
 }
 
 /**
- * Get metrics that use calculation models (compat layer)
- * Internally calls backend paginated API, auto-fetches all pages,
- * and converts to simple string array format
- *
- * Note: use unified /api/kg/metrics endpoint + calculationMethod parameter.
- * Legacy endpoint /api/kg/metrics/model-calculation is deprecated and will be removed on 2026-06-01.
+ * Get model calculation metric list (Compatibility layer)
+ * Internally calls backend pagination API, automatically fetches all pages, and converts to simple string array format
+ * 
+ * Note: Uses unified /api/kg/metrics endpoint + calculationMethod parameter
+ * Original endpoint /api/kg/metrics/model-calculation is deprecated, will be removed on 2026-06-01
  */
 export async function getModelCalMetricsReq(industry: string, category: string, framework: string): Promise<Result<MetricRes>> {
   const result = await fetchAllPages<MetricBackendRes>("/api/kg/metrics", {
     industry,
     category,
     framework,
-    calculationMethod: "calculation_model"  // only fetch metrics with calculation_model
+    calculationMethod: "calculation_model"  // Only fetch metrics of type calculation_model
   });
 
   if (!result.ok) {
@@ -544,7 +540,7 @@ export function updateMetricCalMethodReq(
   model: string,
 ): Promise<Result<UpdateMetricCalMethodSuccess>> {
   // KG API - goes to docker backend (port 3000)
-  // Use PATCH /api/kg/metrics/:id to update the metric's model association
+  // Use PATCH /api/kg/metrics/:id endpoint to update metric model association
 
   return requestHelper(
     "PATCH",
@@ -555,10 +551,10 @@ export function updateMetricCalMethodReq(
 
 /**
  * Get metric calculation method information
- * Uses new KG API: GET /api/kg/metrics/:id/calculation-method
- *
- * @param metric_label metric identifier (label or IRI)
- * @returns detailed calculation method information
+ * Use new KG API: GET /api/kg/metrics/:id/calculation-method
+ * 
+ * @param metric_label Metric identifier (label or IRI)
+ * @returns Metric calculation method details
  */
 export function getMetricComputationMethodReq(
   metric_label: string
@@ -571,8 +567,8 @@ export function getMetricComputationMethodReq(
 }
 
 /**
- * Backward-compat wrapper
- * Calls new API but returns legacy format so existing code can remain unchanged
+ * Backward compatibility wrapper function
+ * Calls new API but returns legacy format, allowing existing code to work without modification
  */
 export async function getMetricComputationMethodReqCompat(
   metric_label: string

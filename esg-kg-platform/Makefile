@@ -1,7 +1,7 @@
 # ESG Knowledge Graph Platform - Complete Docker Management
 # Usage: make [target]
 
-.PHONY: help up down restart build rebuild logs logs-all logs-graphdb logs-backend logs-frontend logs-init status health clean reset dev test start stop ps up-graphdb up-backend up-frontend test-up test-down test-reset test-status test-verify test-logs
+.PHONY: help up down restart rebuild-backend build rebuild logs logs-all logs-graphdb logs-backend logs-frontend logs-init status health clean reset dev test start stop ps up-graphdb up-backend up-frontend test-up test-down test-reset test-status test-verify test-logs
 
 # Default target
 help: ## Show help information
@@ -48,6 +48,11 @@ rebuild: ## 🔨 Rebuild and start
 	docker-compose build --no-cache
 	docker-compose up -d
 	@echo "✅ Rebuild completed"
+
+rebuild-backend: ## 🔨 Rebuild and restart only Backend
+	@echo "🔨 Rebuilding Backend service..."
+	docker-compose up -d --no-deps --build backend
+	@echo "✅ Backend rebuild completed"
 
 logs: ## 📋 View all service logs
 	docker-compose logs -f
