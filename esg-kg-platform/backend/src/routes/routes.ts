@@ -112,6 +112,7 @@ const models: TsoaRoute.Models = {
         "properties": {
             "iri": {"dataType":"string","required":true},
             "label": {"dataType":"string","required":true},
+            "inputMetrics": {"dataType":"array","array":{"dataType":"nestedObjectLiteral","nestedProperties":{"label":{"dataType":"string","required":true},"iri":{"dataType":"string","required":true}}}},
             "updated_at": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
@@ -365,6 +366,18 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "UpdateMetricModelResponse": {
+        "dataType": "refObject",
+        "properties": {
+            "metric_uri": {"dataType":"string","required":true},
+            "metric_label": {"dataType":"string","required":true},
+            "calculation_method": {"dataType":"string","required":true},
+            "model": {"dataType":"union","subSchemas":[{"dataType":"nestedObjectLiteral","nestedProperties":{"label":{"dataType":"string","required":true},"uri":{"dataType":"string","required":true}}},{"dataType":"enum","enums":[null]}]},
+            "updated_at": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "PatchMetricRequest": {
         "dataType": "refObject",
         "properties": {
@@ -375,6 +388,7 @@ const models: TsoaRoute.Models = {
             "dataType": {"ref":"MetricType"},
             "calculationMethod": {"ref":"CalculationMethod"},
             "hasType": {"ref":"MetricRole"},
+            "model": {"dataType":"string"},
             "industry": {"dataType":"string"},
             "category": {"dataType":"string"},
             "framework": {"dataType":"string"},
@@ -3609,6 +3623,7 @@ export function RegisterRoutes(app: Router) {
                 page: {"in":"query","name":"page","dataType":"double"},
                 size: {"in":"query","name":"size","dataType":"double"},
                 search: {"in":"query","name":"search","dataType":"string"},
+                industry: {"in":"query","name":"industry","dataType":"string"},
                 framework: {"in":"query","name":"framework","dataType":"string"},
                 sort: {"in":"query","name":"sort","dataType":"union","subSchemas":[{"dataType":"enum","enums":["label"]},{"dataType":"enum","enums":["createdAt"]}]},
                 order: {"in":"query","name":"order","dataType":"union","subSchemas":[{"dataType":"enum","enums":["asc"]},{"dataType":"enum","enums":["desc"]}]},

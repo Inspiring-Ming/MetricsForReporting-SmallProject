@@ -44,9 +44,9 @@ export class CategoryRepository {
       filterClause += `FILTER(CONTAINS(LCASE(?label), LCASE("${this.escapeSparql(search)}"))) .\n`;
     }
     if (industry) {
-      filterClause += `?industryEntity a esg:Industry ;\n`;
-      filterClause += `                 rdfs:label "${this.escapeSparql(industry)}" ;\n`;
-      filterClause += `                 esg:reportsUsing ?framework .\n`;
+      filterClause += `?industry a esg:Industry ;\n`;
+      filterClause += `          rdfs:label "${this.escapeSparql(industry)}" ;\n`;
+      filterClause += `          esg:reportsUsing ?framework .\n`;
     }
     if (framework) {
       if (!industry) {

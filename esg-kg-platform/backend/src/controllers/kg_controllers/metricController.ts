@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { Route, Get, Post, Put, Patch, Delete, Tags, Query, Path, Body, SuccessResponse, Deprecated } from 'tsoa';
 import { MetricService } from "../../services/kg_services/metricService"
-import { 
+import {
   MetricDetailResponse,
   MetricDatasetsResponse,
   MetricLineageResponse,
@@ -18,6 +18,7 @@ import {
   CreateMetricResponse,
   UpdateMetricRequest,
   UpdateMetricResponse,
+  UpdateMetricModelResponse,
   PatchMetricRequest,
   DeleteMetricResponse,
   AddMetricDatasourceRequest,
@@ -72,8 +73,8 @@ export class MetricController {
     @Query() sort?: 'label' | 'createdAt',
     @Query() order?: 'asc' | 'desc'
   ): Promise<MetricsResponse> {
-    const params: GetMetricsRequest = { 
-      page, size, search, industry, category, framework, calculationMethod, sort, order 
+    const params: GetMetricsRequest = {
+      page, size, search, industry, category, framework, calculationMethod, sort, order
     };
     return await this.metricService.getMetrics(params);
   }
@@ -178,7 +179,7 @@ export class MetricController {
   public async patchMetricWithTsoa(
     @Path() id: string,
     @Body() data: PatchMetricRequest
-  ): Promise<UpdateMetricResponse> {
+  ): Promise<UpdateMetricResponse | UpdateMetricModelResponse> {
     return await this.metricService.patchMetric(id, data);
   }
 
@@ -610,7 +611,7 @@ export class MetricController {
   // Express 兼容方法（用于实际路由）
   getMetricAttributes = asyncHandler(async (req: Request, res: Response) => {
     const { metric_label } = req.query as { metric_label: string };
-    
+
     if (!metric_label) {
       throw new Error('Metric_label query parameter is required');
     }
@@ -623,7 +624,7 @@ export class MetricController {
     // 内部转发到新方法
     req.params.id = metric_label;
     const result = await this.metricService.getMetricById(metric_label);
-    
+
     // 保持旧格式兼容性
     res.json({
       metricLabel: metric_label,
@@ -654,7 +655,7 @@ export class MetricController {
   // Express 兼容方法（用于实际路由）
   getDataPointAttributes = asyncHandler(async (req: Request, res: Response) => {
     const { metric } = req.query as { metric: string };
-    
+
     if (!metric) {
       throw new Error('Metric query parameter is required');
     }
@@ -668,7 +669,7 @@ export class MetricController {
     // 内部转发到新方法
     req.params.id = metric;
     const result = await this.metricService.getMetricById(metric);
-    
+
     // 保持旧格式兼容性
     res.json({
       metric,

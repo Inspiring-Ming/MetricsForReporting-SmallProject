@@ -289,6 +289,24 @@
 					"label": {
 						"type": "string"
 					},
+					"inputMetrics": {
+						"items": {
+							"properties": {
+								"label": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"label",
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
 					"updated_at": {
 						"type": "string"
 					}
@@ -972,6 +990,47 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"UpdateMetricModelResponse": {
+				"description": "更新指标模型关联响应（包含模型详情）",
+				"properties": {
+					"metric_uri": {
+						"type": "string"
+					},
+					"metric_label": {
+						"type": "string"
+					},
+					"calculation_method": {
+						"type": "string"
+					},
+					"model": {
+						"properties": {
+							"label": {
+								"type": "string"
+							},
+							"uri": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"label",
+							"uri"
+						],
+						"type": "object",
+						"nullable": true
+					},
+					"updated_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"metric_uri",
+					"metric_label",
+					"calculation_method",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"PatchMetricRequest": {
 				"description": "部分更新指标请求",
 				"properties": {
@@ -995,6 +1054,9 @@
 					},
 					"hasType": {
 						"$ref": "#/components/schemas/MetricRole"
+					},
+					"model": {
+						"type": "string"
 					},
 					"industry": {
 						"type": "string"
@@ -3857,7 +3919,7 @@
 						}
 					}
 				},
-				"description": "CQ5: 获取指标计算方法信息\nGET /api/computation/method?metric_label={metric_label}",
+				"description": "CQ5: Get metric calculation method information\nGET /api/computation/method?metric_label={metric_label}",
 				"tags": [
 					"Computation (Deprecated)"
 				],
@@ -3865,7 +3927,7 @@
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标标签",
+						"description": "Metric label",
 						"in": "query",
 						"name": "metric_label",
 						"required": true,
@@ -3889,7 +3951,7 @@
 						}
 					}
 				},
-				"description": "获取实现文件信息\nGET /api/computation/implementation?implementation_label={implementation_label}",
+				"description": "Get implementation file information\nGET /api/computation/implementation?implementation_label={implementation_label}",
 				"tags": [
 					"Computation (Deprecated)"
 				],
@@ -3897,7 +3959,7 @@
 				"security": [],
 				"parameters": [
 					{
-						"description": "实现标签",
+						"description": "Implementation label",
 						"in": "query",
 						"name": "implementation_label",
 						"required": true,
@@ -3921,7 +3983,7 @@
 						}
 					}
 				},
-				"description": "按计算类型获取所有实现信息\nGET /api/computation/implementations?calculation_type={calculation_type}",
+				"description": "Get all implementation information by calculation type\nGET /api/computation/implementations?calculation_type={calculation_type}",
 				"tags": [
 					"Computation (Deprecated)"
 				],
@@ -3929,7 +3991,7 @@
 				"security": [],
 				"parameters": [
 					{
-						"description": "计算类型",
+						"description": "Calculation type",
 						"in": "query",
 						"name": "calculation_type",
 						"required": true,
@@ -3953,7 +4015,7 @@
 						}
 					}
 				},
-				"description": "获取所有支持的计算类型\nGET /api/computation/supported-types",
+				"description": "Get all supported calculation types\nGET /api/computation/supported-types",
 				"tags": [
 					"Computation (Deprecated)"
 				],
@@ -3977,14 +4039,14 @@
 						}
 					}
 				},
-				"description": "获取模型列表（支持分页和搜索）",
+				"description": "Get model list (supports pagination and search)",
 				"tags": [
 					"Models"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "页码（从1开始，默认1）",
+						"description": "Page number (starting from 1, default 1)",
 						"in": "query",
 						"name": "page",
 						"required": false,
@@ -3994,7 +4056,7 @@
 						}
 					},
 					{
-						"description": "每页数量（默认10，最大100）",
+						"description": "Items per page (default 10, max 100)",
 						"in": "query",
 						"name": "size",
 						"required": false,
@@ -4004,7 +4066,7 @@
 						}
 					},
 					{
-						"description": "搜索关键词（模糊匹配 label）",
+						"description": "Search keyword (fuzzy match on label)",
 						"in": "query",
 						"name": "search",
 						"required": false,
@@ -4013,7 +4075,7 @@
 						}
 					},
 					{
-						"description": "按计算类型筛选（可选）",
+						"description": "Filter by calculation type (optional)",
 						"in": "query",
 						"name": "calculationType",
 						"required": false,
@@ -4022,7 +4084,7 @@
 						}
 					},
 					{
-						"description": "排序字段（默认 label）",
+						"description": "Sort field (default label)",
 						"in": "query",
 						"name": "sort",
 						"required": false,
@@ -4035,7 +4097,7 @@
 						}
 					},
 					{
-						"description": "排序顺序（默认 asc）",
+						"description": "Sort order (default asc)",
 						"in": "query",
 						"name": "order",
 						"required": false,
@@ -4063,20 +4125,20 @@
 						}
 					}
 				},
-				"description": "创建新模型",
+				"description": "Create a new model",
 				"tags": [
 					"Models"
 				],
 				"security": [],
 				"parameters": [],
 				"requestBody": {
-					"description": "创建模型的请求数据",
+					"description": "Request data for creating a model",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/CreateModelRequest",
-								"description": "创建模型的请求数据"
+								"description": "Request data for creating a model"
 							}
 						}
 					}
@@ -4098,14 +4160,14 @@
 						}
 					}
 				},
-				"description": "获取模型详情",
+				"description": "Get model details",
 				"tags": [
 					"Models"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "模型 ID（URI 格式或简短 ID）",
+						"description": "Model ID (URI format or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -4129,14 +4191,14 @@
 						}
 					}
 				},
-				"description": "更新模型",
+				"description": "Update a model",
 				"tags": [
 					"Models"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "模型 ID",
+						"description": "Model ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -4146,13 +4208,13 @@
 					}
 				],
 				"requestBody": {
-					"description": "更新模型的请求数据",
+					"description": "Request data for updating the model",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/UpdateModelRequest",
-								"description": "更新模型的请求数据"
+								"description": "Request data for updating the model"
 							}
 						}
 					}
@@ -4172,14 +4234,14 @@
 						}
 					}
 				},
-				"description": "删除模型",
+				"description": "Delete a model",
 				"tags": [
 					"Models"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "模型 ID",
+						"description": "Model ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -4188,7 +4250,7 @@
 						}
 					},
 					{
-						"description": "强制删除（忽略依赖检查，默认 false）",
+						"description": "Force delete (ignore dependency checks, default false)",
 						"in": "query",
 						"name": "force",
 						"required": false,
@@ -4481,14 +4543,14 @@
 						}
 					}
 				},
-				"description": "获取指标列表（支持多种过滤条件）",
+				"description": "Get metric list (supports multiple filter conditions)",
 				"tags": [
 					"Metrics"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "页码（从1开始，默认1）",
+						"description": "Page number (starting from 1, default 1)",
 						"in": "query",
 						"name": "page",
 						"required": false,
@@ -4498,7 +4560,7 @@
 						}
 					},
 					{
-						"description": "每页数量（默认10，最大100）",
+						"description": "Items per page (default 10, max 100)",
 						"in": "query",
 						"name": "size",
 						"required": false,
@@ -4508,7 +4570,7 @@
 						}
 					},
 					{
-						"description": "搜索关键词（模糊匹配 label）",
+						"description": "Search keyword (fuzzy match on label)",
 						"in": "query",
 						"name": "search",
 						"required": false,
@@ -4517,7 +4579,7 @@
 						}
 					},
 					{
-						"description": "按行业筛选（可选）",
+						"description": "Filter by industry (optional)",
 						"in": "query",
 						"name": "industry",
 						"required": false,
@@ -4526,7 +4588,7 @@
 						}
 					},
 					{
-						"description": "按分类筛选（可选）",
+						"description": "Filter by category (optional)",
 						"in": "query",
 						"name": "category",
 						"required": false,
@@ -4535,7 +4597,7 @@
 						}
 					},
 					{
-						"description": "按报告框架筛选（可选）",
+						"description": "Filter by reporting framework (optional)",
 						"in": "query",
 						"name": "framework",
 						"required": false,
@@ -4544,7 +4606,7 @@
 						}
 					},
 					{
-						"description": "按计算方法筛选：direct_measurement 或 calculation_model（可选）",
+						"description": "Filter by calculation method: direct_measurement or calculation_model (optional)",
 						"in": "query",
 						"name": "calculationMethod",
 						"required": false,
@@ -4557,7 +4619,7 @@
 						}
 					},
 					{
-						"description": "排序字段（默认 label）",
+						"description": "Sort field (default label)",
 						"in": "query",
 						"name": "sort",
 						"required": false,
@@ -4570,7 +4632,7 @@
 						}
 					},
 					{
-						"description": "排序顺序（默认 asc）",
+						"description": "Sort order (default asc)",
 						"in": "query",
 						"name": "order",
 						"required": false,
@@ -4598,7 +4660,7 @@
 						}
 					}
 				},
-				"description": "创建新指标",
+				"description": "Create a new metric",
 				"tags": [
 					"Metrics"
 				],
@@ -4631,14 +4693,14 @@
 						}
 					}
 				},
-				"description": "获取指标详情（包含所有属性）",
+				"description": "Get metric details (including all attributes)",
 				"tags": [
 					"Metrics"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID（可以是 URI、命名空间格式、label 或简短 ID）",
+						"description": "Metric ID (can be URI, namespace format, label or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -4663,14 +4725,14 @@
 						}
 					}
 				},
-				"description": "完整更新指标（替换所有属性）",
+				"description": "Full update of metric (replace all attributes)",
 				"tags": [
 					"Metrics"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID",
+						"description": "Metric ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -4698,20 +4760,27 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "#/components/schemas/UpdateMetricResponse"
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/UpdateMetricResponse"
+										},
+										{
+											"$ref": "#/components/schemas/UpdateMetricModelResponse"
+										}
+									]
 								}
 							}
 						}
 					}
 				},
-				"description": "部分更新指标（仅更新提供的字段）",
+				"description": "Partial update of metric (only update provided fields)",
 				"tags": [
 					"Metrics"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID",
+						"description": "Metric ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -4745,14 +4814,14 @@
 						}
 					}
 				},
-				"description": "删除指标",
+				"description": "Delete a metric",
 				"tags": [
 					"Metrics"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID",
+						"description": "Metric ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -4761,7 +4830,7 @@
 						}
 					},
 					{
-						"description": "是否级联删除相关数据（默认 false）",
+						"description": "Whether to cascade delete related data (default false)",
 						"in": "query",
 						"name": "cascade",
 						"required": false,
@@ -4770,7 +4839,7 @@
 						}
 					},
 					{
-						"description": "强制删除（忽略依赖检查，默认 false）",
+						"description": "Force delete (ignore dependency checks, default false)",
 						"in": "query",
 						"name": "force",
 						"required": false,
@@ -4796,14 +4865,14 @@
 						}
 					}
 				},
-				"description": "获取指标的数据血缘关系\n\n根据指标的计算方法（直接测量或计算模型），返回相应的数据来源：\n- 直接测量：返回数据集变量和数据源\n- 计算模型：返回模型、输入指标和实现信息",
+				"description": "Get metric data lineage\n\nBased on the metric's calculation method (direct measurement or calculation model), returns corresponding data sources:\n- Direct measurement: returns dataset variables and data sources\n- Calculation model: returns model, input metrics and implementation information",
 				"tags": [
 					"Metrics"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID（可以是 URI、命名空间格式、label 或简短 ID）",
+						"description": "Metric ID (can be URI, namespace format, label or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -4837,7 +4906,7 @@
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID（可以是 URI、命名空间格式、label 或简短 ID）",
+						"description": "Metric ID (can be URI, namespace format, label or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -4864,14 +4933,14 @@
 						}
 					}
 				},
-				"description": "获取指标的最佳数据源\n\n根据 IFRS 披露层次选择最佳数据源：\n1. Corporate Disclosure (最高优先级)\n2. Sustainability Reports\n3. Other sources",
+				"description": "Get the best data source for a metric\n\nSelects the best data source based on IFRS disclosure hierarchy:\n1. Corporate Disclosure (highest priority)\n2. Sustainability Reports\n3. Other sources",
 				"tags": [
 					"Metrics"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID（可以是 URI、命名空间格式、label 或简短 ID）",
+						"description": "Metric ID (can be URI, namespace format, label or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -4898,14 +4967,14 @@
 						}
 					}
 				},
-				"description": "获取指标的所有数据源（非仅最佳数据源）\n\n返回与指标关联的所有数据源列表。\n仅适用于直接测量（direct_measurement）的指标。\n对于计算模型指标，返回空列表。",
+				"description": "Get all data sources for a metric (not just the best one)\n\nReturns a list of all data sources associated with the metric.\nOnly applicable to direct measurement metrics.\nFor calculation model metrics, returns an empty list.",
 				"tags": [
 					"Metrics"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID（可以是 URI、命名空间格式、label 或简短 ID）",
+						"description": "Metric ID (can be URI, namespace format, label or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -4915,7 +4984,7 @@
 						"example": "GHG_Emissions_Scope1"
 					},
 					{
-						"description": "是否包含关联的数据集变量信息（默认 false）",
+						"description": "Whether to include associated dataset variable information (default false)",
 						"in": "query",
 						"name": "includeVariables",
 						"required": false,
@@ -4939,14 +5008,14 @@
 						}
 					}
 				},
-				"description": "为指标添加数据源关联",
+				"description": "Add data source association to metric",
 				"tags": [
 					"Metrics"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID",
+						"description": "Metric ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -5028,14 +5097,14 @@
 						}
 					}
 				},
-				"description": "获取指标计算所需的输入指标列表\n\n返回该指标计算所需的所有输入指标。\n仅适用于 calculation_model 类型的指标。\n对于 direct_measurement 类型的指标，返回空输入列表。",
+				"description": "Get the list of input metrics required for metric calculation\n\nReturns all input metrics required for calculating this metric.\nOnly applicable to calculation_model type metrics.\nFor direct_measurement type metrics, returns an empty input list.",
 				"tags": [
 					"Metrics"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID（可以是 URI、命名空间格式、label 或简短 ID）",
+						"description": "Metric ID (can be URI, namespace format, label or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -5060,14 +5129,14 @@
 						}
 					}
 				},
-				"description": "为计算模型指标添加输入指标",
+				"description": "Add input metric to calculation model metric",
 				"tags": [
 					"Metrics"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID",
+						"description": "Metric ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -5103,14 +5172,14 @@
 						}
 					}
 				},
-				"description": "删除指标的数据源关联",
+				"description": "Remove data source association from metric",
 				"tags": [
 					"Metrics"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID",
+						"description": "Metric ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -5119,7 +5188,7 @@
 						}
 					},
 					{
-						"description": "数据源 ID",
+						"description": "Data source ID",
 						"in": "path",
 						"name": "datasourceId",
 						"required": true,
@@ -5145,14 +5214,14 @@
 						}
 					}
 				},
-				"description": "删除计算模型指标的输入指标关联",
+				"description": "Remove input metric association from calculation model metric",
 				"tags": [
 					"Metrics"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID",
+						"description": "Metric ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -5161,7 +5230,7 @@
 						}
 					},
 					{
-						"description": "输入指标 ID",
+						"description": "Input metric ID",
 						"in": "path",
 						"name": "inputMetricId",
 						"required": true,
@@ -5187,7 +5256,7 @@
 						}
 					}
 				},
-				"description": "批量创建指标",
+				"description": "Batch create metrics",
 				"tags": [
 					"Metrics"
 				],
@@ -5218,7 +5287,7 @@
 						}
 					}
 				},
-				"description": "批量删除指标",
+				"description": "Batch delete metrics",
 				"tags": [
 					"Metrics"
 				],
@@ -5251,14 +5320,14 @@
 						}
 					}
 				},
-				"description": "获取指标的计算方法详情（CQ5）\n\n根据指标的计算方法（直接测量或计算模型），返回相应的信息：\n- 直接测量：返回数据源信息\n- 计算模型：返回模型、公式和实现信息",
+				"description": "Get metric calculation method details (CQ5)\n\nBased on the metric's calculation method (direct measurement or calculation model), returns corresponding information:\n- Direct measurement: returns data source information\n- Calculation model: returns model, formula and implementation information",
 				"tags": [
 					"Metrics"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID（可以是 URI、命名空间格式、label 或简短 ID）",
+						"description": "Metric ID (can be URI, namespace format, label or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -5292,7 +5361,7 @@
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 label",
+						"description": "Metric label",
 						"in": "query",
 						"name": "metric_label",
 						"required": true,
@@ -5325,7 +5394,7 @@
 				"security": [],
 				"parameters": [
 					{
-						"description": "指标 ID",
+						"description": "Metric ID",
 						"in": "query",
 						"name": "metric",
 						"required": true,
@@ -5351,14 +5420,14 @@
 						}
 					}
 				},
-				"description": "获取行业列表（支持分页和搜索）",
+				"description": "Get industry list (supports pagination and search)",
 				"tags": [
 					"Industries"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "页码（从1开始，默认1）",
+						"description": "Page number (starting from 1, default 1)",
 						"in": "query",
 						"name": "page",
 						"required": false,
@@ -5368,7 +5437,7 @@
 						}
 					},
 					{
-						"description": "每页数量（默认10，最大100）",
+						"description": "Items per page (default 10, max 100)",
 						"in": "query",
 						"name": "size",
 						"required": false,
@@ -5378,7 +5447,7 @@
 						}
 					},
 					{
-						"description": "搜索关键词（模糊匹配 label）",
+						"description": "Search keyword (fuzzy match on label)",
 						"in": "query",
 						"name": "search",
 						"required": false,
@@ -5387,7 +5456,7 @@
 						}
 					},
 					{
-						"description": "排序字段（默认 label）",
+						"description": "Sort field (default label)",
 						"in": "query",
 						"name": "sort",
 						"required": false,
@@ -5400,7 +5469,7 @@
 						}
 					},
 					{
-						"description": "排序顺序（默认 asc）",
+						"description": "Sort order (default asc)",
 						"in": "query",
 						"name": "order",
 						"required": false,
@@ -5428,20 +5497,20 @@
 						}
 					}
 				},
-				"description": "创建新行业",
+				"description": "Create a new industry",
 				"tags": [
 					"Industries"
 				],
 				"security": [],
 				"parameters": [],
 				"requestBody": {
-					"description": "创建行业的请求数据",
+					"description": "Request data for creating an industry",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/CreateIndustryRequest",
-								"description": "创建行业的请求数据"
+								"description": "Request data for creating an industry"
 							}
 						}
 					}
@@ -5463,14 +5532,14 @@
 						}
 					}
 				},
-				"description": "获取行业详情",
+				"description": "Get industry details",
 				"tags": [
 					"Industries"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "行业 ID（可以是 URI、命名空间格式或简短 ID）",
+						"description": "Industry ID (can be URI, namespace format or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -5494,14 +5563,14 @@
 						}
 					}
 				},
-				"description": "部分更新行业",
+				"description": "Partial update of industry",
 				"tags": [
 					"Industries"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "行业 ID",
+						"description": "Industry ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -5511,13 +5580,13 @@
 					}
 				],
 				"requestBody": {
-					"description": "更新行业的请求数据",
+					"description": "Request data for updating the industry",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/UpdateIndustryRequest",
-								"description": "更新行业的请求数据"
+								"description": "Request data for updating the industry"
 							}
 						}
 					}
@@ -5537,14 +5606,14 @@
 						}
 					}
 				},
-				"description": "删除行业",
+				"description": "Delete an industry",
 				"tags": [
 					"Industries"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "行业 ID",
+						"description": "Industry ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -5553,7 +5622,7 @@
 						}
 					},
 					{
-						"description": "是否强制删除（忽略 reportsUsing 关联检查）",
+						"description": "Whether to force delete (ignore reportsUsing association checks)",
 						"in": "query",
 						"name": "force",
 						"required": false,
@@ -5579,14 +5648,14 @@
 						}
 					}
 				},
-				"description": "获取实现列表（支持分页和搜索）",
+				"description": "Get implementation list (supports pagination and search)",
 				"tags": [
 					"Implementations"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "页码（从1开始，默认1）",
+						"description": "Page number (starting from 1, default 1)",
 						"in": "query",
 						"name": "page",
 						"required": false,
@@ -5596,7 +5665,7 @@
 						}
 					},
 					{
-						"description": "每页数量（默认10，最大100）",
+						"description": "Items per page (default 10, max 100)",
 						"in": "query",
 						"name": "size",
 						"required": false,
@@ -5606,7 +5675,7 @@
 						}
 					},
 					{
-						"description": "搜索关键词（模糊匹配 label）",
+						"description": "Search keyword (fuzzy match on label)",
 						"in": "query",
 						"name": "search",
 						"required": false,
@@ -5615,7 +5684,7 @@
 						}
 					},
 					{
-						"description": "按编程语言筛选（可选）",
+						"description": "Filter by programming language (optional)",
 						"in": "query",
 						"name": "language",
 						"required": false,
@@ -5624,7 +5693,7 @@
 						}
 					},
 					{
-						"description": "按文件路径筛选（可选）",
+						"description": "Filter by file path (optional)",
 						"in": "query",
 						"name": "filePath",
 						"required": false,
@@ -5633,7 +5702,7 @@
 						}
 					},
 					{
-						"description": "按计算类型筛选（通过关联的模型）（可选）",
+						"description": "Filter by calculation type (via associated models) (optional)",
 						"in": "query",
 						"name": "calculationType",
 						"required": false,
@@ -5642,7 +5711,7 @@
 						}
 					},
 					{
-						"description": "排序字段（默认 label）",
+						"description": "Sort field (default label)",
 						"in": "query",
 						"name": "sort",
 						"required": false,
@@ -5655,7 +5724,7 @@
 						}
 					},
 					{
-						"description": "排序顺序（默认 asc）",
+						"description": "Sort order (default asc)",
 						"in": "query",
 						"name": "order",
 						"required": false,
@@ -5683,20 +5752,20 @@
 						}
 					}
 				},
-				"description": "创建新实现",
+				"description": "Create a new implementation",
 				"tags": [
 					"Implementations"
 				],
 				"security": [],
 				"parameters": [],
 				"requestBody": {
-					"description": "创建实现的请求数据",
+					"description": "Request data for creating an implementation",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/CreateImplementationRequest",
-								"description": "创建实现的请求数据"
+								"description": "Request data for creating an implementation"
 							}
 						}
 					}
@@ -5718,14 +5787,14 @@
 						}
 					}
 				},
-				"description": "获取实现详情",
+				"description": "Get implementation details",
 				"tags": [
 					"Implementations"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "实现 ID（可以是 URI、命名空间格式或简短 ID）",
+						"description": "Implementation ID (can be URI, namespace format or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -5750,14 +5819,14 @@
 						}
 					}
 				},
-				"description": "部分更新实现",
+				"description": "Partial update of implementation",
 				"tags": [
 					"Implementations"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "实现 ID",
+						"description": "Implementation ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -5767,13 +5836,13 @@
 					}
 				],
 				"requestBody": {
-					"description": "更新实现的请求数据",
+					"description": "Request data for updating the implementation",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/UpdateImplementationRequest",
-								"description": "更新实现的请求数据"
+								"description": "Request data for updating the implementation"
 							}
 						}
 					}
@@ -5793,14 +5862,14 @@
 						}
 					}
 				},
-				"description": "删除实现",
+				"description": "Delete an implementation",
 				"tags": [
 					"Implementations"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "实现 ID",
+						"description": "Implementation ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -5809,7 +5878,7 @@
 						}
 					},
 					{
-						"description": "是否强制删除（忽略模型引用关联检查）",
+						"description": "Whether to force delete (ignore model reference association checks)",
 						"in": "query",
 						"name": "force",
 						"required": false,
@@ -5835,14 +5904,14 @@
 						}
 					}
 				},
-				"description": "获取报告框架列表（支持分页和搜索）",
+				"description": "Get reporting framework list (supports pagination and search)",
 				"tags": [
 					"Frameworks"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "页码（从1开始，默认1）",
+						"description": "Page number (starting from 1, default 1)",
 						"in": "query",
 						"name": "page",
 						"required": false,
@@ -5852,7 +5921,7 @@
 						}
 					},
 					{
-						"description": "每页数量（默认10，最大100）",
+						"description": "Items per page (default 10, max 100)",
 						"in": "query",
 						"name": "size",
 						"required": false,
@@ -5862,7 +5931,7 @@
 						}
 					},
 					{
-						"description": "搜索关键词（模糊匹配 label）",
+						"description": "Search keyword (fuzzy match on label)",
 						"in": "query",
 						"name": "search",
 						"required": false,
@@ -5871,7 +5940,7 @@
 						}
 					},
 					{
-						"description": "按行业筛选（可选）",
+						"description": "Filter by industry (optional)",
 						"in": "query",
 						"name": "industry",
 						"required": false,
@@ -5880,7 +5949,7 @@
 						}
 					},
 					{
-						"description": "排序字段（默认 label）",
+						"description": "Sort field (default label)",
 						"in": "query",
 						"name": "sort",
 						"required": false,
@@ -5893,7 +5962,7 @@
 						}
 					},
 					{
-						"description": "排序顺序（默认 asc）",
+						"description": "Sort order (default asc)",
 						"in": "query",
 						"name": "order",
 						"required": false,
@@ -5921,20 +5990,20 @@
 						}
 					}
 				},
-				"description": "创建新报告框架",
+				"description": "Create a new reporting framework",
 				"tags": [
 					"Frameworks"
 				],
 				"security": [],
 				"parameters": [],
 				"requestBody": {
-					"description": "创建框架的请求数据",
+					"description": "Request data for creating a framework",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/CreateFrameworkRequest",
-								"description": "创建框架的请求数据"
+								"description": "Request data for creating a framework"
 							}
 						}
 					}
@@ -5956,14 +6025,14 @@
 						}
 					}
 				},
-				"description": "获取报告框架详情",
+				"description": "Get reporting framework details",
 				"tags": [
 					"Frameworks"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "框架 ID（可以是 URI、命名空间格式或简短 ID）",
+						"description": "Framework ID (can be URI, namespace format or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -5987,14 +6056,14 @@
 						}
 					}
 				},
-				"description": "部分更新报告框架",
+				"description": "Partial update of reporting framework",
 				"tags": [
 					"Frameworks"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "框架 ID",
+						"description": "Framework ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6004,13 +6073,13 @@
 					}
 				],
 				"requestBody": {
-					"description": "更新框架的请求数据",
+					"description": "Request data for updating the framework",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/UpdateFrameworkRequest",
-								"description": "更新框架的请求数据"
+								"description": "Request data for updating the framework"
 							}
 						}
 					}
@@ -6030,14 +6099,14 @@
 						}
 					}
 				},
-				"description": "删除报告框架",
+				"description": "Delete a reporting framework",
 				"tags": [
 					"Frameworks"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "框架 ID",
+						"description": "Framework ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6046,7 +6115,7 @@
 						}
 					},
 					{
-						"description": "是否强制删除（忽略行业引用关联检查）",
+						"description": "Whether to force delete (ignore industry reference association checks)",
 						"in": "query",
 						"name": "force",
 						"required": false,
@@ -6072,14 +6141,14 @@
 						}
 					}
 				},
-				"description": "获取框架的分类列表",
+				"description": "Get categories list for a framework",
 				"tags": [
 					"Frameworks"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "框架 ID",
+						"description": "Framework ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6103,14 +6172,14 @@
 						}
 					}
 				},
-				"description": "添加分类到框架",
+				"description": "Add categories to a framework",
 				"tags": [
 					"Frameworks"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "框架 ID",
+						"description": "Framework ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6120,13 +6189,13 @@
 					}
 				],
 				"requestBody": {
-					"description": "要添加的分类 URIs",
+					"description": "Category URIs to add",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/AddCategoriesToFrameworkRequest",
-								"description": "要添加的分类 URIs"
+								"description": "Category URIs to add"
 							}
 						}
 					}
@@ -6148,14 +6217,14 @@
 						}
 					}
 				},
-				"description": "从框架删除分类",
+				"description": "Remove a category from a framework",
 				"tags": [
 					"Frameworks"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "框架 ID",
+						"description": "Framework ID",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6164,7 +6233,7 @@
 						}
 					},
 					{
-						"description": "分类 ID",
+						"description": "Category ID",
 						"in": "path",
 						"name": "cid",
 						"required": true,
@@ -6190,14 +6259,14 @@
 						}
 					}
 				},
-				"description": "获取数据源列表（支持分页、搜索和排序）",
+				"description": "Get data source list (supports pagination, search and sorting)",
 				"tags": [
 					"Datasources"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "页码（从1开始，默认1）",
+						"description": "Page number (starting from 1, default 1)",
 						"in": "query",
 						"name": "page",
 						"required": false,
@@ -6207,7 +6276,7 @@
 						}
 					},
 					{
-						"description": "每页数量（默认20，最大100）",
+						"description": "Items per page (default 20, max 100)",
 						"in": "query",
 						"name": "size",
 						"required": false,
@@ -6217,7 +6286,7 @@
 						}
 					},
 					{
-						"description": "搜索关键词（模糊匹配 label 或 fileName）",
+						"description": "Search keyword (fuzzy match on label or fileName)",
 						"in": "query",
 						"name": "search",
 						"required": false,
@@ -6226,7 +6295,7 @@
 						}
 					},
 					{
-						"description": "排序字段（默认 label）",
+						"description": "Sort field (default label)",
 						"in": "query",
 						"name": "sort",
 						"required": false,
@@ -6241,7 +6310,7 @@
 						}
 					},
 					{
-						"description": "排序顺序（默认 asc）",
+						"description": "Sort order (default asc)",
 						"in": "query",
 						"name": "order",
 						"required": false,
@@ -6269,20 +6338,20 @@
 						}
 					}
 				},
-				"description": "创建数据源",
+				"description": "Create a data source",
 				"tags": [
 					"Datasources"
 				],
 				"security": [],
 				"parameters": [],
 				"requestBody": {
-					"description": "数据源信息",
+					"description": "Data source information",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/CreateDatasourceRequest",
-								"description": "数据源信息"
+								"description": "Data source information"
 							}
 						}
 					}
@@ -6304,14 +6373,14 @@
 						}
 					}
 				},
-				"description": "获取数据源详情",
+				"description": "Get data source details",
 				"tags": [
 					"Datasources"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "数据源 ID（URI 格式或简短 ID）",
+						"description": "Data source ID (URI format or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6335,14 +6404,14 @@
 						}
 					}
 				},
-				"description": "更新数据源（部分更新）",
+				"description": "Update a data source (partial update)",
 				"tags": [
 					"Datasources"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "数据源 ID（URI 格式或简短 ID）",
+						"description": "Data source ID (URI format or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6352,13 +6421,13 @@
 					}
 				],
 				"requestBody": {
-					"description": "需要更新的字段",
+					"description": "Fields to update",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/UpdateDatasourceRequest",
-								"description": "需要更新的字段"
+								"description": "Fields to update"
 							}
 						}
 					}
@@ -6378,14 +6447,14 @@
 						}
 					}
 				},
-				"description": "删除数据源",
+				"description": "Delete a data source",
 				"tags": [
 					"Datasources"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "数据源 ID（URI 格式或简短 ID）",
+						"description": "Data source ID (URI format or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6394,7 +6463,7 @@
 						}
 					},
 					{
-						"description": "是否强制删除（忽略依赖检查，默认 false）",
+						"description": "Whether to force delete (ignore dependency checks, default false)",
 						"in": "query",
 						"name": "force",
 						"required": false,
@@ -6421,14 +6490,14 @@
 						}
 					}
 				},
-				"description": "获取使用此数据源的所有数据集变量",
+				"description": "Get all dataset variables using this data source",
 				"tags": [
 					"Datasources"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "数据源 ID（短 ID 或完整 URI）",
+						"description": "Data source ID (short ID or full URI)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6454,14 +6523,14 @@
 						}
 					}
 				},
-				"description": "获取间接使用此数据源的所有指标（通过数据集变量）",
+				"description": "Get all metrics indirectly using this data source (through dataset variables)",
 				"tags": [
 					"Datasources"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "数据源 ID（短 ID 或完整 URI）",
+						"description": "Data source ID (short ID or full URI)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6487,14 +6556,14 @@
 						}
 					}
 				},
-				"description": "获取数据集变量列表（支持分页、搜索和筛选）",
+				"description": "Get dataset variable list (supports pagination, search and filtering)",
 				"tags": [
 					"Dataset Variables"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "页码（从1开始，默认1）",
+						"description": "Page number (starting from 1, default 1)",
 						"in": "query",
 						"name": "page",
 						"required": false,
@@ -6504,7 +6573,7 @@
 						}
 					},
 					{
-						"description": "每页数量（默认20，最大100）",
+						"description": "Items per page (default 20, max 100)",
 						"in": "query",
 						"name": "size",
 						"required": false,
@@ -6514,7 +6583,7 @@
 						}
 					},
 					{
-						"description": "搜索关键词（模糊匹配 label）",
+						"description": "Search keyword (fuzzy match on label)",
 						"in": "query",
 						"name": "search",
 						"required": false,
@@ -6523,7 +6592,7 @@
 						}
 					},
 					{
-						"description": "按数据源筛选（可选，URI或ID）",
+						"description": "Filter by data source (optional, URI or ID)",
 						"in": "query",
 						"name": "datasource",
 						"required": false,
@@ -6532,7 +6601,7 @@
 						}
 					},
 					{
-						"description": "按指标筛选（可选，URI或ID）",
+						"description": "Filter by metric (optional, URI or ID)",
 						"in": "query",
 						"name": "metric",
 						"required": false,
@@ -6541,7 +6610,7 @@
 						}
 					},
 					{
-						"description": "最小置信度分数（可选，0-100）",
+						"description": "Minimum confidence score (optional, 0-100)",
 						"in": "query",
 						"name": "minConfidenceScore",
 						"required": false,
@@ -6551,7 +6620,7 @@
 						}
 					},
 					{
-						"description": "按单位兼容性筛选（可选）",
+						"description": "Filter by unit compatibility (optional)",
 						"in": "query",
 						"name": "isUnitCompatible",
 						"required": false,
@@ -6560,7 +6629,7 @@
 						}
 					},
 					{
-						"description": "排序字段（默认 label）",
+						"description": "Sort field (default label)",
 						"in": "query",
 						"name": "sort",
 						"required": false,
@@ -6574,7 +6643,7 @@
 						}
 					},
 					{
-						"description": "排序顺序（默认 asc）",
+						"description": "Sort order (default asc)",
 						"in": "query",
 						"name": "order",
 						"required": false,
@@ -6602,20 +6671,20 @@
 						}
 					}
 				},
-				"description": "创建新的数据集变量",
+				"description": "Create a new dataset variable",
 				"tags": [
 					"Dataset Variables"
 				],
 				"security": [],
 				"parameters": [],
 				"requestBody": {
-					"description": "创建数据集变量的请求数据",
+					"description": "Request data for creating a dataset variable",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/CreateDatasetVariableRequest",
-								"description": "创建数据集变量的请求数据"
+								"description": "Request data for creating a dataset variable"
 							}
 						}
 					}
@@ -6637,14 +6706,14 @@
 						}
 					}
 				},
-				"description": "获取数据集变量详情",
+				"description": "Get dataset variable details",
 				"tags": [
 					"Dataset Variables"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "数据集变量 ID（URI 格式或简短 ID）",
+						"description": "Dataset variable ID (URI format or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6668,14 +6737,14 @@
 						}
 					}
 				},
-				"description": "更新数据集变量（部分更新）",
+				"description": "Update dataset variable (partial update)",
 				"tags": [
 					"Dataset Variables"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "数据集变量 ID（URI 格式或简短 ID）",
+						"description": "Dataset variable ID (URI format or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6685,13 +6754,13 @@
 					}
 				],
 				"requestBody": {
-					"description": "更新数据集变量的请求数据",
+					"description": "Request data for updating the dataset variable",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/UpdateDatasetVariableRequest",
-								"description": "更新数据集变量的请求数据"
+								"description": "Request data for updating the dataset variable"
 							}
 						}
 					}
@@ -6711,14 +6780,14 @@
 						}
 					}
 				},
-				"description": "删除数据集变量",
+				"description": "Delete a dataset variable",
 				"tags": [
 					"Dataset Variables"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "数据集变量 ID（URI 格式或简短 ID）",
+						"description": "Dataset variable ID (URI format or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6727,7 +6796,7 @@
 						}
 					},
 					{
-						"description": "强制删除（忽略依赖检查，默认 false）",
+						"description": "Force delete (ignore dependency checks, default false)",
 						"in": "query",
 						"name": "force",
 						"required": false,
@@ -6753,14 +6822,14 @@
 						}
 					}
 				},
-				"description": "获取数据集变量的所有数据源",
+				"description": "Get all data sources for a dataset variable",
 				"tags": [
 					"Dataset Variables"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "数据集变量 ID（URI 格式或简短 ID）",
+						"description": "Dataset variable ID (URI format or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6784,14 +6853,14 @@
 						}
 					}
 				},
-				"description": "为数据集变量添加数据源关联",
+				"description": "Add data source association to dataset variable",
 				"tags": [
 					"Dataset Variables"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "数据集变量 ID（URI 格式或简短 ID）",
+						"description": "Dataset variable ID (URI format or short ID)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6801,13 +6870,13 @@
 					}
 				],
 				"requestBody": {
-					"description": "添加数据源的请求数据",
+					"description": "Request data for adding data source",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
 								"$ref": "#/components/schemas/AddDatasourceToVariableRequest",
-								"description": "添加数据源的请求数据"
+								"description": "Request data for adding data source"
 							}
 						}
 					}
@@ -6829,14 +6898,14 @@
 						}
 					}
 				},
-				"description": "移除数据集变量的数据源关联",
+				"description": "Remove data source association from dataset variable",
 				"tags": [
 					"Dataset Variables"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "数据集变量 ID（短 ID 或完整 URI）",
+						"description": "Dataset variable ID (short ID or full URI)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6845,7 +6914,7 @@
 						}
 					},
 					{
-						"description": "数据源 ID（短 ID 或完整 URI）",
+						"description": "Data source ID (short ID or full URI)",
 						"in": "path",
 						"name": "dsId",
 						"required": true,
@@ -6871,14 +6940,14 @@
 						}
 					}
 				},
-				"description": "获取数据集变量的质量信息",
+				"description": "Get quality information for a dataset variable",
 				"tags": [
 					"Dataset Variables"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "数据集变量 ID（短 ID 或完整 URI）",
+						"description": "Dataset variable ID (short ID or full URI)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6904,14 +6973,14 @@
 						}
 					}
 				},
-				"description": "获取使用此数据集变量的所有指标",
+				"description": "Get all metrics using this dataset variable",
 				"tags": [
 					"Dataset Variables"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "数据集变量 ID（短 ID 或完整 URI）",
+						"description": "Dataset variable ID (short ID or full URI)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -6937,14 +7006,14 @@
 						}
 					}
 				},
-				"description": "获取分类列表（支持分页和搜索）",
+				"description": "Get category list (supports pagination and search)",
 				"tags": [
 					"Categories"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "页码（从1开始，默认1）",
+						"description": "Page number (starting from 1, default 1)",
 						"in": "query",
 						"name": "page",
 						"required": false,
@@ -6954,7 +7023,7 @@
 						}
 					},
 					{
-						"description": "每页数量（默认20，最大100）",
+						"description": "Items per page (default 20, max 100)",
 						"in": "query",
 						"name": "size",
 						"required": false,
@@ -6964,7 +7033,7 @@
 						}
 					},
 					{
-						"description": "搜索关键词（模糊匹配 label）",
+						"description": "Search keyword (fuzzy match on label)",
 						"in": "query",
 						"name": "search",
 						"required": false,
@@ -6973,7 +7042,16 @@
 						}
 					},
 					{
-						"description": "按框架筛选（可选）",
+						"description": "Filter by industry (optional)",
+						"in": "query",
+						"name": "industry",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by framework (optional)",
 						"in": "query",
 						"name": "framework",
 						"required": false,
@@ -6982,7 +7060,7 @@
 						}
 					},
 					{
-						"description": "排序字段（默认 label）",
+						"description": "Sort field (default label)",
 						"in": "query",
 						"name": "sort",
 						"required": false,
@@ -6995,7 +7073,7 @@
 						}
 					},
 					{
-						"description": "排序顺序（默认 asc）",
+						"description": "Sort order (default asc)",
 						"in": "query",
 						"name": "order",
 						"required": false,
@@ -7023,7 +7101,7 @@
 						}
 					}
 				},
-				"description": "创建新分类",
+				"description": "Create a new category",
 				"tags": [
 					"Categories"
 				],
@@ -7056,14 +7134,14 @@
 						}
 					}
 				},
-				"description": "获取分类详情",
+				"description": "Get category details",
 				"tags": [
 					"Categories"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "分类 ID（URI 格式）",
+						"description": "Category ID (URI format)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -7087,14 +7165,14 @@
 						}
 					}
 				},
-				"description": "更新分类信息",
+				"description": "Update category information",
 				"tags": [
 					"Categories"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "分类 ID（URI 格式）",
+						"description": "Category ID (URI format)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -7128,14 +7206,14 @@
 						}
 					}
 				},
-				"description": "删除分类",
+				"description": "Delete a category",
 				"tags": [
 					"Categories"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "分类 ID（URI 格式）",
+						"description": "Category ID (URI format)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -7144,7 +7222,7 @@
 						}
 					},
 					{
-						"description": "强制删除（即使被框架引用也删除，默认 false）",
+						"description": "Force delete (delete even if referenced by frameworks, default false)",
 						"in": "query",
 						"name": "force",
 						"required": false,
@@ -7170,14 +7248,14 @@
 						}
 					}
 				},
-				"description": "获取分类的指标列表",
+				"description": "Get metrics list for a category",
 				"tags": [
 					"Categories"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "分类 ID（URI 格式）",
+						"description": "Category ID (URI format)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -7201,14 +7279,14 @@
 						}
 					}
 				},
-				"description": "为分类添加指标",
+				"description": "Add metrics to a category",
 				"tags": [
 					"Categories"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "分类 ID（URI 格式）",
+						"description": "Category ID (URI format)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -7244,14 +7322,14 @@
 						}
 					}
 				},
-				"description": "从分类中移除指标",
+				"description": "Remove a metric from a category",
 				"tags": [
 					"Categories"
 				],
 				"security": [],
 				"parameters": [
 					{
-						"description": "分类 ID（URI 格式）",
+						"description": "Category ID (URI format)",
 						"in": "path",
 						"name": "id",
 						"required": true,
@@ -7260,7 +7338,7 @@
 						}
 					},
 					{
-						"description": "指标 ID（URI 格式）",
+						"description": "Metric ID (URI format)",
 						"in": "path",
 						"name": "mid",
 						"required": true,

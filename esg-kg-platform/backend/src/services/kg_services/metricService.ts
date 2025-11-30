@@ -106,11 +106,14 @@ export class MetricService {
     }
 
     try {
+      // 解析指标标识符
+      const metricIri = await this.resolveMetricIdentifier(id);
+
       // 获取指标元数据
-      const metadata = await this.kgRepo.getMetricMetadata(id);
+      const metadata = await this.kgRepo.getMetricMetadata(metricIri);
 
       // 获取指标所有属性
-      const attributesMap = await this.kgRepo.getMetricAttributes(id);
+      const attributesMap = await this.kgRepo.getMetricAttributes(metadata.metric.label || id);
       const attributes = Object.fromEntries(attributesMap);
 
       return {
@@ -148,8 +151,8 @@ export class MetricService {
     this.validateMetricId(id);
 
     try {
-      // 转换为 IRI 格式
-      const metricIri = this.normalizeMetricId(id);
+      // 解析指标标识符
+      const metricIri = await this.resolveMetricIdentifier(id);
 
       // 首先获取metric的基本信息以确定计算方法
       const metadata = await this.kgRepo.getMetricMetadata(metricIri);
@@ -232,7 +235,8 @@ export class MetricService {
     this.validateMetricId(id);
 
     try {
-      const dataSource = await this.kgRepo.getBestDataSourceForMetric(id);
+      const metricIri = await this.resolveMetricIdentifier(id);
+      const dataSource = await this.kgRepo.getBestDataSourceForMetric(metricIri);
 
       return {
         metricId: id,
@@ -267,10 +271,10 @@ export class MetricService {
       throw new ValidationError('Metric ID is required');
     }
 
-    // Validate IRI format
-    if (!this.isValidUri(id)) {
-      throw new ValidationError('Invalid metric ID format');
-    }
+    // Validate IRI format - Removed to allow labels
+    // if (!this.isValidUri(id)) {
+    //   throw new ValidationError('Invalid metric ID format');
+    // }
 
     try {
       // 获取指标详情以确认计算方法
@@ -373,8 +377,8 @@ export class MetricService {
     this.validateMetricId(id);
 
     try {
-      // 解析指标 IRI
-      const metricIri = this.normalizeMetricId(id);
+      // 解析指标标识符
+      const metricIri = await this.resolveMetricIdentifier(id);
 
       // 获取指标元数据以获取 label
       const metadata = await this.kgRepo.getMetricMetadata(metricIri);
@@ -411,8 +415,8 @@ export class MetricService {
     this.validateMetricId(id);
 
     try {
-      // 解析指标 IRI
-      const metricIri = this.normalizeMetricId(id);
+      // 解析指标标识符
+      const metricIri = await this.resolveMetricIdentifier(id);
 
       // 获取指标元数据
       const metadata = await this.kgRepo.getMetricMetadata(metricIri);
@@ -531,19 +535,33 @@ export class MetricService {
   /**
    * 标准化指标 ID 为 IRI 格式
    */
-  private normalizeMetricId(id: string): string {
-    // 如果已经是完整 IRI
-    if (id.startsWith('http://') || id.startsWith('https://')) {
-      return id;
+  /**
+   * 解析指标标识符（支持 URI, Short ID, Label）
+   */
+  private async resolveMetricIdentifier(idOrLabel: string): Promise<string> {
+    // 1. 如果是完整 URI，直接返回
+    if (idOrLabel.startsWith('http://') || idOrLabel.startsWith('https://')) {
+      return idOrLabel;
     }
 
-    // 如果是命名空间格式 (esg:MetricName)
-    if (id.includes(':')) {
-      return id;
+    // 2. 如果是 Short ID (esg:xxx)，转换为 URI
+    if (idOrLabel.startsWith('esg:')) {
+      return `http://example.org/esg#${idOrLabel.substring(4)}`;
     }
 
-    // 否则假设是简短ID或label，直接返回
-    return id;
+    // 3. 尝试通过 Label 查找
+    const uriByLabel = await this.metricRepo.getMetricUriByLabel(idOrLabel);
+    if (uriByLabel) {
+      return uriByLabel;
+    }
+
+    // 4. 如果没找到 Label，且看起来像 Short ID (无空格)，假设它是 Short ID
+    if (/^[a-zA-Z][a-zA-Z0-9_-]*$/.test(idOrLabel)) {
+      return `http://example.org/esg#${idOrLabel}`;
+    }
+
+    // 5. 如果既不是 URI，也不是 Short ID，也没找到 Label，抛出异常
+    throw new NotFoundError(`Metric not found with identifier or label: ${idOrLabel}`);
   }
 
   /**
@@ -579,17 +597,14 @@ export class MetricService {
   }
 
   /**
-   * 验证并标准化 metric ID
-   * @throws ValidationError 如果 ID 格式无效
+   * 验证 metric ID
+   * @throws ValidationError 如果 ID 为空
    */
   private validateMetricId(id: string): void {
     if (!id || id.trim().length === 0) {
       throw new ValidationError('Metric ID is required');
     }
-
-    if (!this.isValidUri(id)) {
-      throw new ValidationError('Invalid metric ID format');
-    }
+    // 不再验证格式，因为可能是 Label
   }
 
   // =====================================================
@@ -976,8 +991,8 @@ export class MetricService {
     this.validateMetricId(id);
 
     try {
-      // 解析指标 IRI
-      const metricIri = this.normalizeMetricId(id);
+      // 解析指标标识符
+      const metricIri = await this.resolveMetricIdentifier(id);
 
       // 获取指标元数据
       const metadata = await this.kgRepo.getMetricMetadata(metricIri);

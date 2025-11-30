@@ -377,15 +377,23 @@ export class KnowledgeGraphRepository {
    * 获取指标的最佳数据源
    */
   async getBestDataSourceForMetric(metricID: string): Promise<DataSourceInfo | null> {
-    // First check if metric exists by trying to get its metadata
-    try {
-      await this.getMetricMetadata(metricID);
-    } catch (error) {
-      if (error instanceof NotFoundError) {
-        throw error;
+    const isUri = metricID.startsWith('http://') || metricID.startsWith('https://');
+
+    // Only check metadata if it's a URI to avoid syntax errors with labels
+    if (isUri) {
+      try {
+        await this.getMetricMetadata(metricID);
+      } catch (error) {
+        if (error instanceof NotFoundError) {
+          throw error;
+        }
+        // If it's another error type, continue with the query
       }
-      // If it's another error type, continue with the query
     }
+
+    const metricBinding = isUri
+      ? `BIND(<${metricID}> AS ?metric)`
+      : `?metric rdfs:label "${metricID}" .`;
 
     const query = `
       ${this.ESG_PREFIX}
@@ -395,7 +403,7 @@ export class KnowledgeGraphRepository {
                     esg:metric ?metric ;
                     esg:disclosureType ?disclosureType .
         
-        ?metric rdfs:label "${metricID}" .
+        ${metricBinding}
         
         # obtainedFrom is optional - calculated metrics don't have it
         OPTIONAL {

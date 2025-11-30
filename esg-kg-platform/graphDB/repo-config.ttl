@@ -8,7 +8,7 @@
    rep:repositoryID "esg-repo" ;
    rdfs:label "ESG Repository (GraphDB 11.x)" ;
    rep:repositoryImpl [
-     rep:repositoryType "graphdb:FreeSailRepository" ;
+     rep:repositoryType "graphdb:SailRepository" ;
      sr:sailImpl [
        sail:sailType "graphdb:Sail" ;
        graphdb:ruleset "owl-horst-optimized" ;

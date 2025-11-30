@@ -585,12 +585,7 @@ ${insertClause}
     const sort = params.sort || 'label';
     const order = params.order || 'asc';
 
-    // Resolve short IDs to full URIs
-    const industryUri = params.industry ? this.resolveMetricUri(params.industry) : null;
-    const categoryUri = params.category ? this.resolveMetricUri(params.category) : null;
-    const frameworkUri = params.framework ? this.resolveMetricUri(params.framework) : null;
-
-    // 构建过滤条件 - 使用完整的关系链
+    // 构建过滤条件 - 使用完整的关系链，通过label匹配
     let filters = '';
 
     if (params.calculationMethod) {
@@ -603,56 +598,62 @@ ${insertClause}
     }
 
     // 构建关系链查询 - 按照知识图谱结构: Industry -> Framework -> Category -> Metric
-    // 必须提供完整的关系链才能正确过滤
-    if (industryUri && frameworkUri && categoryUri) {
+    // 使用label进行匹配而不是URI
+    if (params.industry && params.framework && params.category) {
       // 完整的关系链
-      filters += `\n      <${categoryUri}> esg:consistsOf ?metric .`;
-      filters += `\n      <${frameworkUri}> esg:includes <${categoryUri}> .`;
-      filters += `\n      <${industryUri}> esg:reportsUsing <${frameworkUri}> .`;
-    } else if (frameworkUri && categoryUri) {
+      filters += `\n      ?category esg:consistsOf ?metric .`;
+      filters += `\n      ?category rdfs:label "${this.escapeSparql(params.category)}" .`;
+      filters += `\n      ?framework esg:includes ?category .`;
+      filters += `\n      ?framework rdfs:label "${this.escapeSparql(params.framework)}" .`;
+      filters += `\n      ?industry esg:reportsUsing ?framework .`;
+      filters += `\n      ?industry rdfs:label "${this.escapeSparql(params.industry)}" .`;
+    } else if (params.framework && params.category) {
       // Framework -> Category -> Metric
-      filters += `\n      <${categoryUri}> esg:consistsOf ?metric .`;
-      filters += `\n      <${frameworkUri}> esg:includes <${categoryUri}> .`;
-    } else if (categoryUri) {
-      // 只有 Category -> Metric (但这在实际中不应该发生，因为 Category 必须属于某个 Framework)
-      filters += `\n      <${categoryUri}> esg:consistsOf ?metric .`;
+      filters += `\n      ?category esg:consistsOf ?metric .`;
+      filters += `\n      ?category rdfs:label "${this.escapeSparql(params.category)}" .`;
+      filters += `\n      ?framework esg:includes ?category .`;
+      filters += `\n      ?framework rdfs:label "${this.escapeSparql(params.framework)}" .`;
+    } else if (params.category) {
+      // 只有 Category -> Metric
+      filters += `\n      ?category esg:consistsOf ?metric .`;
+      filters += `\n      ?category rdfs:label "${this.escapeSparql(params.category)}" .`;
     }
 
     // 查询关联关系以返回完整信息
     let relationshipPatterns = '';
-    if (industryUri && frameworkUri && categoryUri) {
+    if (params.industry && params.framework && params.category) {
       // 已知完整关系链，直接使用
       relationshipPatterns = `
-        <${categoryUri}> esg:consistsOf ?metric .
-        <${categoryUri}> rdfs:label ?categoryLabel .
-        <${frameworkUri}> esg:includes <${categoryUri}> .
-        <${frameworkUri}> rdfs:label ?frameworkLabel .
-        <${industryUri}> esg:reportsUsing <${frameworkUri}> .
-        <${industryUri}> rdfs:label ?industryLabel .
-        BIND(<${categoryUri}> AS ?category)
-        BIND(<${frameworkUri}> AS ?framework)
-        BIND(<${industryUri}> AS ?industry)`;
-    } else if (frameworkUri && categoryUri) {
+        ?category esg:consistsOf ?metric .
+        ?category rdfs:label ?categoryLabel .
+        ?framework esg:includes ?category .
+        ?framework rdfs:label ?frameworkLabel .
+        ?industry esg:reportsUsing ?framework .
+        ?industry rdfs:label ?industryLabel .
+        FILTER(?categoryLabel = "${this.escapeSparql(params.category)}")
+        FILTER(?frameworkLabel = "${this.escapeSparql(params.framework)}")
+        FILTER(?industryLabel = "${this.escapeSparql(params.industry)}")`;
+    } else if (params.framework && params.category) {
       // 已知 Framework 和 Category
       relationshipPatterns = `
-        <${categoryUri}> esg:consistsOf ?metric .
-        <${categoryUri}> rdfs:label ?categoryLabel .
-        <${frameworkUri}> esg:includes <${categoryUri}> .
-        <${frameworkUri}> rdfs:label ?frameworkLabel .
-        BIND(<${categoryUri}> AS ?category)
-        BIND(<${frameworkUri}> AS ?framework)
+        ?category esg:consistsOf ?metric .
+        ?category rdfs:label ?categoryLabel .
+        ?framework esg:includes ?category .
+        ?framework rdfs:label ?frameworkLabel .
+        FILTER(?categoryLabel = "${this.escapeSparql(params.category)}")
+        FILTER(?frameworkLabel = "${this.escapeSparql(params.framework)}")
         OPTIONAL {
-          ?industry esg:reportsUsing <${frameworkUri}> .
+          ?industry esg:reportsUsing ?framework .
           ?industry rdfs:label ?industryLabel .
         }`;
-    } else if (categoryUri) {
+    } else if (params.category) {
       // 只知道 Category
       relationshipPatterns = `
-        <${categoryUri}> esg:consistsOf ?metric .
-        <${categoryUri}> rdfs:label ?categoryLabel .
-        BIND(<${categoryUri}> AS ?category)
+        ?category esg:consistsOf ?metric .
+        ?category rdfs:label ?categoryLabel .
+        FILTER(?categoryLabel = "${this.escapeSparql(params.category)}")
         OPTIONAL {
-          ?framework esg:includes <${categoryUri}> .
+          ?framework esg:includes ?category .
           ?framework rdfs:label ?frameworkLabel .
           OPTIONAL {
             ?industry esg:reportsUsing ?framework .
@@ -1063,6 +1064,30 @@ ${insertClause}
       .replace(/[^\w\s-]/g, '')
       .replace(/\s+/g, '_')
       .replace(/-+/g, '_');
+  }
+
+  /**
+   * 根据 Label 获取指标 URI
+   */
+  async getMetricUriByLabel(label: string): Promise<string | null> {
+    const query = `
+      ${this.prefix}
+      SELECT ?metric WHERE {
+        ?metric a esg:Metric ;
+                rdfs:label "${this.escapeSparql(label)}" .
+      }
+      LIMIT 1
+    `;
+
+    try {
+      const result = await this.graphDB.executeSparqlQuery(query);
+      if (result.results.bindings.length > 0) {
+        return result.results.bindings[0].metric.value;
+      }
+      return null;
+    } catch (error) {
+      throw new GraphDBQueryError(`Failed to get metric URI by label: ${label}`, { originalError: error });
+    }
   }
 
   /**
