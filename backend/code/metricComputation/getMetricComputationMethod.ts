@@ -3,9 +3,11 @@ import path from "path";
 import { PythonShell } from "python-shell";
 
 import {
-  getMetricAtributes, getDataPointAtribute,
+  getMetricAtributes,
+  getMetricCalculationMethod,
+  getMetricInputs,
   getDataSourceInfo,
-} from "../KG/queryGraph";
+} from "../utils/kgApiClient";
 import { getMetric } from "../dynamoDB/dynamoDBHandler";
 import HTTPError from "http-errors";
 import { wrapError } from "../utils/generalHelper";
@@ -28,28 +30,29 @@ async function getMetricComputationMethod(metric_label: string) {
   switch (computationMethod) {
   case "calculation_model":
   {
-    const model = metricAtrMap.get("isCalculatedBy");
-    // console.log(modelList); // For later multiple model for one metric computation
-    const modelAtr = await getDataPointAtribute(model);
-
-    const requiredInputs = modelAtr.get("requiresInputFrom");
-    if (!requiredInputs) {
-      throw HTTPError(404, `Model "${modelAtr.get("label")}" does not have "requiresInputFrom"`);
+    // Use new API to get calculation method details
+    const calcMethodData = await getMetricCalculationMethod(metric_label);
+    
+    if (!calcMethodData.model) {
+      throw HTTPError(404, `Metric "${metric_label}" does not have a model association`);
     }
 
-    let requiredInputArr: string[] = [];
-    if (requiredInputs.includes(",")) {
-      requiredInputArr = requiredInputs.split(", ");
-    } else {
-      requiredInputArr.push(requiredInputs);
-    }
+    // Get input metrics using new API
+    const inputsData = await getMetricInputs(metric_label);
+    const requiredInputArr = inputsData.inputs.map((input: any) => input.label || input.iri);
+
+    // Use implementation filePath as calculationType for backward compatibility
+    // Priority: implementation.filePath > model.calculationType > "calculation_model"
+    const calculationType = calcMethodData.implementation?.filePath 
+      || calcMethodData.model.calculationType 
+      || "calculation_model";
 
     const returnObj = {
       measureMethod: "calculation_model",
-      isCalculatedBy: modelAtr.get("label"),
-      hasCalculationType: modelAtr.get("hasCalculationType"),
-      executesWith: modelAtr.get("executesWith"),
-      hasFormula: modelAtr.get("hasMathematicalExpression"),
+      isCalculatedBy: calcMethodData.model.label,
+      hasCalculationType: calculationType,
+      executesWith: calcMethodData.implementation?.filePath || calcMethodData.implementation?.label,
+      hasFormula: calcMethodData.model.mathematicalExpression || calcMethodData.model.formula,
       requiresInputFrom: requiredInputArr,
     };
 
@@ -60,15 +63,18 @@ async function getMetricComputationMethod(metric_label: string) {
 
   case "direct_measurement":
   {
-    const dataPoint =  metricAtrMap.get("obtainedFrom");
-    const dataPointAtr = await getDataPointAtribute(dataPoint);
-    const source = dataPointAtr.get("sourceFrom");
-    const sourceLabel = await getDataSourceInfo(source);
+    // Use new API to get calculation method details
+    const calcMethodData = await getMetricCalculationMethod(metric_label);
+    
+    // Extract data source information
+    const firstDataSource = calcMethodData.data_sources?.[0];
+    const obtainedFrom = calcMethodData.attributes?.obtainedFrom || firstDataSource?.dataSourceID || metric_label;
+    const source = firstDataSource?.fileName || firstDataSource?.description;
 
     const returnObj = {
       measureMethod: "direct_measurement",
-      obtainedFrom: dataPointAtr.get("label"),
-      source: sourceLabel,
+      obtainedFrom: obtainedFrom,
+      source: source,
     };
 
     return returnObj;
@@ -103,6 +109,18 @@ interface modelExecutionReturn {
   metricInfo: any[],
 }
 
+/**
+ * Helper function to remove IRI prefix (esg:) from metric names
+ * @param metricName - Metric name that might have esg: prefix
+ * @returns Clean metric name without prefix
+ */
+function removeIRIPrefix(metricName: string): string {
+  if (metricName.startsWith('esg:')) {
+    return metricName.substring(4);
+  }
+  return metricName;
+}
+
 async function modelExecutaion(
   perm_id: string,
   calculation_type: string,
@@ -119,36 +137,42 @@ async function modelExecutaion(
   let pillar: string | undefined = undefined;
 
   try {
-    // Get all metric atribute
-    const metricAtrArrMap: Map<string, string>[] = await Promise.all(
-      metricArray.map(async (m) => {
-        const data = await getDataPointAtribute(m);
-        return data;
+    // Clean metric names by removing esg: prefix if present
+    const cleanMetricArray = metricArray.map(m => removeIRIPrefix(m));
+    
+    // Get all metric calculation method details
+    const metricCalcMethods = await Promise.all(
+      cleanMetricArray.map(async (m) => {
+        return await getMetricCalculationMethod(m);
       })
     );
 
     const metricInforArr = [];
 
-    // Retreive metric data from DynamoDB
-    for (const metric of metricAtrArrMap) {
-      const dataset_acess_var = metric.get("obtainedFrom");
-      if (!dataset_acess_var) {
-        throw HTTPError(404, `Metric ${metric.get("label")?? JSON.stringify([...metric])} doesn't have an obtained method`);
+    // Retrieve metric data from DynamoDB
+    for (const metricCalcMethod of metricCalcMethods) {
+      const metricLabel = metricCalcMethod.metric_label;
+      
+      // For direct measurement metrics, get the data source ID
+      let metric_name: string;
+      let sourceLabel: string | undefined;
+      
+      if (metricCalcMethod.calculation_method === 'direct_measurement') {
+        const firstDataSource = metricCalcMethod.data_sources?.[0];
+        metric_name = metricCalcMethod.attributes?.obtainedFrom || firstDataSource?.dataSourceID || metricLabel;
+        sourceLabel = firstDataSource?.fileName || firstDataSource?.description;
+      } else {
+        // For calculation model metrics, use the metric label directly
+        metric_name = metricLabel;
+        sourceLabel = undefined;
       }
-
-      const inputMetricAtr = await getDataPointAtribute(dataset_acess_var);
-
-      const metric_name = inputMetricAtr.get("label") ?? dataset_acess_var;
 
       const inputMetricData = await getMetric(perm_id, metric_name, year);
 
       const metricValue = inputMetricData.metric_value;
       if (metricValue === undefined || metricValue === null) {
-        throw HTTPError(404, `Metric ${JSON.stringify([...metric])} doesn't have a reported value`);
+        throw HTTPError(404, `Metric ${metricLabel} doesn't have a reported value`);
       }
-
-      const source = inputMetricAtr.get("sourceFrom");
-      const sourceLabel = await getDataSourceInfo(source);
 
       const metricInfoObject = {
         metric_name: inputMetricData.metric_name?? "No Data",

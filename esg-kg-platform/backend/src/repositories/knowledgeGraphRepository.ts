@@ -399,21 +399,25 @@ export class KnowledgeGraphRepository {
       ${this.ESG_PREFIX}
       ${this.RDFS_PREFIX}
       SELECT ?dataSourceID ?disclosureType WHERE {
-        ?observation a esg:Observation ;
-                    esg:metric ?metric ;
-                    esg:disclosureType ?disclosureType .
-        
+        ?metric a esg:Metric .
         ${metricBinding}
         
-        # obtainedFrom is optional - calculated metrics don't have it
+        # For direct measurement metrics, get DatasetVariable label
+        ?metric esg:obtainedFrom ?datasetVariable .
+        ?datasetVariable rdfs:label ?dataSourceID .
+        
+        # Get best disclosure type from observations
         OPTIONAL {
-          ?observation esg:obtainedFrom ?dataSourceID .
+          ?observation a esg:Observation ;
+                      esg:metric ?metric ;
+                      esg:disclosureType ?disclosureType .
         }
       }
       ORDER BY 
         (IF(?disclosureType = esg:regulatory_filing, 1, 
             IF(?disclosureType = esg:company_report, 2, 
                 IF(?disclosureType = esg:third_party, 3, 4))))
+      LIMIT 1
     `;
 
     try {
@@ -422,7 +426,7 @@ export class KnowledgeGraphRepository {
       if (results.results.bindings.length > 0) {
         const binding = results.results.bindings[0];
         const dataSourceID = binding.dataSourceID?.value || '';
-        const disclosureType = binding.disclosureType?.value?.split('#')[1] || 'unknown';
+        const disclosureType = binding.disclosureType?.value?.split('#')[1] || 'company_report';
 
         return {
           dataSourceID,
@@ -927,9 +931,9 @@ export class KnowledgeGraphRepository {
         ?model a esg:Model ;
                rdfs:label ?modelLabel .
         
-        OPTIONAL { ?model esg:calculationType ?calculationType . }
-        OPTIONAL { ?model esg:formula ?formula . }
-        OPTIONAL { ?model esg:mathematicalExpression ?mathematicalExpression . }
+        OPTIONAL { ?model esg:hasCalculationType ?calculationType . }
+        OPTIONAL { ?model esg:hasFormula ?formula . }
+        OPTIONAL { ?model esg:hasMathematicalExpression ?mathematicalExpression . }
         
         # 获取实现信息
         OPTIONAL {

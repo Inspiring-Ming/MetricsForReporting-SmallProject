@@ -29,6 +29,8 @@ import {
   saveAndCompileUserPythonScript,
   executeSavedUserPythonScriptFlexible,
 } from "./metricComputation/implementationUpload";
+import { generateReport, delGeneratedReport } from "./reportGeneration/reportGen";
+import path from "path";
 
 const app = express();
 const PORT: number = parseInt(process.env.PORT || "3001");
@@ -42,6 +44,8 @@ app.use(cors());
 app.use(morgan("dev"));
 // for error handling
 app.use(errorHandler());
+// Serve static files for generated reports
+app.use('/Testing_report', express.static(path.join(process.cwd(), 'Testing_report')));
 
 // ========================================================================= //
 // =========================== DATABASE SYSTEM ============================= //
@@ -295,6 +299,39 @@ app.post("/SAGE/code/execute", async (req, res) => {
   console.log("Executing saved user script identifier:", identifier);
   try {
     const result = await executeSavedUserPythonScriptFlexible(identifier, inputs);
+    res.json(result);
+  } catch (error) {
+    handleHttpError(res, error);
+  }
+});
+
+// ========================================================================= //
+// ===================== REPORT GENERATION FUNCTIONS ======================= //
+// ========================================================================= //
+
+/**
+ * 📄 POST: Generate ESG Report (PDF or HTML)
+ * Accepts report data and generates a downloadable file
+ */
+app.post("/SAGE/report/generate", async (req, res) => {
+  const { fileType, data } = req.body;
+
+  try {
+    const result = await generateReport(fileType, data);
+    res.json(result);
+  } catch (error) {
+    handleHttpError(res, error);
+  }
+});
+
+/**
+ * 🗑️ DELETE: Delete a generated report file
+ */
+app.delete("/SAGE/report/:fileName", async (req, res) => {
+  const { fileName } = req.params;
+
+  try {
+    const result = delGeneratedReport(fileName);
     res.json(result);
   } catch (error) {
     handleHttpError(res, error);
