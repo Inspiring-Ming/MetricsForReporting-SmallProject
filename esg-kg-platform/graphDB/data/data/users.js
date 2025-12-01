@@ -2,7 +2,7 @@
   "users" : {
     "admin" : {
       "username" : "admin",
-      "password" : "{bcrypt}$2a$10$2bVwdgUyAOAh6Qk535W0.uXzAeaSdQ1cikVI9YW1fhIpdvYXHTy4K",
+      "password" : "{bcrypt}$2a$10$WDd/DiQKp5Qc1zrsXRc3lOIRa0VDiixUsWY3A0Op88AScdO3hb.IS",
       "grantedAuthorities" : [ "ROLE_ADMIN" ],
       "appSettings" : {
         "DEFAULT_INFERENCE" : true,
@@ -11,7 +11,7 @@
         "IGNORE_SHARED_QUERIES" : false,
         "EXECUTE_COUNT" : true
       },
-      "dateCreated" : 1764480086748,
+      "dateCreated" : 1764568545052,
       "gptThreads" : [ ]
     }
   },

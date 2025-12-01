@@ -478,15 +478,31 @@ export class MetricService {
         attributes: metric.attributes
       };
 
-      // 如果是直接测量，获取数据源信息
+      // 如果是直接测量，从 lineage 获取数据源信息
       if (response.calculation_method === 'direct_measurement') {
         try {
-          const bestDataSource = await this.getBestDataSource(id);
-          if (bestDataSource.dataSource) {
-            response.data_sources = [bestDataSource.dataSource];
+          const lineage = await this.getMetricLineage(id);
+          
+          // 确保是直接测量类型的 lineage
+          if (lineage.lineageType === 'direct_measurement' && lineage.obtainedFrom && lineage.obtainedFrom.length > 0) {
+            const firstVariable = lineage.obtainedFrom[0];
+            
+            // 从第一个 DatasetVariable 的 sources 中提取数据源信息
+            if (firstVariable && firstVariable.sources && firstVariable.sources.length > 0) {
+              const firstSource = firstVariable.sources[0];
+              
+              if (firstSource) {
+                response.data_sources = [{
+                  dataSourceID: firstVariable.label || '',  // DatasetVariable label (e.g., "ENERGYUSETOTAL")
+                  fileName: firstSource.label || '',        // 使用 DataSource label 作为 fileName
+                  disclosureType: 'company_report',         // 默认披露类型
+                  description: firstSource.description
+                }];
+              }
+            }
           }
         } catch (error) {
-          console.warn(`Failed to get data source for metric ${id}:`, error);
+          console.warn(`Failed to get lineage data source for metric ${id}:`, error);
         }
       }
 

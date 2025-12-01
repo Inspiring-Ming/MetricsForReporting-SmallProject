@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // GraphDB Configuration
-const GRAPHDB_BASE_URL = process.env.GRAPHDB_URL || "https://abcxyz123456.xyz";
+const GRAPHDB_BASE_URL = process.env.GRAPHDB_URL || "localhost:7200";
 const REPOSITORY_ID = process.env.GRAPHDB_REPOSITORY || "esg-knowledge-graph";
 const GRAPHDB_ENDPOINT = `${GRAPHDB_BASE_URL}/repositories/${REPOSITORY_ID}`;
 

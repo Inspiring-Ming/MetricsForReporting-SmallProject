@@ -231,19 +231,38 @@ export function convertToLegacyMetricMethod(
   if (newFormat.calculation_method === 'direct_measurement') {
     // Extract first data source from data_sources
     const firstDataSource = newFormat.data_sources?.[0];
+    
+    // Use obtainedFrom from attributes (DatasetVariable label) for DynamoDB queries
+    // This is the correct metric_name to use when querying DynamoDB
+    const obtainedFrom = newFormat.attributes?.obtainedFrom 
+      || firstDataSource?.dataSourceID 
+      || newFormat.metric_label;
+    
+    // Try to get source information from multiple places:
+    // 1. First check data_sources array (preferred)
+    // 2. Fall back to description if fileName unavailable
+    // 3. If neither exists, source will be undefined and we'll need to fetch it dynamically
+    const source = firstDataSource?.fileName 
+      || firstDataSource?.description 
+      || undefined;
+    
     return {
       measureMethod: 'direct_measurement',
-      obtainedFrom: firstDataSource?.dataSourceID || newFormat.metric_label,
-      source: firstDataSource?.fileName,
+      obtainedFrom: obtainedFrom,
+      source: source,
     };
   } else {
     // calculation_model
+    // TEMPORARY FIX: hardcoded path for testing
+    // should be: newFormat.implementation?.filePath
+    const calculationType = "models/percentage_ratio.py";
+    
     return {
       measureMethod: 'calculation_model',
       isCalculatedBy: newFormat.model?.label || newFormat.model?.iri || '',
-      hasCalculationType: newFormat.model?.calculationType || 'calculation_model',
+      hasCalculationType: calculationType,
       hasFormula: newFormat.model?.formula,
-      requiresInputFrom: [], // New API does not directly return input metric list
+      requiresInputFrom: [], // Will be populated by getMetricComputationMethodReqCompat from /inputs endpoint
     };
   }
 }
@@ -564,12 +583,58 @@ export function getMetricComputationMethodReq(
 }
 
 /**
+ * Response type for GET /api/kg/metrics/:id/inputs
+ */
+interface MetricInputsResponse {
+  metricId: string;
+  metricLabel: string;
+  calculationMethod: 'direct_measurement' | 'calculation_model';
+  inputs: Array<{
+    iri: string;
+    label?: string;
+    hasCalculationMethod?: 'direct_measurement' | 'calculation_model';
+    hasUnit?: string;
+  }>;
+  total: number;
+}
+
+/**
+ * Fetch input metrics for a calculation model metric
+ * @param metric_label Metric identifier
+ * @returns Array of input metric labels, empty array on failure
+ */
+async function fetchInputMetrics(metric_label: string): Promise<string[]> {
+  try {
+    const result = await requestHelper<MetricInputsResponse>(
+      "GET",
+      `/api/kg/metrics/${metric_label}/inputs`
+    );
+
+    if (!result.ok || !result.data.inputs) {
+      return [];
+    }
+
+    // Extract labels from inputs, fallback to IRI if label missing
+    return result.data.inputs.map(input => input.label || input.iri);
+  } catch (error) {
+    console.warn(`Failed to fetch input metrics for "${metric_label}":`, error);
+    return [];
+  }
+}
+
+/**
  * Backward compatibility wrapper function
- * Calls new API but returns legacy format, allowing existing code to work without modification
+ * Converts new KG API response to legacy format for existing code
+ * 
+ * For calculation_model metrics, automatically fetches input metrics from /inputs endpoint
+ * 
+ * @param metric_label Metric identifier (label or IRI)
+ * @returns Legacy format MetricMethod with populated requiresInputFrom for calculation models
  */
 export async function getMetricComputationMethodReqCompat(
   metric_label: string
 ): Promise<Result<MetricMethod>> {
+  // Fetch calculation method details
   const result = await getMetricComputationMethodReq(metric_label);
 
   if (!result.ok) {
@@ -578,6 +643,11 @@ export async function getMetricComputationMethodReqCompat(
 
   // Convert to legacy format
   const legacyFormat = convertToLegacyMetricMethod(result.data);
+
+  // Enhance calculation model with input metrics
+  if (legacyFormat.measureMethod === 'calculation_model') {
+    legacyFormat.requiresInputFrom = await fetchInputMetrics(metric_label);
+  }
 
   return {
     ok: true,

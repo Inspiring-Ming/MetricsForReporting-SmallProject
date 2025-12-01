@@ -24,8 +24,10 @@
     "middleware-http-errors": "^0.1.2",
     "morgan": "^1.10.0",
     "n3": "^1.26.0",
+    "puppeteer": "^24.31.0",
     "python-shell": "^5.0.0",
-    "serverless-http": "^3.2.0"
+    "serverless-http": "^3.2.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",

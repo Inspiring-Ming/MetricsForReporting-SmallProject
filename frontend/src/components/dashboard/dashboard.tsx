@@ -373,7 +373,8 @@ export default function ESGDashboard() {
 
       setMetricsByCategory((prev) => {
         const next = { ...prev };
-        for (const r of results) next[r.c] = r.list;
+        // Deduplicate metrics to avoid duplicate keys in dropdown
+        for (const r of results) next[r.c] = Array.from(new Set(r.list));
         return next;
       });
       setMetricsErr((prev) => {
