@@ -78,16 +78,19 @@ export class ModelService {
         }
 
         // 验证所有input metrics是否存在
-        if (data.input_metrics && data.input_metrics.length > 0) {
-            const metricRepository = (await import('../../repositories/metricRepository')).MetricRepository;
-            const metricRepo = new metricRepository();
-            for (const metricId of data.input_metrics) {
-                const metric = await metricRepo.getMetricById(metricId);
-                if (!metric) {
-                    throw new NotFoundError(`Input metric not found: ${metricId}`);
-                }
-            }
-        }
+        // COMMENTED OUT: Allow non-existent metrics as inputs for flexibility
+        // User can configure input metrics later via PUT /api/kg/models/:id/metrics/inputs
+        // Note: Model execution will fail if input metrics don't exist or have no data
+        // if (data.input_metrics && data.input_metrics.length > 0) {
+        //     const metricRepository = (await import('../../repositories/metricRepository')).MetricRepository;
+        //     const metricRepo = new metricRepository();
+        //     for (const metricId of data.input_metrics) {
+        //         const metric = await metricRepo.getMetricById(metricId);
+        //         if (!metric) {
+        //             throw new NotFoundError(`Input metric not found: ${metricId}`);
+        //         }
+        //     }
+        // }
 
         // 检查是否存在同名模型
         const existing = await this.repository.getModelById(data.name);
@@ -138,16 +141,18 @@ export class ModelService {
         }
 
         // 验证所有input metrics是否存在
-        if (data.input_metrics !== undefined) {
-            const metricRepository = (await import('../../repositories/metricRepository')).MetricRepository;
-            const metricRepo = new metricRepository();
-            for (const metricId of data.input_metrics) {
-                const metric = await metricRepo.getMetricById(metricId);
-                if (!metric) {
-                    throw new NotFoundError(`Input metric not found: ${metricId}`);
-                }
-            }
-        }
+        // COMMENTED OUT: Allow non-existent metrics as inputs for flexibility
+        // Note: Model execution will fail if input metrics don't exist or have no data
+        // if (data.input_metrics !== undefined) {
+        //     const metricRepository = (await import('../../repositories/metricRepository')).MetricRepository;
+        //     const metricRepo = new metricRepository();
+        //     for (const metricId of data.input_metrics) {
+        //         const metric = await metricRepo.getMetricById(metricId);
+        //         if (!metric) {
+        //             throw new NotFoundError(`Input metric not found: ${metricId}`);
+        //         }
+        //     }
+        // }
 
         await this.repository.updateModel(id, data);
         const updated = await this.repository.getModelById(id);

@@ -700,10 +700,8 @@ export class MetricService {
    * 部分更新指标
    */
   async patchMetric(id: string, data: PatchMetricRequest): Promise<UpdateMetricResponse | UpdateMetricModelResponse> {
-    // 验证 IRI 格式
-    if (!this.isValidUri(id)) {
-      throw new ValidationError('Invalid metric IRI format');
-    }
+    // Resolve identifier (supports URI, Short ID, or Label)
+    const resolvedId = await this.resolveMetricIdentifier(id);
 
     // 至少需要一个字段
     if (Object.keys(data).length === 0) {
@@ -729,10 +727,12 @@ export class MetricService {
 
     // 验证 model 字段
     if (data.model !== undefined && data.model && data.model.trim().length > 0) {
-      // 验证模型 URI 格式
-      if (!this.isValidUri(data.model)) {
-        throw new ValidationError(`Invalid model IRI format: ${data.model}`);
-      }
+      // Model identifier can be: URI, Short ID, label, or name
+      // No strict validation here - let the system resolve it later
+      // The model should exist when linking, but we don't enforce URI format
+      
+      // NOTE: Removed strict URI validation to allow flexible model identifiers
+      // The model name/label will be converted to proper IRI when storing in GraphDB
 
       // 如果同时提供了 calculationMethod，确保它是 calculation_model
       if (data.calculationMethod && data.calculationMethod !== 'calculation_model') {
@@ -741,19 +741,19 @@ export class MetricService {
 
       // 如果没有提供 calculationMethod，检查当前指标的计算方法
       if (!data.calculationMethod) {
-        const current = await this.metricRepo.getMetricById(id);
+        const current = await this.metricRepo.getMetricById(resolvedId);
         if (current && current.hasCalculationMethod === 'direct_measurement') {
           throw new ValidationError('Cannot set model for direct_measurement metrics. Change calculationMethod to "calculation_model" first.');
         }
       }
     }
 
-    await this.metricRepo.patchMetric(id, data);
+    await this.metricRepo.patchMetric(resolvedId, data);
 
     // 获取更新后的指标信息
-    const updated = await this.metricRepo.getMetricById(id);
+    const updated = await this.metricRepo.getMetricById(resolvedId);
     if (!updated) {
-      throw new NotFoundError(`Metric not found: ${id}`);
+      throw new NotFoundError(`Metric not found: ${resolvedId}`);
     }
 
     // 如果更新包含 model 字段，返回详细的模型信息
@@ -783,7 +783,7 @@ export class MetricService {
       }
 
       return {
-        metric_uri: id,
+        metric_uri: resolvedId,
         metric_label: updated.label!,
         calculation_method: updated.hasCalculationMethod,
         model: modelInfo,
@@ -793,7 +793,7 @@ export class MetricService {
 
     // 标准响应（没有更新 model）
     return {
-      iri: id,
+      iri: resolvedId,
       label: updated.label!,
       calculationMethod: updated.hasCalculationMethod,
       updated_at: new Date().toISOString()

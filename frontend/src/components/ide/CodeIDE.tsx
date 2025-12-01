@@ -211,7 +211,7 @@ export default function CodeIDE({
         const implRes = await uploadImplementationReq(baseImpl, "Python", implPath);
         if (implRes.ok) {
           implOk = true;
-          implUri = implRes.data?.data?.uri || null;
+          implUri = (implRes.data as any)?.iri || null;
           const iri = implUri || baseImpl;
           setImplUploadMsg(`Implementation uploaded with IRI: ${iri}`);
         } else {
@@ -232,7 +232,7 @@ export default function CodeIDE({
         const kgRes = await uploadModelReq(modelName, calculation_type, inputs, baseImpl);
         if (kgRes.ok) {
           modelOk = true;
-          modelIriLocal = kgRes.data?.data?.uri || modelName;
+          modelIriLocal = (kgRes.data as any)?.iri || modelName;
           setModelUploadMsg(`Model uploaded with IRI: ${modelIriLocal}`);
           setModelUri(modelIriLocal); // save for visualization
         } else {

@@ -231,7 +231,9 @@ export class ModelRepository {
     // 关联输入指标
     if (data.input_metrics && data.input_metrics.length > 0) {
       data.input_metrics.forEach(metric => {
-        const metricUri = metric.startsWith('http') ? metric : `http://example.org/esg#${metric}`;
+        // Remove spaces and special characters from metric name for valid IRI
+        const sanitizedMetric = metric.replace(/\s+/g, '_').replace(/[^\w\-_]/g, '');
+        const metricUri = metric.startsWith('http') ? metric : `http://example.org/esg#${sanitizedMetric}`;
         triples += `<${iri}> esg:requiresInputFrom <${metricUri}> . \n`;
       });
     }
@@ -292,7 +294,9 @@ export class ModelRepository {
     if (data.input_metrics) {
       deleteTriples += `<${id}> esg:requiresInputFrom ?input . \n`;
       data.input_metrics.forEach(metric => {
-        const metricUri = metric.startsWith('http') ? metric : `http://example.org/esg#${metric}`;
+        // Remove spaces and special characters from metric name for valid IRI
+        const sanitizedMetric = metric.replace(/\s+/g, '_').replace(/[^\w\-_]/g, '');
+        const metricUri = metric.startsWith('http') ? metric : `http://example.org/esg#${sanitizedMetric}`;
         insertTriples += `<${id}> esg:requiresInputFrom <${metricUri}> . \n`;
       });
     }
@@ -424,7 +428,9 @@ export class ModelRepository {
     // 构建新的输入指标三元组
     let insertTriples = `<${modelId}> dcterms:modified "${now}" . \n`;
     inputMetricIds.forEach(metricId => {
-      const metricUri = metricId.startsWith('http') ? metricId : `http://example.org/esg#${metricId}`;
+      // Remove spaces and special characters from metric name for valid IRI
+      const sanitizedMetric = metricId.replace(/\s+/g, '_').replace(/[^\w\-_]/g, '');
+      const metricUri = metricId.startsWith('http') ? metricId : `http://example.org/esg#${sanitizedMetric}`;
       insertTriples += `<${modelId}> esg:requiresInputFrom <${metricUri}> . \n`;
     });
 

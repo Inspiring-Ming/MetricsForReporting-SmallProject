@@ -1426,16 +1426,24 @@ export class KnowledgeGraphRepository {
     }
 
     // 检查所有输入指标是否存在
+    // COMMENTED OUT: Allow non-existent metrics as inputs for flexibility
+    // Note: Model execution will fail if input metrics don't exist or have no data
     const resolvedInputMetrics: Array<{ iri: string; label: string }> = [];
     for (const metricLabel of inputMetrics) {
-      const metric = await this.getEntityByLabel(metricLabel, 'Metric');
-      if (!metric) {
-        throw new GraphDBQueryError(
-          `Input metric not found: ${metricLabel}`,
-          { metricLabel, code: 'METRIC_NOT_FOUND' }
-        );
-      }
-      resolvedInputMetrics.push(metric);
+      // Skip validation - allow any metric name
+      // Create IRI from label if metric doesn't exist
+      const metricIri = `http://example.org/esg#${metricLabel.replace(/\s+/g, '')}`;
+      resolvedInputMetrics.push({ iri: metricIri, label: metricLabel });
+      
+      // Original validation (commented out):
+      // const metric = await this.getEntityByLabel(metricLabel, 'Metric');
+      // if (!metric) {
+      //   throw new GraphDBQueryError(
+      //     `Input metric not found: ${metricLabel}`,
+      //     { metricLabel, code: 'METRIC_NOT_FOUND' }
+      //   );
+      // }
+      // resolvedInputMetrics.push(metric);
     }
 
     const modelUri = `http://example.org/esg#${name}`;
