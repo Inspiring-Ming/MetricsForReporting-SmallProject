@@ -67,6 +67,7 @@ RUN pnpm install --prod --frozen-lockfile || pnpm install --prod
 # Copy built files from builder
 COPY --chown=nodejs:nodejs --from=builder /app/backend/dist ./backend/dist
 COPY --chown=nodejs:nodejs --from=builder /app/backend/code ./backend/code
+COPY --chown=nodejs:nodejs --from=builder /app/backend/src ./backend/src
 COPY --chown=nodejs:nodejs --from=builder /app/backend/tsconfig.json ./backend/
 
 # Copy models and data if needed

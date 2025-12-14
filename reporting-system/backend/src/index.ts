@@ -12,7 +12,7 @@ dotenv.config();
 
 const app = express();
 const PORT = parseInt(process.env.PORT || "3001");
-const HOST = process.env.HOST || "localhost";
+const HOST = process.env.HOST || "0.0.0.0";
 
 // Middleware
 app.use(express.json());

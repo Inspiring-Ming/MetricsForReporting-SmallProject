@@ -8,7 +8,7 @@ import path from "path";
 import crypto from "crypto";
 import { ReportData, ReportGenerationResponse } from "../models/report.model";
 import { BadRequestError, InternalServerError } from "../errors";
-import { genPDFandHTML, deleteFile } from "../../code/reportGeneration/generatePDF";
+import { genPDFandHTML, deleteFile } from "../utils/generatePDF";
 
 export class ReportService {
   private host: string;

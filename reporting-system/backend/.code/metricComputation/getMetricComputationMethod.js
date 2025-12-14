@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMetricComputationMethod = getMetricComputationMethod;
 exports.getMetricValue = getMetricValue;
 exports.modelExecutaion = modelExecutaion;
 const fs_1 = __importDefault(require("fs"));
@@ -13,66 +12,6 @@ const kgApiClient_1 = require("../utils/kgApiClient");
 const dynamoDBHandler_1 = require("../dynamoDB/dynamoDBHandler");
 const http_errors_1 = __importDefault(require("http-errors"));
 const generalHelper_1 = require("../utils/generalHelper");
-/**
- * CQ5:How is the value of [specific metric] calculated or directly measured?
- *
- * @param {string} metric_label
- * @returns
- */
-async function getMetricComputationMethod(metric_label) {
-    const metricAtrMap = await (0, kgApiClient_1.getMetricAtributes)(metric_label);
-    const computationMethod = metricAtrMap.get("hasCalculationMethod");
-    if (!computationMethod) {
-        throw (0, http_errors_1.default)(404, `Metric ${metric_label} don't have a calculation method`);
-    }
-    switch (computationMethod) {
-        case "calculation_model":
-            {
-                // Use new API to get calculation method details
-                const calcMethodData = await (0, kgApiClient_1.getMetricCalculationMethod)(metric_label);
-                if (!calcMethodData.model) {
-                    throw (0, http_errors_1.default)(404, `Metric "${metric_label}" does not have a model association`);
-                }
-                // Get input metrics using new API
-                const inputsData = await (0, kgApiClient_1.getMetricInputs)(metric_label);
-                const requiredInputArr = inputsData.inputs.map((input) => input.label || input.iri);
-                // Use implementation filePath as calculationType for backward compatibility
-                // Priority: implementation.filePath > model.calculationType > "calculation_model"
-                const calculationType = calcMethodData.implementation?.filePath
-                    || calcMethodData.model.calculationType
-                    || "calculation_model";
-                const returnObj = {
-                    measureMethod: "calculation_model",
-                    isCalculatedBy: calcMethodData.model.label,
-                    hasCalculationType: calculationType,
-                    executesWith: calcMethodData.implementation?.filePath || calcMethodData.implementation?.label,
-                    hasFormula: calcMethodData.model.mathematicalExpression || calcMethodData.model.formula,
-                    requiresInputFrom: requiredInputArr,
-                };
-                console.log(returnObj);
-                return returnObj;
-            }
-        case "direct_measurement":
-            {
-                // Use new API to get calculation method details
-                const calcMethodData = await (0, kgApiClient_1.getMetricCalculationMethod)(metric_label);
-                // Extract data source information
-                const firstDataSource = calcMethodData.data_sources?.[0];
-                const obtainedFrom = calcMethodData.attributes?.obtainedFrom || firstDataSource?.dataSourceID || metric_label;
-                const source = firstDataSource?.fileName || firstDataSource?.description;
-                const returnObj = {
-                    measureMethod: "direct_measurement",
-                    obtainedFrom: obtainedFrom,
-                    source: source,
-                };
-                return returnObj;
-            }
-        default:
-            {
-                throw (0, http_errors_1.default)(404, `Unrecognized computation method: "${computationMethod}" of "${metric_label}" `);
-            }
-    }
-}
 // CQ8: What are the historical Values of [specific datapoint]?
 async function getMetricValue(perm_id, metric_name, year) {
     const metricAtr = await (0, dynamoDBHandler_1.getMetric)(perm_id, metric_name, year);

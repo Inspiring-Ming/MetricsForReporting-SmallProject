@@ -6,7 +6,7 @@
     "dev": "ts-node -T src/index.ts",
     "dev:old": "ts-node -T code/index.ts",
     "start": "node dist/index.js",
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "test": "jest",
     "ts-node": "ts-node",
     "lint": "eslint",

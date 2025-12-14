@@ -170,7 +170,7 @@ export class ComputationService {
         );
       }
 
-      return await response.json();
+      return (await response.json()) as MetricCalculationMethod;
     } catch (error: any) {
       if (error.statusCode) {
         throw error; // Re-throw custom error
