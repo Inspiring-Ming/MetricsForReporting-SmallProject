@@ -32,6 +32,9 @@ FROM node:18-alpine AS runner
 # Install curl for health checks
 RUN apk add --no-cache curl
 
+# Install Python3 and pip for model execution
+RUN apk add --no-cache python3 py3-pip
+
 # Install Chromium and dependencies for Puppeteer
 RUN apk add --no-cache \
     chromium \

@@ -2,90 +2,10 @@ import fs from "fs";
 import path from "path";
 import { PythonShell } from "python-shell";
 
-import {
-  getMetricAtributes,
-  getMetricCalculationMethod,
-  getMetricInputs,
-  getDataSourceInfo,
-} from "../utils/kgApiClient";
+import { getMetricCalculationMethod } from "../utils/kgApiClient";
 import { getMetric } from "../dynamoDB/dynamoDBHandler";
 import HTTPError from "http-errors";
 import { wrapError } from "../utils/generalHelper";
-
-/**
- * CQ5:How is the value of [specific metric] calculated or directly measured?
- *
- * @param {string} metric_label
- * @returns
- */
-async function getMetricComputationMethod(metric_label: string) {
-  const metricAtrMap = await getMetricAtributes(metric_label);
-
-  const computationMethod = metricAtrMap.get("hasCalculationMethod");
-
-  if (!computationMethod) {
-    throw HTTPError(404, `Metric ${metric_label} don't have a calculation method`);
-  }
-
-  switch (computationMethod) {
-  case "calculation_model":
-  {
-    // Use new API to get calculation method details
-    const calcMethodData = await getMetricCalculationMethod(metric_label);
-    
-    if (!calcMethodData.model) {
-      throw HTTPError(404, `Metric "${metric_label}" does not have a model association`);
-    }
-
-    // Get input metrics using new API
-    const inputsData = await getMetricInputs(metric_label);
-    const requiredInputArr = inputsData.inputs.map((input: any) => input.label || input.iri);
-
-    // Use implementation filePath as calculationType for backward compatibility
-    // Priority: implementation.filePath > model.calculationType > "calculation_model"
-    const calculationType = calcMethodData.implementation?.filePath 
-      || calcMethodData.model.calculationType 
-      || "calculation_model";
-
-    const returnObj = {
-      measureMethod: "calculation_model",
-      isCalculatedBy: calcMethodData.model.label,
-      hasCalculationType: calculationType,
-      executesWith: calcMethodData.implementation?.filePath || calcMethodData.implementation?.label,
-      hasFormula: calcMethodData.model.mathematicalExpression || calcMethodData.model.formula,
-      requiresInputFrom: requiredInputArr,
-    };
-
-    console.log(returnObj);
-
-    return returnObj;
-  }
-
-  case "direct_measurement":
-  {
-    // Use new API to get calculation method details
-    const calcMethodData = await getMetricCalculationMethod(metric_label);
-    
-    // Extract data source information
-    const firstDataSource = calcMethodData.data_sources?.[0];
-    const obtainedFrom = calcMethodData.attributes?.obtainedFrom || firstDataSource?.dataSourceID || metric_label;
-    const source = firstDataSource?.fileName || firstDataSource?.description;
-
-    const returnObj = {
-      measureMethod: "direct_measurement",
-      obtainedFrom: obtainedFrom,
-      source: source,
-    };
-
-    return returnObj;
-  }
-
-  default:
-  {
-    throw HTTPError(404, `Unrecognized computation method: "${computationMethod}" of "${metric_label}" `);
-  }
-  }
-}
 
 // CQ8: What are the historical Values of [specific datapoint]?
 async function getMetricValue(
@@ -257,7 +177,6 @@ function isFolder(folderName: string) {
 }
 
 export {
-  getMetricComputationMethod,
   getMetricValue,
   modelExecutaion,
 };

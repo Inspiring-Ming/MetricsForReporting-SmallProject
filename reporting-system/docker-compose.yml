@@ -13,6 +13,10 @@ services:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: ${PORT:-3001}
       ESG_PLATFORM_API_URL: ${ESG_PLATFORM_API_URL:-http://host.docker.internal:3000}
+      KG_API_URL: ${KG_API_URL:-http://host.docker.internal:3000/api/kg}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION:-ap-southeast-2}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
@@ -31,7 +35,8 @@ services:
       - "5173:5173"
     environment:
       NODE_ENV: ${NODE_ENV:-development}
-      VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:3001}
+      VITE_BACKEND_URL: http://backend:3001
+      VITE_KG_API_URL: http://host.docker.internal:3000
     depends_on:
       backend:
         condition: service_healthy

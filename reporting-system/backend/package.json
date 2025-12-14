@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "ts-node -T code/index.ts",
+    "dev": "ts-node -T src/index.ts",
+    "dev:old": "ts-node -T code/index.ts",
     "start": "node dist/index.js",
     "build": "tsc",
     "test": "jest",
     "ts-node": "ts-node",
     "lint": "eslint",
     "lint-fix": "eslint --fix",
-    "test_graph": "ts-node code/KG/queryGraph.ts",
     "convert_csv": "ts-node code/dynamodb/CSVtoDynamoJSON.ts",
     "test_query": "ts-node code/dynamodb/dynamoDBHandler.ts",
     "test_computation": "ts-node code/metricComputation/getMetricComputationMethod.ts"
