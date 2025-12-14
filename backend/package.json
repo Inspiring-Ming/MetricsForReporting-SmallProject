@@ -1,6 +1,11 @@
 {
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
   "scripts": {
-    "start": "ts-node -T code/index.ts",
+    "dev": "ts-node -T code/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc",
     "test": "jest",
     "ts-node": "ts-node",
     "lint": "eslint",

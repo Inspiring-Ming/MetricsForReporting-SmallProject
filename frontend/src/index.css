@@ -1,6 +1,0 @@
-@import "tailwindcss";
-
-/* Remove Vite template constraints */
-html, body, #root { height: 100%; }
-body { margin: 0; }
-#root { max-width: none; padding: 0; text-align: initial; }
