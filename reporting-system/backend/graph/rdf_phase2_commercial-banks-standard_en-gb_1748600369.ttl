@@ -1,0 +1,284 @@
+@prefix esg: <http://esg-kg.org/ontology#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix gri: <http://gri-kg.org/ontology#> .
+@prefix ungc: <http://ungc-kg.org/ontology#> .
+@prefix iso: <http://iso26000-kg.org/ontology#> .
+
+# Core Entities (with metadata corrections)
+esg:CommercialBanks a esg:Industry ;
+    rdfs:label "Commercial Banks" ;
+    rdfs:comment "Industry covered by SASB Commercial Banks standards" .
+
+esg:SASBCommercialBanks a esg:ReportingFramework ;
+    rdfs:label "SASB Commercial Banks" ;
+    rdfs:comment "Reporting framework with concept alignments to external ontologies" .
+
+# Aligned Concepts (Eurofidai Mappings)
+esg:FinancedEmissionsScope3 a esg:Metric ;
+    rdfs:label "Financed Emissions Scope 3" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:CO2INDIRECTSCOPE3 ;
+    esg:alignmentConfidence 0.75 ;
+    esg:unitCompatible true .
+
+esg:CO2INDIRECTSCOPE3 a esg:EurofidaiVariable ;
+    rdfs:label "CO2INDIRECTSCOPE3" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:ClimateRiskAssessmentinLending a esg:Metric ;
+    rdfs:label "Climate Risk Assessment in Lending" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:POLICY_EMISSIONS ;
+    esg:alignmentConfidence 0.72 ;
+    esg:unitCompatible false .
+
+esg:POLICY_EMISSIONS a esg:EurofidaiVariable ;
+    rdfs:label "POLICY_EMISSIONS" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:BoardRiskCommitteeComposition a esg:Metric ;
+    rdfs:label "Board Risk Committee Composition" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:ANALYTICINDEPBOARD ;
+    esg:alignmentConfidence 0.78 ;
+    esg:unitCompatible true .
+
+esg:ANALYTICINDEPBOARD a esg:EurofidaiVariable ;
+    rdfs:label "ANALYTICINDEPBOARD" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:CEOCompensationRiskAlignment a esg:Metric ;
+    rdfs:label "CEO Compensation Risk Alignment" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:CEO_ANNUAL_COMPENSATION ;
+    esg:alignmentConfidence 0.73 ;
+    esg:unitCompatible true .
+
+esg:CEO_ANNUAL_COMPENSATION a esg:EurofidaiVariable ;
+    rdfs:label "CEO_ANNUAL_COMPENSATION" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:ThirdPartyRiskManagement a esg:Metric ;
+    rdfs:label "Third-Party Risk Management" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:ENV_SUPPLY_CHAIN_MGT ;
+    esg:alignmentConfidence 0.71 ;
+    esg:unitCompatible false .
+
+esg:ENV_SUPPLY_CHAIN_MGT a esg:EurofidaiVariable ;
+    rdfs:label "ENV_SUPPLY_CHAIN_MGT" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+esg:FairLendingPracticeCompliance a esg:Metric ;
+    rdfs:label "Fair Lending Practice Compliance" ;
+    rdfs:comment "Regulatory metric aligned with Eurofidai dataset" ;
+    esg:alignedWithEurofidai esg:HUMAN_RIGHTS_POLICY_DUEDILIGENCE ;
+    esg:alignmentConfidence 0.74 ;
+    esg:unitCompatible false .
+
+esg:HUMAN_RIGHTS_POLICY_DUEDILIGENCE a esg:EurofidaiVariable ;
+    rdfs:label "HUMAN_RIGHTS_POLICY_DUEDILIGENCE" ;
+    rdfs:comment "Eurofidai dataset variable" .
+
+# Metrics with Eurofidai Alignments
+esg:NumberDataBreaches a esg:Metric ;
+    rdfs:label "Number Data Breaches" ;
+    rdfs:comment "Number of data breaches" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:PercentagePersonalDataBreaches a esg:Metric ;
+    rdfs:label "Percentage Personal Data Breaches" ;
+    rdfs:comment "Percentage that are personal data breaches" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:AccountHoldersAffected a esg:Metric ;
+    rdfs:label "Account Holders Affected" ;
+    rdfs:comment "Number of account holders affected" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:DataSecurityRiskApproach a esg:Metric ;
+    rdfs:label "Data Security Risk Approach" ;
+    rdfs:comment "Description of approach to identifying and addressing data security risks" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Discussion" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:SmallBusinessLoanCount a esg:Metric ;
+    rdfs:label "Small Business Loan Count" ;
+    rdfs:comment "Number of loans outstanding that qualify for programmes designed to promote small business and community development" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:SmallBusinessLoanAmount a esg:Metric ;
+    rdfs:label "Small Business Loan Amount" ;
+    rdfs:comment "Amount of loans outstanding that qualify for programmes designed to promote small business and community development" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:PastDueLoanCount a esg:Metric ;
+    rdfs:label "Past Due Loan Count" ;
+    rdfs:comment "Number of past due and nonaccrual loans or loans subject to forbearance that qualify for programmes designed to promote small business and community development" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:PastDueLoanAmount a esg:Metric ;
+    rdfs:label "Past Due Loan Amount" ;
+    rdfs:comment "Amount of past due and nonaccrual loans or loans subject to forbearance that qualify for programmes designed to promote small business and community development" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:NoCostCheckingAccounts a esg:Metric ;
+    rdfs:label "No Cost Checking Accounts" ;
+    rdfs:comment "Number of no-cost retail checking accounts provided to previously unbanked or underbanked customers" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:FinancialLiteracyParticipants a esg:Metric ;
+    rdfs:label "Financial Literacy Participants" ;
+    rdfs:comment "Number of participants in financial literacy initiatives for unbanked, underbanked, or underserved customers" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:ESGCreditAnalysisApproach a esg:Metric ;
+    rdfs:label "ESG Credit Analysis Approach" ;
+    rdfs:comment "Description of approach to incorporation of environmental, social and governance (ESG) factors in credit analysis" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Discussion" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:Scope1FinancedEmissions a esg:Metric ;
+    rdfs:label "Scope 1 Financed Emissions" ;
+    rdfs:comment "Absolute gross financed emissions, disaggregated by Scope 1" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:Scope2FinancedEmissions a esg:Metric ;
+    rdfs:label "Scope 2 Financed Emissions" ;
+    rdfs:comment "Absolute gross financed emissions, disaggregated by Scope 2" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:Scope3FinancedEmissions a esg:Metric ;
+    rdfs:label "Scope 3 Financed Emissions" ;
+    rdfs:comment "Absolute gross financed emissions, disaggregated by Scope 3" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:GrossExposureByIndustry a esg:Metric ;
+    rdfs:label "Gross Exposure By Industry" ;
+    rdfs:comment "Gross exposure for each industry by asset class" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:FinancedEmissionsCoveragePercentage a esg:Metric ;
+    rdfs:label "Financed Emissions Coverage Percentage" ;
+    rdfs:comment "Percentage of gross exposure included in the financed emissions calculation" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:FinancedEmissionsMethodology a esg:Metric ;
+    rdfs:label "Financed Emissions Methodology" ;
+    rdfs:comment "Description of the methodology used to calculate financed emissions" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Discussion" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:LegalProceedingsMonetaryLosses a esg:Metric ;
+    rdfs:label "Legal Proceedings Monetary Losses" ;
+    rdfs:comment "Total amount of monetary losses as a result of legal proceedings associated with fraud, insider trading, antitrust, anti-competitive behaviour, market manipulation, malpractice, or other related financial industry laws or regulations" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:WhistleblowerPoliciesDescription a esg:Metric ;
+    rdfs:label "Whistleblower Policies Description" ;
+    rdfs:comment "Description of whistleblower policies and procedures" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Discussion" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:GSIBScoreByCategory a esg:Metric ;
+    rdfs:label "G-SIB Score By Category" ;
+    rdfs:comment "Global Systemically Important Bank (G-SIB) score, by category" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+esg:StressTestIntegrationApproach a esg:Metric ;
+    rdfs:label "Stress Test Integration Approach" ;
+    rdfs:comment "Description of approach to integrate results of mandatory and voluntary stress tests into capital adequacy planning, long-term corporate strategy, and other business activities" ;
+    esg:hasCode "n/a" ;
+    esg:hasUnit "n/a" ;
+    esg:hasMetricType "Discussion" ;
+    esg:hasIndustry "Commercial Banks" ;
+    esg:hasReportingFramework "SASB Commercial Banks" .
+
+# Alignment Summary
+esg:AlignmentSummary a esg:AlignmentMetadata ;
+    esg:totalConceptsProcessed 27 ;
+    esg:totalConceptsMapped 6 ;
+    esg:alignmentAccuracy 28.6 ;
+    esg:externalOntologiesUsed "Eurofidai Dataset" ;
+    esg:alignmentTimestamp "2025-05-30T10:19:29Z" .
+

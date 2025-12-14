@@ -1,0 +1,13 @@
+node_modules/
+package-lock.json
+output/
+backend/code/dynamoDB/uploadCSV.ts
+AWS/
+backup/
+backend/data/Raw_data_with_industry.csv
+.env
+esg-kg-platform/graphDB/data/**
+
+
+**/.DS_Store
+backend/.env

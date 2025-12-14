@@ -1,0 +1,56 @@
+# Node modules at all levels
+node_modules
+**/node_modules
+npm-debug.log
+package-lock.json
+
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist
+build
+coverage
+.next
+out
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*.swn
+
+# Testing
+.pytest_cache
+__pycache__
+*.pyc
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Makefile
+Makefile

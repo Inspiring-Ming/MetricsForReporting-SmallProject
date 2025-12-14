@@ -1,0 +1,47 @@
+services:
+  # Backend API Service
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: metrics-backend
+    ports:
+      - "3001:3001"
+    cap_add:
+      - SYS_ADMIN
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3001}
+      ESG_PLATFORM_API_URL: ${ESG_PLATFORM_API_URL:-http://host.docker.internal:3000}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Web Application
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: metrics-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      VITE_BACKEND_URL: ${VITE_BACKEND_URL:-http://localhost:3001}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# No custom networks needed - using default Docker Compose network
+# Services communicate via service names within the same compose file
