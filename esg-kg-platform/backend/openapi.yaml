@@ -1,0 +1,1844 @@
+openapi: 3.0.3
+info:
+  title: ESG Knowledge Graph API
+  description: |
+    ESG Knowledge Graph platform backend API server providing comprehensive ESG metrics and knowledge graph data services.
+    
+    ## Response Format
+    - **List endpoints**: Return `{result: [...]}` format
+    - **Object endpoints**: Return data directly
+    - **Error responses**: Return `{ok: false, error: string, code?: string}` with appropriate HTTP status codes
+  version: 1.0.0
+  contact:
+    name: ESG Knowledge Graph API Support
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://api.esg-platform.com/api
+    description: Production server
+
+tags:
+  - name: Health & System
+    description: Health check and system status endpoints
+  - name: Knowledge Graph
+    description: ESG knowledge graph query operations
+  - name: Metrics
+    description: Metric metadata and data lineage operations
+  - name: Computation
+    description: Metric computation and implementation services
+  - name: Data Management
+    description: SPARQL queries, TTL uploads, and validation services
+
+paths:
+  /health:
+    get:
+      tags: [Health & System]
+      summary: Health check
+      description: Returns server status and GraphDB connection information
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        example: "healthy"
+                      timestamp:
+                        type: string
+                        format: date-time
+                      graphdb:
+                        type: object
+                        properties:
+                          connected:
+                            type: boolean
+                          url:
+                            type: string
+        '503':
+          description: Server is unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  data:
+                    type: object
+
+  /repositories:
+    get:
+      tags: [Health & System]
+      summary: List GraphDB repositories
+      description: Get list of available GraphDB repositories
+      responses:
+        '200':
+          description: List of repositories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: string
+                  total:
+                    type: number
+
+  /system:
+    get:
+      tags: [Health & System]
+      summary: Get system information
+      description: Get detailed system information including versions and configuration
+      responses:
+        '200':
+          description: System information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      version:
+                        type: string
+                      nodeVersion:
+                        type: string
+                      uptime:
+                        type: number
+                      environment:
+                        type: string
+
+  # Knowledge Graph APIs
+  /kg/frameworks:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get reporting frameworks for industry
+      description: CQ2 - Get specific industry applicable reporting frameworks
+      parameters:
+        - name: industry
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "Technology"
+      responses:
+        '200':
+          description: List of reporting frameworks
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: string
+              example:
+                result: ["SASB", "GRI", "TCFD"]
+
+  /kg/categories:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get categories in reporting framework
+      description: CQ3 - Get categories included within the reporting framework
+      parameters:
+        - name: industry
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "Technology"
+        - name: framework
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "SASB"
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: string
+              example:
+                result: ["Data Security", "Energy Management", "Employee Engagement"]
+
+  /kg/metrics:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get metrics in category
+      description: CQ4 - Get metrics classified under specific category
+      parameters:
+        - name: industry
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "Technology"
+        - name: category
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "Data Security"
+        - name: framework
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "SASB"
+      responses:
+        '200':
+          description: List of metrics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: string
+              example:
+                result: ["Data breaches", "Customer privacy", "Data governance"]
+
+  /kg/metrics/uris:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get metric URIs (high performance)
+      description: CQ4 - Get metric URIs for specific category (optimized version)
+      parameters:
+        - name: industry
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: category
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: framework
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of metric URIs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: string
+
+  /kg/metrics/model-calculation:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get metrics with model calculation method
+      description: Get all metrics in a specific category that use model calculation method (calculation_model)
+      parameters:
+        - name: industry
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "Semiconductors"
+          description: Industry name (e.g., "Commercial Banks", "Semiconductors")
+        - name: category
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "Greenhouse Gas Emissions"
+          description: Category label (e.g., "Data Security", "Energy Management in Manufacturing")
+        - name: framework
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "SASB Semiconductors"
+          description: Reporting framework name (e.g., "SASB Commercial Banks", "SASB Semiconductors")
+      responses:
+        '200':
+          description: List of metrics with model calculation method
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      type: string
+                    description: Array of metric labels that use calculation_model method
+              example:
+                result: ["GHGEmissionIntensity", "Percentage Grid Electricity", "Percentage Renewable Energy"]
+        '400':
+          description: Validation error - missing required parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                  code:
+                    type: string
+              example:
+                ok: false
+                error: "Industry query parameter is required"
+                code: "VALIDATION_ERROR"
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                  code:
+                    type: string
+
+  /kg/metrics/attributes:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get metric attributes
+      description: Get all attributes for a specific metric
+      parameters:
+        - name: metric_label
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "Data breaches"
+      responses:
+        '200':
+          description: Metric attributes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metricLabel:
+                    type: string
+                  attributes:
+                    type: object
+                    additionalProperties:
+                      type: string
+                example:
+                  metricLabel: "Data breaches"
+                  attributes:
+                    hasUnit: "number"
+                    hasType: "SASBRequirement"
+                    hasMetricType: "Quantitative"
+
+  /kg/datapoints/attributes:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get data point attributes
+      description: CQ8 - Get historical values and attributes of specific datapoint
+      parameters:
+        - name: metric
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Data point attributes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metric:
+                    type: string
+                  attributes:
+                    type: object
+                    additionalProperties:
+                      type: string
+
+  /kg/datasource:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get data source information
+      description: Get information about a specific data source
+      parameters:
+        - name: source
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Data source information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  source:
+                    type: string
+                  info:
+                    type: string
+                    nullable: true
+
+  /kg/metrics/best-datasource:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get best data source for metric
+      description: Auto-select the best data source following IFRS disclosure hierarchy
+      parameters:
+        - name: metric_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Best data source information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metricId:
+                    type: string
+                  dataSource:
+                    type: object
+                    nullable: true
+                    properties:
+                      dataSourceID:
+                        type: string
+                      disclosureType:
+                        type: string
+
+  /kg/models/implementation:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get implementation for model
+      description: CQ6 - Get implementation used to execute specific model
+      parameters:
+        - name: model_label
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Model implementation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  modelLabel:
+                    type: string
+                  implementation:
+                    $ref: '#/components/schemas/Implementation'
+
+  /kg/implementations/details:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get implementation details
+      description: Get detailed information about a specific implementation
+      parameters:
+        - name: implementation_label
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Implementation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImplementationDetails'
+
+  /kg/implementations:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get all implementations
+      description: Get all available implementations in the knowledge graph
+      responses:
+        '200':
+          description: List of implementations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ImplementationSummary'
+    post:
+      tags: [Knowledge Graph]
+      summary: Create a new implementation
+      description: |
+        Create a new implementation node in the knowledge graph.
+        An implementation defines how a calculation model is executed (e.g., a Python function).
+        
+        **Required fields**: name, language, file_path
+        **Optional fields**: function_name, description, input_parameters, return_type, validation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - language
+                - file_path
+              properties:
+                name:
+                  type: string
+                  description: Unique identifier for the implementation (will be used as URI suffix)
+                  example: "WaterRecyclingRateImpl"
+                language:
+                  type: string
+                  description: Programming language of the implementation
+                  example: "Python"
+                  enum: ["Python", "JavaScript", "R", "SQL"]
+                file_path:
+                  type: string
+                  description: Path to the implementation file
+                  example: "/models/water_recycling.py"
+                function_name:
+                  type: string
+                  description: Name of the function to execute (optional)
+                  example: "calculate_water_recycling_rate"
+                description:
+                  type: string
+                  description: Description of what this implementation does (optional)
+                  example: "Python implementation for calculating water recycling percentage"
+                input_parameters:
+                  type: string
+                  description: Description of input parameters with types (optional)
+                  example: "recycled_water: float, total_water: float"
+                return_type:
+                  type: string
+                  description: Return type of the function (optional)
+                  example: "float"
+                validation:
+                  type: string
+                  description: Validation rules or constraints (optional)
+                  example: "Total water must be greater than 0 to avoid division by zero"
+            examples:
+              minimal:
+                summary: Minimal request (required fields only)
+                value:
+                  name: "WaterRecyclingRateImpl"
+                  language: "Python"
+                  file_path: "/models/water_recycling.py"
+              complete:
+                summary: Complete request (with all optional fields)
+                value:
+                  name: "WaterRecyclingRateImpl"
+                  language: "Python"
+                  file_path: "/models/water_recycling.py"
+                  function_name: "calculate_water_recycling_rate"
+                  description: "Python implementation for calculating water recycling percentage"
+                  input_parameters: "recycled_water: float, total_water: float"
+                  return_type: "float"
+                  validation: "Total water must be greater than 0 to avoid division by zero"
+      responses:
+        '201':
+          description: Implementation created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      uri:
+                        type: string
+                        example: "http://example.org/esg#WaterRecyclingRateImpl"
+                      label:
+                        type: string
+                        example: "WaterRecyclingRateImpl"
+                      language:
+                        type: string
+                        example: "Python"
+                      file_path:
+                        type: string
+                        example: "/models/water_recycling.py"
+                      created_at:
+                        type: string
+                        format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Implementation already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /kg/models:
+    post:
+      tags: [Knowledge Graph]
+      summary: Create a new calculation model
+      description: |
+        Create a new model node in the knowledge graph.
+        A model defines how a metric is calculated, including the calculation type,
+        required inputs, and the implementation to execute.
+        
+        **Required fields**: name, calculation_type, input_metrics, implementation
+        **Optional fields**: description, formula, mathematical_expression
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - calculation_type
+                - input_metrics
+                - implementation
+              properties:
+                name:
+                  type: string
+                  description: Unique identifier for the model (will be used as URI suffix)
+                  example: "WaterRecyclingRateModel"
+                calculation_type:
+                  type: string
+                  description: Type of calculation (must be a supported type)
+                  example: "percentage_ratio"
+                input_metrics:
+                  type: array
+                  description: Array of input metric labels or URIs required by this model
+                  items:
+                    type: string
+                  example: ["RecycledWater", "TotalWater"]
+                  minItems: 1
+                implementation:
+                  type: string
+                  description: Name or URI of the implementation that executes this model
+                  example: "WaterRecyclingRateImpl"
+                description:
+                  type: string
+                  description: Description of what this model calculates (optional)
+                  example: "Calculates the percentage of water that is recycled"
+                formula:
+                  type: string
+                  description: Machine-readable formula (optional)
+                  example: "(recycled_water / total_water) * 100"
+                mathematical_expression:
+                  type: string
+                  description: Human-readable mathematical expression (optional)
+                  example: "Recycling_Rate = (Recycled_Water / Total_Water) × 100%"
+            examples:
+              minimal:
+                summary: Minimal request (required fields only)
+                value:
+                  name: "WaterRecyclingRateModel"
+                  calculation_type: "percentage_ratio"
+                  input_metrics: ["RecycledWater", "TotalWater"]
+                  implementation: "WaterRecyclingRateImpl"
+              complete:
+                summary: Complete request (with all optional fields)
+                value:
+                  name: "WaterRecyclingRateModel"
+                  calculation_type: "percentage_ratio"
+                  input_metrics: ["RecycledWater", "TotalWater"]
+                  implementation: "WaterRecyclingRateImpl"
+                  description: "Calculates the percentage of water that is recycled"
+                  formula: "(recycled_water / total_water) * 100"
+                  mathematical_expression: "Recycling_Rate = (Recycled_Water / Total_Water) × 100%"
+      responses:
+        '201':
+          description: Model created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      uri:
+                        type: string
+                        example: "http://example.org/esg#WaterRecyclingRateModel"
+                      label:
+                        type: string
+                        example: "WaterRecyclingRateModel"
+                      calculation_type:
+                        type: string
+                        example: "percentage_ratio"
+                      input_metrics:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            uri:
+                              type: string
+                            label:
+                              type: string
+                      implementation:
+                        type: object
+                        properties:
+                          uri:
+                            type: string
+                          label:
+                            type: string
+                      created_at:
+                        type: string
+                        format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Input metric(s) or implementation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Model already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /kg/implementations/by-calculation-type:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get implementations by calculation type
+      description: Get implementations filtered by specific calculation type
+      parameters:
+        - name: calculation_type
+          in: query
+          required: true
+          schema:
+            type: string
+          example: "intensity_ratio"
+      responses:
+        '200':
+          description: List of implementations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ImplementationByCalculationType'
+
+  /kg/calculation-types:
+    get:
+      tags: [Knowledge Graph]
+      summary: Get all calculation types
+      description: Get all available calculation types with model counts
+      responses:
+        '200':
+          description: List of calculation types
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CalculationType'
+              example:
+                result:
+                  - calculationType: "intensity_ratio"
+                    count: 2
+                    modelLabels: ["Water Intensity", "Carbon Intensity"]
+                  - calculationType: "percentage_ratio"
+                    count: 1
+                    modelLabels: ["Renewable Energy Use"]
+
+  /kg/metrics/{metric_label}/calculation-method:
+    patch:
+      tags: [Knowledge Graph]
+      summary: Link a calculation model to a metric
+      description: |
+        Update a metric's calculation method to use a calculation model.
+        This establishes the relationship: Metric --isCalculatedBy--> Model
+      parameters:
+        - name: metric_label
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Label of the metric to update
+          example: "WaterRecyclingRate"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - model
+              properties:
+                model:
+                  type: string
+                  description: Name or URI of the model to link to this metric
+                  example: "WaterRecyclingRateModel"
+      responses:
+        '200':
+          description: Metric calculation method updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      metric_uri:
+                        type: string
+                        example: "http://example.org/esg#WaterRecyclingRate"
+                      metric_label:
+                        type: string
+                        example: "WaterRecyclingRate"
+                      calculation_method:
+                        type: string
+                        example: "calculation_model"
+                      model:
+                        type: object
+                        properties:
+                          uri:
+                            type: string
+                          label:
+                            type: string
+                      updated_at:
+                        type: string
+                        format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Metric or model not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /kg/reset:
+    post:
+      tags: [Knowledge Graph]
+      summary: Reset knowledge graph to initial state
+      description: |
+        Clear all data in the repository and reload the initial TTL file (esg_knowledge_graph_latest.ttl).
+        **WARNING**: This is a destructive operation. All uploaded/modified data will be permanently lost.
+        This operation cannot be undone.
+      responses:
+        '200':
+          description: Reset successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Knowledge graph reset to initial state successfully"
+                  stats:
+                    type: object
+                    properties:
+                      triplesCleared:
+                        type: integer
+                        description: Number of triples cleared before reset
+                        example: 1234
+                      triplesImported:
+                        type: integer
+                        description: Number of triples imported from initial file
+                        example: 1234
+                      resetAt:
+                        type: string
+                        format: date-time
+                        description: ISO timestamp of when the reset occurred
+                        example: "2025-10-31T12:34:56.789Z"
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                    example: "Initial TTL file not found"
+                  code:
+                    type: string
+                    example: "VALIDATION_ERROR"
+        '500':
+          description: Reset operation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    enum: [false]
+                  error:
+                    type: string
+                    example: "Failed to reset knowledge graph"
+                  code:
+                    type: string
+                    example: "GRAPHDB_ERROR"
+
+  # Metric APIs
+  /metric/{id}:
+    get:
+      tags: [Metrics]
+      summary: Get metric metadata
+      description: Get comprehensive metadata for a specific metric
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "water_consumption"
+      responses:
+        '200':
+          description: Metric metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricMetadata'
+
+  /metric/{id}/datasets:
+    get:
+      tags: [Metrics]
+      summary: Get metric data lineage
+      description: Get data lineage information showing data sources and calculation paths
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Metric data lineage
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DirectMeasurementResponse'
+                  - $ref: '#/components/schemas/CalculationModelResponse'
+
+  # Computation APIs
+  /computation/method:
+    get:
+      tags: [Computation]
+      summary: Get metric computation method
+      description: CQ5 - Get computation method information for specific metric
+      parameters:
+        - name: metric_label
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Computation method information
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /computation/implementation:
+    get:
+      tags: [Computation]
+      summary: Get implementation information
+      description: Get detailed implementation file information
+      parameters:
+        - name: implementation_label
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Implementation information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImplementationDetails'
+
+  /computation/implementations:
+    get:
+      tags: [Computation]
+      summary: Get implementations by calculation type
+      description: Get all implementation files for specific calculation type
+      parameters:
+        - name: calculation_type
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of implementations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ImplementationDetails'
+
+  /computation/supported-types:
+    get:
+      tags: [Computation]
+      summary: Get supported calculation types
+      description: Get all calculation types supported by the system
+      responses:
+        '200':
+          description: Supported calculation types
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CalculationType'
+
+  # Data Management APIs
+  /sparql:
+    post:
+      tags: [Data Management]
+      summary: Execute SPARQL query
+      description: Execute SPARQL queries (SELECT/CONSTRUCT/UPDATE) against GraphDB
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: SPARQL query string
+                infer:
+                  type: boolean
+                  description: Enable inference
+                  default: false
+                sameAs:
+                  type: boolean
+                  description: Enable sameAs reasoning
+                  default: false
+              required: [query]
+            example:
+              query: "SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 10"
+              infer: false
+      responses:
+        '200':
+          description: Query results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                  meta:
+                    type: object
+                    properties:
+                      queryType:
+                        type: string
+                      executionTime:
+                        type: number
+            text/turtle:
+              schema:
+                type: string
+                description: TTL content for CONSTRUCT/DESCRIBE queries
+
+  /sparql/validate:
+    post:
+      tags: [Data Management]
+      summary: Validate SPARQL query
+      description: Validate SPARQL query syntax without execution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+              required: [query]
+      responses:
+        '200':
+          description: Validation results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      valid:
+                        type: boolean
+                      queryType:
+                        type: string
+
+  /sparql/history:
+    get:
+      tags: [Data Management]
+      summary: Get query history
+      description: Get recent SPARQL query execution history
+      responses:
+        '200':
+          description: Query history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        query:
+                          type: string
+                        timestamp:
+                          type: string
+                          format: date-time
+                        executionTime:
+                          type: number
+
+  /upload-ttl/upload:
+    post:
+      tags: [Data Management]
+      summary: Upload TTL data
+      description: Direct TTL file upload to GraphDB with support for named graphs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ttl:
+                  type: string
+                  description: TTL content to upload
+                graph:
+                  type: string
+                  description: Named graph URI (optional)
+                baseURI:
+                  type: string
+                  description: Base URI for relative IRIs (optional)
+              required: [ttl]
+      responses:
+        '201':
+          description: Upload successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  /upload-ttl/validate:
+    post:
+      tags: [Data Management]
+      summary: Validate TTL syntax
+      description: Validate TTL content without uploading
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ttl:
+                  type: string
+      responses:
+        '200':
+          description: Validation results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      valid:
+                        type: boolean
+                      size:
+                        type: object
+                        properties:
+                          bytes:
+                            type: number
+                          mb:
+                            type: number
+                      analysis:
+                        type: object
+                      warnings:
+                        type: array
+                        items:
+                          type: string
+        '400':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  data:
+                    type: object
+                    properties:
+                      valid:
+                        type: boolean
+                        enum: [false]
+                      error:
+                        type: string
+
+  /upload-ttl/stats:
+    post:
+      tags: [Data Management]  
+      summary: Get TTL statistics
+      description: Analyze TTL content and return statistics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ttl:
+                  type: string
+      responses:
+        '200':
+          description: TTL statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  /wizard/preview:
+    post:
+      tags: [Data Management]
+      summary: Preview TTL from wizard data
+      description: Generate TTL preview from wizard form data
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: TTL preview
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      ttl:
+                        type: string
+                      triplesCount:
+                        type: number
+                      triples:
+                        type: array
+                        items:
+                          type: object
+                  meta:
+                    type: object
+                    properties:
+                      hasDirectMeasurement:
+                        type: boolean
+                      hasCalculationModel:
+                        type: boolean
+
+  /wizard/validate-draft:
+    post:
+      tags: [Data Management]
+      summary: Validate draft TTL
+      description: Pre-submission validation of TTL content using SHACL constraints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Validation passed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                      graph:
+                        type: string
+                  message:
+                    type: string
+        '422':
+          description: Validation failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    enum: [false]
+                  data:
+                    type: object
+                    properties:
+                      ok:
+                        type: boolean
+                        enum: [false]
+                      message:
+                        type: string
+                      raw:
+                        type: string
+                  message:
+                    type: string
+
+  /wizard/submit:
+    post:
+      tags: [Data Management]
+      summary: Submit validated TTL
+      description: Submit validated TTL data to GraphDB
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Submission successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                  message:
+                    type: string
+
+  /wizard/template:
+    get:
+      tags: [Data Management]
+      summary: Generate wizard template
+      description: Generate a template for wizard form data
+      responses:
+        '200':
+          description: Wizard template
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  /shacl/validate-repo:
+    post:
+      tags: [Data Management]
+      summary: Validate repository with SHACL
+      description: Repository-wide SHACL validation using provided shapes
+      requestBody:
+        required: true
+        content:
+          text/turtle:
+            schema:
+              type: string
+              description: SHACL shapes in Turtle format
+      responses:
+        '200':
+          description: Validation report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      isValid:
+                        type: boolean
+                      summary:
+                        type: object
+                      violations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            focusNode:
+                              type: string
+                            severity:
+                              type: string
+                            message:
+                              type: string
+                            path:
+                              type: string
+                      humanReadable:
+                        type: string
+                      rawReport:
+                        type: string
+                  message:
+                    type: string
+
+  /shacl/validate-shapes:
+    post:
+      tags: [Data Management]
+      summary: Validate SHACL shapes
+      description: Validate SHACL shapes syntax and structure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shapesTtl:
+                  type: string
+      responses:
+        '200':
+          description: Shapes validation results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  /shacl/shapes-stats:
+    post:
+      tags: [Data Management]
+      summary: Get SHACL shapes statistics
+      description: Analyze SHACL shapes and return statistics
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                shapesTtl:
+                  type: string
+      responses:
+        '200':
+          description: Shapes statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+components:
+  schemas:
+    # Basic response types
+    ListResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            type: object
+
+    StringListResponse:
+      type: object
+      properties:
+        result:
+          type: array
+          items:
+            type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          enum: [false]
+        error:
+          type: string
+        code:
+          type: string
+
+    # Domain-specific schemas
+    CalculationType:
+      type: object
+      properties:
+        calculationType:
+          type: string
+          example: "intensity_ratio"
+        count:
+          type: integer
+          example: 2
+        modelLabels:
+          type: array
+          items:
+            type: string
+          example: ["Water Intensity", "Carbon Intensity"]
+
+    Implementation:
+      type: object
+      properties:
+        implementationLabel:
+          type: string
+        language:
+          type: string
+        filePath:
+          type: string
+        functionName:
+          type: string
+        description:
+          type: string
+
+    ImplementationDetails:
+      type: object
+      properties:
+        label:
+          type: string
+        language:
+          type: string
+        filePath:
+          type: string
+        functionName:
+          type: string
+        description:
+          type: string
+        inputParameters:
+          type: string
+        returnType:
+          type: string
+        validation:
+          type: string
+
+    ImplementationSummary:
+      type: object
+      properties:
+        label:
+          type: string
+        language:
+          type: string
+        description:
+          type: string
+
+    ImplementationByCalculationType:
+      type: object
+      properties:
+        implementationLabel:
+          type: string
+        modelLabel:
+          type: string
+        filePath:
+          type: string
+        functionName:
+          type: string
+        description:
+          type: string
+
+    MetricDTO:
+      type: object
+      properties:
+        iri:
+          type: string
+        label:
+          type: string
+        hasType:
+          type: string
+          enum: ["SASBRequirement", "Input Metric", "Manual"]
+        hasMetricType:
+          type: string
+          enum: ["Quantitative", "Discussion"]
+        hasUnit:
+          type: string
+        hasCalculationMethod:
+          type: string
+          enum: ["direct_measurement", "calculation_model"]
+
+    HierarchyDTO:
+      type: object
+      properties:
+        category:
+          type: object
+          properties:
+            iri:
+              type: string
+            label:
+              type: string
+        framework:
+          type: object
+          properties:
+            iri:
+              type: string
+            label:
+              type: string
+        industry:
+          type: object
+          properties:
+            iri:
+              type: string
+            label:
+              type: string
+
+    MetricMetadata:
+      type: object
+      properties:
+        metric:
+          $ref: '#/components/schemas/MetricDTO'
+        hierarchy:
+          $ref: '#/components/schemas/HierarchyDTO'
+        additionalAttributes:
+          type: object
+          additionalProperties: true
+
+    DatasetVariableDTO:
+      type: object
+      properties:
+        iri:
+          type: string
+        label:
+          type: string
+        alignmentReason:
+          type: string
+        confidenceScore:
+          type: number
+          minimum: 0
+          maximum: 100
+        isUnitCompatible:
+          type: string
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataSourceDTO'
+
+    DataSourceDTO:
+      type: object
+      properties:
+        iri:
+          type: string
+        label:
+          type: string
+        fileName:
+          type: string
+        description:
+          type: string
+        coverage:
+          type: string
+        recordCount:
+          type: number
+
+    ModelDTO:
+      type: object
+      properties:
+        iri:
+          type: string
+        label:
+          type: string
+        calculationType:
+          type: string
+        formula:
+          type: string
+        mathematicalExpression:
+          type: string
+        implementation:
+          $ref: '#/components/schemas/ImplementationDTO'
+
+    ImplementationDTO:
+      type: object
+      properties:
+        iri:
+          type: string
+        label:
+          type: string
+        language:
+          type: string
+        filePath:
+          type: string
+        functionName:
+          type: string
+        returnType:
+          type: string
+        validation:
+          type: string
+
+    DirectMeasurementResponse:
+      type: object
+      properties:
+        metric:
+          allOf:
+            - $ref: '#/components/schemas/MetricDTO'
+            - type: object
+              properties:
+                hasCalculationMethod:
+                  type: string
+                  enum: ["direct_measurement"]
+        obtainedFrom:
+          type: array
+          items:
+            $ref: '#/components/schemas/DatasetVariableDTO'
+        page:
+          type: number
+        size:
+          type: number
+        total:
+          type: number
+
+    CalculationModelResponse:
+      type: object
+      properties:
+        metric:
+          allOf:
+            - $ref: '#/components/schemas/MetricDTO'
+            - type: object
+              properties:
+                hasCalculationMethod:
+                  type: string
+                  enum: ["calculation_model"]
+        model:
+          $ref: '#/components/schemas/ModelDTO'
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/DatasetVariableDTO'
+        page:
+          type: number
+        size:
+          type: number
+        total:
+          type: number
+
+  responses:
+    BadRequest:
+      description: Bad request - Invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+security: []

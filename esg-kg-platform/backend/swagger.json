@@ -1,0 +1,7375 @@
+{
+	"openapi": "3.0.0",
+	"components": {
+		"examples": {},
+		"headers": {},
+		"parameters": {},
+		"requestBodies": {},
+		"responses": {},
+		"schemas": {
+			"Pick_Model.iri-or-label-or-calculationType-or-formula-or-mathematicalExpression_": {
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"calculationType": {
+						"type": "string"
+					},
+					"formula": {
+						"type": "string"
+					},
+					"mathematicalExpression": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"Pick_Implementation.iri-or-label-or-language-or-filePath-or-functionName-or-returnType-or-validation_": {
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"language": {
+						"type": "string"
+					},
+					"filePath": {
+						"type": "string"
+					},
+					"functionName": {
+						"type": "string"
+					},
+					"returnType": {
+						"type": "string"
+					},
+					"validation": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"ImplementationDTO": {
+				"$ref": "#/components/schemas/Pick_Implementation.iri-or-label-or-language-or-filePath-or-functionName-or-returnType-or-validation_",
+				"description": "实现DTO - 实现信息的传输格式"
+			},
+			"ModelDTO": {
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Pick_Model.iri-or-label-or-calculationType-or-formula-or-mathematicalExpression_"
+					},
+					{
+						"properties": {
+							"implementation": {
+								"allOf": [
+									{
+										"$ref": "#/components/schemas/ImplementationDTO"
+									}
+								],
+								"nullable": true
+							}
+						},
+						"type": "object"
+					}
+				],
+				"description": "模型DTO - 包含实现信息"
+			},
+			"ModelsResponse": {
+				"description": "模型列表响应",
+				"properties": {
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"size": {
+						"type": "number",
+						"format": "double"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					},
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/ModelDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ModelDetailDTO": {
+				"description": "模型详情DTO - 包含更多详细信息",
+				"properties": {
+					"description": {
+						"type": "string"
+					},
+					"inputMetrics": {
+						"items": {
+							"properties": {
+								"label": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"label",
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"implementation": {
+						"properties": {
+							"language": {
+								"type": "string"
+							},
+							"label": {
+								"type": "string"
+							},
+							"iri": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"label",
+							"iri"
+						],
+						"type": "object"
+					},
+					"createdAt": {
+						"type": "string"
+					},
+					"updatedAt": {
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ModelDetailResponse": {
+				"description": "模型详情响应",
+				"properties": {
+					"result": {
+						"$ref": "#/components/schemas/ModelDetailDTO"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateModelResponse": {
+				"description": "创建模型响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"calculation_type": {
+						"type": "string"
+					},
+					"input_metrics": {
+						"items": {
+							"properties": {
+								"label": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"label",
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"implementation": {
+						"properties": {
+							"label": {
+								"type": "string"
+							},
+							"iri": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"label",
+							"iri"
+						],
+						"type": "object"
+					},
+					"created_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"calculation_type",
+					"input_metrics",
+					"implementation",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateModelRequest": {
+				"description": "创建模型请求",
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"calculation_type": {
+						"type": "string"
+					},
+					"input_metrics": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"implementation": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"formula": {
+						"type": "string"
+					},
+					"mathematical_expression": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"name",
+					"calculation_type",
+					"input_metrics",
+					"implementation"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateModelResponse": {
+				"description": "更新模型响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"inputMetrics": {
+						"items": {
+							"properties": {
+								"label": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"label",
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"updated_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateModelRequest": {
+				"description": "更新模型请求\n更新模型请求\n更新模型请求",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"calculation_type": {
+						"type": "string"
+					},
+					"input_metrics": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"implementation": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"formula": {
+						"type": "string"
+					},
+					"mathematical_expression": {
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DeleteModelResponse": {
+				"description": "删除模型响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"deleted": {
+						"type": "boolean"
+					},
+					"deleted_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"deleted",
+					"deleted_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ModelMetricsInputsResponse": {
+				"description": "模型输入指标列表响应 (GET /api/kg/models/:id/metrics/inputs)",
+				"properties": {
+					"modelId": {
+						"type": "string"
+					},
+					"modelLabel": {
+						"type": "string"
+					},
+					"inputs": {
+						"items": {
+							"properties": {
+								"hasMetricType": {
+									"type": "string"
+								},
+								"hasUnit": {
+									"type": "string"
+								},
+								"hasCalculationMethod": {
+									"type": "string",
+									"enum": [
+										"direct_measurement",
+										"calculation_model"
+									]
+								},
+								"label": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"label",
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"modelId",
+					"modelLabel",
+					"inputs",
+					"total"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ModelMetricsOutputResponse": {
+				"description": "模型输出指标响应 (GET /api/kg/models/:id/metrics/output)",
+				"properties": {
+					"modelId": {
+						"type": "string"
+					},
+					"modelLabel": {
+						"type": "string"
+					},
+					"output": {
+						"properties": {
+							"hasMetricType": {
+								"type": "string"
+							},
+							"hasUnit": {
+								"type": "string"
+							},
+							"hasCalculationMethod": {
+								"type": "string",
+								"enum": [
+									"calculation_model"
+								],
+								"nullable": false
+							},
+							"label": {
+								"type": "string"
+							},
+							"iri": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"hasCalculationMethod",
+							"label",
+							"iri"
+						],
+						"type": "object",
+						"nullable": true
+					}
+				},
+				"required": [
+					"modelId",
+					"modelLabel",
+					"output"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateModelMetricsInputsResponse": {
+				"description": "更新模型输入指标响应",
+				"properties": {
+					"modelId": {
+						"type": "string"
+					},
+					"inputs": {
+						"items": {
+							"properties": {
+								"label": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"label",
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"updated_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"modelId",
+					"inputs",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateModelMetricsInputsRequest": {
+				"description": "更新模型输入指标请求 (PUT /api/kg/models/:id/metrics/inputs)",
+				"properties": {
+					"inputs": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"inputs"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddModelInputMetricResponse": {
+				"description": "添加输入指标响应",
+				"properties": {
+					"model_iri": {
+						"type": "string"
+					},
+					"metric_iri": {
+						"type": "string"
+					},
+					"added_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"model_iri",
+					"metric_iri",
+					"added_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RemoveModelInputMetricResponse": {
+				"description": "删除输入指标响应",
+				"properties": {
+					"model_iri": {
+						"type": "string"
+					},
+					"metric_iri": {
+						"type": "string"
+					},
+					"removed_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"model_iri",
+					"metric_iri",
+					"removed_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ModelImplementationsResponse": {
+				"description": "模型实现列表响应 (GET /api/kg/models/:id/implementations)",
+				"properties": {
+					"modelId": {
+						"type": "string"
+					},
+					"modelLabel": {
+						"type": "string"
+					},
+					"implementations": {
+						"items": {
+							"properties": {
+								"functionName": {
+									"type": "string"
+								},
+								"filePath": {
+									"type": "string"
+								},
+								"language": {
+									"type": "string"
+								},
+								"label": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"label",
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"modelId",
+					"modelLabel",
+					"implementations",
+					"total"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddModelImplementationResponse": {
+				"description": "添加实现到模型响应",
+				"properties": {
+					"model_iri": {
+						"type": "string"
+					},
+					"implementation_iri": {
+						"type": "string"
+					},
+					"added_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"model_iri",
+					"implementation_iri",
+					"added_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddModelImplementationRequest": {
+				"description": "添加实现到模型请求 (POST /api/kg/models/:id/implementations)",
+				"properties": {
+					"implementationId": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"implementationId"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MetricRole": {
+				"type": "string",
+				"enum": [
+					"SASBRequirement",
+					"Input Metric",
+					"Manual"
+				],
+				"description": "指标角色类型枚举"
+			},
+			"MetricType": {
+				"type": "string",
+				"enum": [
+					"Quantitative",
+					"Discussion"
+				],
+				"description": "指标数据类型枚举"
+			},
+			"CalculationMethod": {
+				"type": "string",
+				"enum": [
+					"direct_measurement",
+					"calculation_model"
+				],
+				"description": "指标计算方法枚举"
+			},
+			"Pick_Metric.iri-or-label-or-hasType-or-hasMetricType-or-hasUnit-or-hasCalculationMethod_": {
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"hasType": {
+						"$ref": "#/components/schemas/MetricRole"
+					},
+					"hasMetricType": {
+						"$ref": "#/components/schemas/MetricType"
+					},
+					"hasUnit": {
+						"type": "string"
+					},
+					"hasCalculationMethod": {
+						"$ref": "#/components/schemas/CalculationMethod"
+					}
+				},
+				"required": [
+					"iri",
+					"hasCalculationMethod"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"MetricDTO": {
+				"$ref": "#/components/schemas/Pick_Metric.iri-or-label-or-hasType-or-hasMetricType-or-hasUnit-or-hasCalculationMethod_",
+				"description": "指标DTO - 指标的传输格式"
+			},
+			"MetricsResponse": {
+				"description": "指标列表响应",
+				"properties": {
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"size": {
+						"type": "number",
+						"format": "double"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					},
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/MetricDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateMetricResponse": {
+				"description": "创建指标响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"code": {
+						"type": "string"
+					},
+					"calculationMethod": {
+						"$ref": "#/components/schemas/CalculationMethod"
+					},
+					"created_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"calculationMethod",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Record_string.any_": {
+				"properties": {},
+				"additionalProperties": {},
+				"type": "object",
+				"description": "Construct a type with a set of properties K of type T"
+			},
+			"CreateMetricRequest": {
+				"description": "创建指标请求",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"code": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"unit": {
+						"type": "string"
+					},
+					"dataType": {
+						"$ref": "#/components/schemas/MetricType"
+					},
+					"calculationMethod": {
+						"$ref": "#/components/schemas/CalculationMethod"
+					},
+					"hasType": {
+						"$ref": "#/components/schemas/MetricRole"
+					},
+					"industry": {
+						"type": "string"
+					},
+					"category": {
+						"type": "string"
+					},
+					"framework": {
+						"type": "string"
+					},
+					"disclosureLevel": {
+						"type": "number",
+						"format": "double"
+					},
+					"additionalProperties": {
+						"$ref": "#/components/schemas/Record_string.any_"
+					}
+				},
+				"required": [
+					"label",
+					"calculationMethod"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Pick_Category.iri-or-label_": {
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"Pick_ReportingFramework.iri-or-label_": {
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"Pick_Industry.iri-or-label_": {
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"HierarchyDTO": {
+				"description": "层次结构信息DTO",
+				"properties": {
+					"category": {
+						"$ref": "#/components/schemas/Pick_Category.iri-or-label_"
+					},
+					"framework": {
+						"$ref": "#/components/schemas/Pick_ReportingFramework.iri-or-label_"
+					},
+					"industry": {
+						"$ref": "#/components/schemas/Pick_Industry.iri-or-label_"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MetricDetailResponse": {
+				"description": "指标详情响应（包含所有属性）",
+				"properties": {
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/MetricDTO"
+							},
+							{
+								"properties": {
+									"updatedAt": {
+										"type": "string"
+									},
+									"createdAt": {
+										"type": "string"
+									},
+									"hierarchy": {
+										"$ref": "#/components/schemas/HierarchyDTO"
+									},
+									"attributes": {
+										"$ref": "#/components/schemas/Record_string.any_"
+									}
+								},
+								"type": "object"
+							}
+						]
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateMetricResponse": {
+				"description": "更新指标响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"calculationMethod": {
+						"$ref": "#/components/schemas/CalculationMethod"
+					},
+					"updated_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"calculationMethod",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateMetricRequest": {
+				"description": "更新指标请求（完整更新）",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"code": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"unit": {
+						"type": "string"
+					},
+					"dataType": {
+						"$ref": "#/components/schemas/MetricType"
+					},
+					"calculationMethod": {
+						"$ref": "#/components/schemas/CalculationMethod"
+					},
+					"hasType": {
+						"$ref": "#/components/schemas/MetricRole"
+					},
+					"industry": {
+						"type": "string"
+					},
+					"category": {
+						"type": "string"
+					},
+					"framework": {
+						"type": "string"
+					},
+					"disclosureLevel": {
+						"type": "number",
+						"format": "double"
+					},
+					"additionalProperties": {
+						"$ref": "#/components/schemas/Record_string.any_"
+					}
+				},
+				"required": [
+					"label",
+					"calculationMethod"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateMetricModelResponse": {
+				"description": "更新指标模型关联响应（包含模型详情）",
+				"properties": {
+					"metric_uri": {
+						"type": "string"
+					},
+					"metric_label": {
+						"type": "string"
+					},
+					"calculation_method": {
+						"type": "string"
+					},
+					"model": {
+						"properties": {
+							"label": {
+								"type": "string"
+							},
+							"uri": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"label",
+							"uri"
+						],
+						"type": "object",
+						"nullable": true
+					},
+					"updated_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"metric_uri",
+					"metric_label",
+					"calculation_method",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"PatchMetricRequest": {
+				"description": "部分更新指标请求",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"code": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"unit": {
+						"type": "string"
+					},
+					"dataType": {
+						"$ref": "#/components/schemas/MetricType"
+					},
+					"calculationMethod": {
+						"$ref": "#/components/schemas/CalculationMethod"
+					},
+					"hasType": {
+						"$ref": "#/components/schemas/MetricRole"
+					},
+					"model": {
+						"type": "string"
+					},
+					"industry": {
+						"type": "string"
+					},
+					"category": {
+						"type": "string"
+					},
+					"framework": {
+						"type": "string"
+					},
+					"disclosureLevel": {
+						"type": "number",
+						"format": "double"
+					},
+					"additionalProperties": {
+						"$ref": "#/components/schemas/Record_string.any_"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DeleteMetricResponse": {
+				"description": "删除指标响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"deleted": {
+						"type": "boolean"
+					},
+					"deleted_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"deleted",
+					"deleted_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Pick_DatasetVariable.iri-or-label-or-alignmentReason-or-confidenceScore-or-isUnitCompatible_": {
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"alignmentReason": {
+						"type": "string"
+					},
+					"confidenceScore": {
+						"type": "number",
+						"format": "double"
+					},
+					"isUnitCompatible": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"Pick_DataSource.iri-or-label-or-fileName-or-description-or-coverage-or-recordCount_": {
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"coverage": {
+						"type": "string"
+					},
+					"recordCount": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"DataSourceDTO": {
+				"$ref": "#/components/schemas/Pick_DataSource.iri-or-label-or-fileName-or-description-or-coverage-or-recordCount_",
+				"description": "数据源DTO - 轻量级传输格式"
+			},
+			"DatasetVariableDTO": {
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Pick_DatasetVariable.iri-or-label-or-alignmentReason-or-confidenceScore-or-isUnitCompatible_"
+					},
+					{
+						"properties": {
+							"sources": {
+								"items": {
+									"$ref": "#/components/schemas/DataSourceDTO"
+								},
+								"type": "array"
+							}
+						},
+						"type": "object"
+					}
+				],
+				"description": "数据集变量DTO - 包含关联的数据源"
+			},
+			"DirectMeasurementLineageResponse": {
+				"description": "直接测量数据血缘响应",
+				"properties": {
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"size": {
+						"type": "number",
+						"format": "double"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					},
+					"metric": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/MetricDTO"
+							},
+							{
+								"properties": {
+									"hasCalculationMethod": {
+										"type": "string",
+										"enum": [
+											"direct_measurement"
+										],
+										"nullable": false
+									}
+								},
+								"required": [
+									"hasCalculationMethod"
+								],
+								"type": "object"
+							}
+						]
+					},
+					"lineageType": {
+						"type": "string",
+						"enum": [
+							"direct_measurement"
+						],
+						"nullable": false
+					},
+					"obtainedFrom": {
+						"items": {
+							"$ref": "#/components/schemas/DatasetVariableDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"metric",
+					"lineageType",
+					"obtainedFrom"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CalculationModelLineageResponse": {
+				"description": "计算模型数据血缘响应",
+				"properties": {
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"size": {
+						"type": "number",
+						"format": "double"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					},
+					"metric": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/MetricDTO"
+							},
+							{
+								"properties": {
+									"hasCalculationMethod": {
+										"type": "string",
+										"enum": [
+											"calculation_model"
+										],
+										"nullable": false
+									}
+								},
+								"required": [
+									"hasCalculationMethod"
+								],
+								"type": "object"
+							}
+						]
+					},
+					"lineageType": {
+						"type": "string",
+						"enum": [
+							"calculation_model"
+						],
+						"nullable": false
+					},
+					"model": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ModelDTO"
+							}
+						],
+						"nullable": true
+					},
+					"inputs": {
+						"items": {
+							"$ref": "#/components/schemas/DatasetVariableDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"metric",
+					"lineageType",
+					"model",
+					"inputs"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MetricLineageResponse": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/DirectMeasurementLineageResponse"
+					},
+					{
+						"$ref": "#/components/schemas/CalculationModelLineageResponse"
+					}
+				],
+				"description": "指标数据血缘响应联合类型 (GET /api/kg/metrics/:id/lineage)"
+			},
+			"DirectMeasurementResponse": {
+				"properties": {
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"size": {
+						"type": "number",
+						"format": "double"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					},
+					"metric": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/MetricDTO"
+							},
+							{
+								"properties": {
+									"hasCalculationMethod": {
+										"type": "string",
+										"enum": [
+											"direct_measurement"
+										],
+										"nullable": false
+									}
+								},
+								"required": [
+									"hasCalculationMethod"
+								],
+								"type": "object"
+							}
+						]
+					},
+					"obtainedFrom": {
+						"items": {
+							"$ref": "#/components/schemas/DatasetVariableDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"metric",
+					"obtainedFrom"
+				],
+				"type": "object",
+				"additionalProperties": false,
+				"deprecated": true
+			},
+			"CalculationModelResponse": {
+				"properties": {
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"size": {
+						"type": "number",
+						"format": "double"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					},
+					"metric": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/MetricDTO"
+							},
+							{
+								"properties": {
+									"hasCalculationMethod": {
+										"type": "string",
+										"enum": [
+											"calculation_model"
+										],
+										"nullable": false
+									}
+								},
+								"required": [
+									"hasCalculationMethod"
+								],
+								"type": "object"
+							}
+						]
+					},
+					"model": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ModelDTO"
+							}
+						],
+						"nullable": true
+					},
+					"inputs": {
+						"items": {
+							"$ref": "#/components/schemas/DatasetVariableDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"metric",
+					"model",
+					"inputs"
+				],
+				"type": "object",
+				"additionalProperties": false,
+				"deprecated": true
+			},
+			"MetricDatasetsResponse": {
+				"anyOf": [
+					{
+						"$ref": "#/components/schemas/DirectMeasurementResponse"
+					},
+					{
+						"$ref": "#/components/schemas/CalculationModelResponse"
+					}
+				]
+			},
+			"BestDataSourceResponse": {
+				"description": "最佳数据源响应",
+				"properties": {
+					"metricId": {
+						"type": "string"
+					},
+					"dataSource": {
+						"properties": {
+							"description": {
+								"type": "string"
+							},
+							"fileName": {
+								"type": "string"
+							},
+							"disclosureType": {
+								"type": "string"
+							},
+							"dataSourceID": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"disclosureType",
+							"dataSourceID"
+						],
+						"type": "object",
+						"nullable": true
+					}
+				},
+				"required": [
+					"metricId",
+					"dataSource"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MetricDataSourcesResponse": {
+				"description": "所有数据源列表响应 (GET /api/kg/metrics/:id/datasources)",
+				"properties": {
+					"metricId": {
+						"type": "string"
+					},
+					"metricLabel": {
+						"type": "string"
+					},
+					"calculationMethod": {
+						"type": "string",
+						"enum": [
+							"direct_measurement",
+							"calculation_model"
+						]
+					},
+					"dataSources": {
+						"items": {
+							"properties": {
+								"variables": {
+									"items": {
+										"properties": {
+											"isUnitCompatible": {
+												"type": "string"
+											},
+											"confidenceScore": {
+												"type": "number",
+												"format": "double"
+											},
+											"alignmentReason": {
+												"type": "string"
+											},
+											"label": {
+												"type": "string"
+											},
+											"iri": {
+												"type": "string"
+											}
+										},
+										"required": [
+											"iri"
+										],
+										"type": "object"
+									},
+									"type": "array"
+								},
+								"coverage": {
+									"type": "string"
+								},
+								"description": {
+									"type": "string"
+								},
+								"recordCount": {
+									"type": "number",
+									"format": "double"
+								},
+								"disclosureType": {
+									"type": "string"
+								},
+								"fileName": {
+									"type": "string"
+								},
+								"label": {
+									"type": "string"
+								},
+								"dataSourceID": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"disclosureType",
+								"dataSourceID"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"metricId",
+					"metricLabel",
+					"calculationMethod",
+					"dataSources",
+					"total"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MetricModelsResponse": {
+				"description": "使用该指标作为输入的模型列表响应 (GET /api/kg/metrics/:id/models)",
+				"properties": {
+					"metricId": {
+						"type": "string"
+					},
+					"metricLabel": {
+						"type": "string"
+					},
+					"models": {
+						"items": {
+							"properties": {
+								"implementation": {
+									"properties": {
+										"language": {
+											"type": "string"
+										},
+										"label": {
+											"type": "string"
+										},
+										"iri": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"iri"
+									],
+									"type": "object"
+								},
+								"outputMetric": {
+									"properties": {
+										"label": {
+											"type": "string"
+										},
+										"iri": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"iri"
+									],
+									"type": "object"
+								},
+								"mathematicalExpression": {
+									"type": "string"
+								},
+								"formula": {
+									"type": "string"
+								},
+								"calculationType": {
+									"type": "string"
+								},
+								"label": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"metricId",
+					"metricLabel",
+					"models",
+					"total"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MetricInputsResponse": {
+				"description": "指标输入列表响应 (GET /api/kg/metrics/:id/inputs)",
+				"properties": {
+					"metricId": {
+						"type": "string"
+					},
+					"metricLabel": {
+						"type": "string"
+					},
+					"calculationMethod": {
+						"type": "string",
+						"enum": [
+							"direct_measurement",
+							"calculation_model"
+						]
+					},
+					"model": {
+						"properties": {
+							"calculationType": {
+								"type": "string"
+							},
+							"label": {
+								"type": "string"
+							},
+							"iri": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"iri"
+						],
+						"type": "object"
+					},
+					"inputs": {
+						"items": {
+							"properties": {
+								"hasInputs": {
+									"type": "boolean"
+								},
+								"hasType": {
+									"type": "string"
+								},
+								"hasMetricType": {
+									"type": "string"
+								},
+								"hasUnit": {
+									"type": "string"
+								},
+								"hasCalculationMethod": {
+									"type": "string",
+									"enum": [
+										"direct_measurement",
+										"calculation_model"
+									]
+								},
+								"label": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"metricId",
+					"metricLabel",
+					"calculationMethod",
+					"inputs",
+					"total"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddMetricDatasourceResponse": {
+				"description": "添加数据源关联响应",
+				"properties": {
+					"metric_iri": {
+						"type": "string"
+					},
+					"datasource_iri": {
+						"type": "string"
+					},
+					"added_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"metric_iri",
+					"datasource_iri",
+					"added_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddMetricDatasourceRequest": {
+				"description": "添加数据源关联请求",
+				"properties": {
+					"datasourceUri": {
+						"type": "string"
+					},
+					"datasetVariableUri": {
+						"type": "string"
+					},
+					"disclosureLevel": {
+						"type": "number",
+						"format": "double"
+					},
+					"priority": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"datasourceUri"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RemoveMetricDatasourceResponse": {
+				"description": "删除数据源关联响应",
+				"properties": {
+					"metric_iri": {
+						"type": "string"
+					},
+					"datasource_iri": {
+						"type": "string"
+					},
+					"removed_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"metric_iri",
+					"datasource_iri",
+					"removed_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddMetricInputResponse": {
+				"description": "添加输入指标响应",
+				"properties": {
+					"metric_iri": {
+						"type": "string"
+					},
+					"input_metric_iri": {
+						"type": "string"
+					},
+					"added_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"metric_iri",
+					"input_metric_iri",
+					"added_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddMetricInputRequest": {
+				"description": "添加输入指标请求",
+				"properties": {
+					"inputMetricUri": {
+						"type": "string"
+					},
+					"order": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"inputMetricUri"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RemoveMetricInputResponse": {
+				"description": "删除输入指标响应",
+				"properties": {
+					"metric_iri": {
+						"type": "string"
+					},
+					"input_metric_iri": {
+						"type": "string"
+					},
+					"removed_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"metric_iri",
+					"input_metric_iri",
+					"removed_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BatchCreateMetricsResponse": {
+				"description": "批量创建指标响应",
+				"properties": {
+					"created": {
+						"items": {
+							"properties": {
+								"label": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"label",
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"failed": {
+						"items": {
+							"properties": {
+								"error": {
+									"type": "string"
+								},
+								"label": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"error",
+								"label"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"total_created": {
+						"type": "number",
+						"format": "double"
+					},
+					"total_failed": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"created",
+					"failed",
+					"total_created",
+					"total_failed"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BatchCreateMetricsRequest": {
+				"description": "批量创建指标请求",
+				"properties": {
+					"metrics": {
+						"items": {
+							"$ref": "#/components/schemas/CreateMetricRequest"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"metrics"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BatchDeleteMetricsResponse": {
+				"description": "批量删除指标响应",
+				"properties": {
+					"deleted": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"failed": {
+						"items": {
+							"properties": {
+								"error": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"error",
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"total_deleted": {
+						"type": "number",
+						"format": "double"
+					},
+					"total_failed": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"deleted",
+					"failed",
+					"total_deleted",
+					"total_failed"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"BatchDeleteMetricsRequest": {
+				"description": "批量删除指标请求",
+				"properties": {
+					"metricIds": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					},
+					"cascade": {
+						"type": "boolean"
+					},
+					"force": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"metricIds"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MetricCalculationMethodResponse": {
+				"description": "指标计算方法详情响应 (GET /api/kg/metrics/:id/calculation-method)",
+				"properties": {
+					"metric_label": {
+						"type": "string"
+					},
+					"metric_iri": {
+						"type": "string"
+					},
+					"calculation_method": {
+						"type": "string",
+						"enum": [
+							"direct_measurement",
+							"calculation_model"
+						]
+					},
+					"attributes": {
+						"$ref": "#/components/schemas/Record_string.any_"
+					},
+					"data_sources": {
+						"items": {
+							"properties": {
+								"description": {
+									"type": "string"
+								},
+								"fileName": {
+									"type": "string"
+								},
+								"disclosureType": {
+									"type": "string"
+								},
+								"dataSourceID": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"disclosureType",
+								"dataSourceID"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"model": {
+						"properties": {
+							"description": {
+								"type": "string"
+							},
+							"mathematicalExpression": {
+								"type": "string"
+							},
+							"formula": {
+								"type": "string"
+							},
+							"calculationType": {
+								"type": "string"
+							},
+							"iri": {
+								"type": "string"
+							},
+							"label": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"iri",
+							"label"
+						],
+						"type": "object"
+					},
+					"implementation": {
+						"properties": {
+							"description": {
+								"type": "string"
+							},
+							"functionName": {
+								"type": "string"
+							},
+							"filePath": {
+								"type": "string"
+							},
+							"language": {
+								"type": "string"
+							},
+							"iri": {
+								"type": "string"
+							},
+							"label": {
+								"type": "string"
+							}
+						},
+						"required": [
+							"iri",
+							"label"
+						],
+						"type": "object"
+					}
+				},
+				"required": [
+					"metric_label",
+					"metric_iri",
+					"calculation_method"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"MetricModelsDetailResponse": {
+				"description": "指标的计算模型列表详情响应 (GET /api/kg/metrics/:id/models)",
+				"properties": {
+					"metricId": {
+						"type": "string"
+					},
+					"metricLabel": {
+						"type": "string"
+					},
+					"calculationMethod": {
+						"type": "string",
+						"enum": [
+							"direct_measurement",
+							"calculation_model"
+						]
+					},
+					"usage": {
+						"type": "string",
+						"enum": [
+							"output",
+							"input"
+						]
+					},
+					"models": {
+						"items": {
+							"properties": {
+								"outputMetric": {
+									"properties": {
+										"label": {
+											"type": "string"
+										},
+										"iri": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"iri"
+									],
+									"type": "object"
+								},
+								"inputMetrics": {
+									"items": {
+										"properties": {
+											"label": {
+												"type": "string"
+											},
+											"iri": {
+												"type": "string"
+											}
+										},
+										"required": [
+											"label",
+											"iri"
+										],
+										"type": "object"
+									},
+									"type": "array"
+								},
+								"implementation": {
+									"properties": {
+										"language": {
+											"type": "string"
+										},
+										"label": {
+											"type": "string"
+										},
+										"iri": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"iri"
+									],
+									"type": "object"
+								},
+								"mathematicalExpression": {
+									"type": "string"
+								},
+								"formula": {
+									"type": "string"
+								},
+								"calculationType": {
+									"type": "string"
+								},
+								"label": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"label",
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"metricId",
+					"metricLabel",
+					"calculationMethod",
+					"usage",
+					"models",
+					"total"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Pick_Industry.iri-or-label-or-description_": {
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"IndustryDTO": {
+				"$ref": "#/components/schemas/Pick_Industry.iri-or-label-or-description_",
+				"description": "行业DTO - 用于列表展示"
+			},
+			"IndustriesResponse": {
+				"description": "行业列表响应",
+				"properties": {
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"size": {
+						"type": "number",
+						"format": "double"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					},
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/IndustryDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IndustryDetailDTO": {
+				"description": "行业详情DTO - 包含关联的报告框架",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"reportsUsing": {
+						"items": {
+							"$ref": "#/components/schemas/Pick_ReportingFramework.iri-or-label_"
+						},
+						"type": "array"
+					},
+					"createdAt": {
+						"type": "string"
+					},
+					"updatedAt": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"IndustryDetailResponse": {
+				"description": "行业详情响应",
+				"properties": {
+					"result": {
+						"$ref": "#/components/schemas/IndustryDetailDTO"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateIndustryResponse": {
+				"description": "创建行业响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"created_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateIndustryRequest": {
+				"description": "创建行业请求",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"reportsUsing": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"label"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateIndustryResponse": {
+				"description": "更新行业响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"updated_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateIndustryRequest": {
+				"description": "更新行业请求",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"reportsUsing": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DeleteIndustryResponse": {
+				"description": "删除行业响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"deleted": {
+						"type": "boolean"
+					},
+					"deleted_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"deleted",
+					"deleted_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ImplementationsResponse": {
+				"description": "实现列表响应",
+				"properties": {
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"size": {
+						"type": "number",
+						"format": "double"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					},
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/ImplementationDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"ImplementationDetailResponse": {
+				"description": "实现详情响应",
+				"properties": {
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/ImplementationDTO"
+							},
+							{
+								"properties": {
+									"updatedAt": {
+										"type": "string"
+									},
+									"createdAt": {
+										"type": "string"
+									},
+									"relatedModels": {
+										"items": {
+											"properties": {
+												"calculationType": {
+													"type": "string"
+												},
+												"label": {
+													"type": "string"
+												},
+												"iri": {
+													"type": "string"
+												}
+											},
+											"required": [
+												"label",
+												"iri"
+											],
+											"type": "object"
+										},
+										"type": "array"
+									},
+									"inputParameters": {
+										"type": "string"
+									},
+									"description": {
+										"type": "string"
+									}
+								},
+								"type": "object"
+							}
+						]
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateImplementationResponse": {
+				"description": "创建实现响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"language": {
+						"type": "string"
+					},
+					"file_path": {
+						"type": "string"
+					},
+					"created_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"language",
+					"file_path",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateImplementationRequest": {
+				"description": "创建实现请求",
+				"properties": {
+					"name": {
+						"type": "string"
+					},
+					"language": {
+						"type": "string"
+					},
+					"file_path": {
+						"type": "string"
+					},
+					"function_name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"input_parameters": {
+						"type": "string"
+					},
+					"return_type": {
+						"type": "string"
+					},
+					"validation": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"name",
+					"language",
+					"file_path"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateImplementationResponse": {
+				"description": "更新实现响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"language": {
+						"type": "string"
+					},
+					"file_path": {
+						"type": "string"
+					},
+					"updated_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateImplementationRequest": {
+				"description": "更新实现请求",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"language": {
+						"type": "string"
+					},
+					"file_path": {
+						"type": "string"
+					},
+					"function_name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"input_parameters": {
+						"type": "string"
+					},
+					"return_type": {
+						"type": "string"
+					},
+					"validation": {
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DeleteImplementationResponse": {
+				"description": "删除实现响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"deleted": {
+						"type": "boolean"
+					},
+					"deleted_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"deleted",
+					"deleted_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"FrameworkDTO": {
+				"$ref": "#/components/schemas/Pick_ReportingFramework.iri-or-label_",
+				"description": "报告框架DTO - 用于列表展示"
+			},
+			"FrameworksResponse": {
+				"description": "报告框架列表响应",
+				"properties": {
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"size": {
+						"type": "number",
+						"format": "double"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					},
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/FrameworkDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"FrameworkDetailDTO": {
+				"description": "报告框架详情DTO - 包含关联的分类",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"categories": {
+						"items": {
+							"$ref": "#/components/schemas/Pick_Category.iri-or-label_"
+						},
+						"type": "array"
+					},
+					"sourceDocument": {
+						"type": "string"
+					},
+					"createdAt": {
+						"type": "string"
+					},
+					"updatedAt": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"FrameworkDetailResponse": {
+				"description": "报告框架详情响应",
+				"properties": {
+					"result": {
+						"$ref": "#/components/schemas/FrameworkDetailDTO"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateFrameworkResponse": {
+				"description": "创建报告框架响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"sourceDocument": {
+						"type": "string"
+					},
+					"created_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateFrameworkRequest": {
+				"description": "创建报告框架请求",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"sourceDocument": {
+						"type": "string"
+					},
+					"categories": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"label"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateFrameworkResponse": {
+				"description": "更新报告框架响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"sourceDocument": {
+						"type": "string"
+					},
+					"updated_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateFrameworkRequest": {
+				"description": "更新报告框架请求",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"sourceDocument": {
+						"type": "string"
+					},
+					"categories": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DeleteFrameworkResponse": {
+				"description": "删除报告框架响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"deleted": {
+						"type": "boolean"
+					},
+					"deleted_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"deleted",
+					"deleted_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CategoryDTO": {
+				"$ref": "#/components/schemas/Pick_Category.iri-or-label_",
+				"description": "分类DTO - 用于列表展示"
+			},
+			"FrameworkCategoriesResponse": {
+				"description": "框架分类列表响应",
+				"properties": {
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/CategoryDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddCategoriesToFrameworkResponse": {
+				"description": "添加分类到框架响应",
+				"properties": {
+					"framework_iri": {
+						"type": "string"
+					},
+					"added_categories": {
+						"items": {
+							"$ref": "#/components/schemas/CategoryDTO"
+						},
+						"type": "array"
+					},
+					"added_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"framework_iri",
+					"added_categories",
+					"added_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddCategoriesToFrameworkRequest": {
+				"description": "添加分类到框架请求",
+				"properties": {
+					"categories": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"categories"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RemoveCategoryFromFrameworkResponse": {
+				"description": "从框架删除分类响应",
+				"properties": {
+					"framework_iri": {
+						"type": "string"
+					},
+					"removed_category_iri": {
+						"type": "string"
+					},
+					"removed_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"framework_iri",
+					"removed_category_iri",
+					"removed_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DatasourcesResponse": {
+				"description": "数据源列表响应",
+				"properties": {
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"size": {
+						"type": "number",
+						"format": "double"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					},
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/DataSourceDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Pick_DatasetVariable.iri-or-label_": {
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"DatasourceDetailResponse": {
+				"description": "数据源详情响应",
+				"properties": {
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/DataSourceDTO"
+							},
+							{
+								"properties": {
+									"updatedAt": {
+										"type": "string"
+									},
+									"createdAt": {
+										"type": "string"
+									},
+									"variables": {
+										"items": {
+											"$ref": "#/components/schemas/Pick_DatasetVariable.iri-or-label_"
+										},
+										"type": "array"
+									}
+								},
+								"type": "object"
+							}
+						]
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateDatasourceResponse": {
+				"description": "创建数据源响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"created_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateDatasourceRequest": {
+				"description": "创建数据源请求",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"coverage": {
+						"type": "string"
+					},
+					"recordCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"disclosureType": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"label"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateDatasourceResponse": {
+				"description": "更新数据源响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"updated_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateDatasourceRequest": {
+				"description": "更新数据源请求（部分更新）",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"fileName": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string"
+					},
+					"coverage": {
+						"type": "string"
+					},
+					"recordCount": {
+						"type": "number",
+						"format": "double"
+					},
+					"disclosureType": {
+						"type": "string"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DeleteDatasourceResponse": {
+				"description": "删除数据源响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"deleted": {
+						"type": "boolean"
+					},
+					"deleted_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"deleted",
+					"deleted_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DatasourceVariablesResponse": {
+				"description": "数据源的变量列表响应",
+				"properties": {
+					"datasource_id": {
+						"type": "string"
+					},
+					"datasource_label": {
+						"type": "string"
+					},
+					"variables": {
+						"items": {
+							"properties": {
+								"alignmentReason": {
+									"type": "string"
+								},
+								"confidenceScore": {
+									"type": "number",
+									"format": "double"
+								},
+								"label": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"label",
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"datasource_id",
+					"datasource_label",
+					"variables",
+					"total"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DatasourceMetricsResponse": {
+				"description": "数据源的指标列表响应（间接关联）",
+				"properties": {
+					"datasource_id": {
+						"type": "string"
+					},
+					"datasource_label": {
+						"type": "string"
+					},
+					"metrics": {
+						"items": {
+							"properties": {
+								"variable": {
+									"properties": {
+										"label": {
+											"type": "string"
+										},
+										"iri": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"label",
+										"iri"
+									],
+									"type": "object"
+								},
+								"hasUnit": {
+									"type": "string"
+								},
+								"hasCalculationMethod": {
+									"type": "string",
+									"enum": [
+										"direct_measurement",
+										"calculation_model"
+									]
+								},
+								"label": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"variable",
+								"hasCalculationMethod",
+								"label",
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"datasource_id",
+					"datasource_label",
+					"metrics",
+					"total"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DatasetVariablesResponse": {
+				"description": "数据集变量列表响应",
+				"properties": {
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"size": {
+						"type": "number",
+						"format": "double"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					},
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/DatasetVariableDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Pick_Metric.iri-or-label-or-hasCalculationMethod_": {
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"hasCalculationMethod": {
+						"$ref": "#/components/schemas/CalculationMethod"
+					}
+				},
+				"required": [
+					"iri",
+					"hasCalculationMethod"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"DatasetVariableDetailResponse": {
+				"description": "数据集变量详情响应",
+				"properties": {
+					"result": {
+						"allOf": [
+							{
+								"$ref": "#/components/schemas/DatasetVariableDTO"
+							},
+							{
+								"properties": {
+									"updatedAt": {
+										"type": "string"
+									},
+									"createdAt": {
+										"type": "string"
+									},
+									"metrics": {
+										"items": {
+											"$ref": "#/components/schemas/Pick_Metric.iri-or-label-or-hasCalculationMethod_"
+										},
+										"type": "array"
+									}
+								},
+								"type": "object"
+							}
+						]
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateDatasetVariableResponse": {
+				"description": "创建数据集变量响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"created_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateDatasetVariableRequest": {
+				"description": "创建数据集变量请求",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"alignmentReason": {
+						"type": "string"
+					},
+					"confidenceScore": {
+						"type": "number",
+						"format": "double"
+					},
+					"isUnitCompatible": {
+						"type": "string"
+					},
+					"sources": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"label"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateDatasetVariableResponse": {
+				"description": "更新数据集变量响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"updated_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateDatasetVariableRequest": {
+				"description": "更新数据集变量请求（部分更新）",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"alignmentReason": {
+						"type": "string"
+					},
+					"confidenceScore": {
+						"type": "number",
+						"format": "double"
+					},
+					"isUnitCompatible": {
+						"type": "string"
+					},
+					"sources": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DeleteDatasetVariableResponse": {
+				"description": "删除数据集变量响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"deleted": {
+						"type": "boolean"
+					},
+					"deleted_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"deleted",
+					"deleted_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"VariableDatasourcesResponse": {
+				"description": "数据集变量数据源列表响应",
+				"properties": {
+					"variable_id": {
+						"type": "string"
+					},
+					"variable_label": {
+						"type": "string"
+					},
+					"datasources": {
+						"items": {
+							"$ref": "#/components/schemas/DataSourceDTO"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"variable_id",
+					"variable_label",
+					"datasources",
+					"total"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddDatasourceToVariableResponse": {
+				"description": "添加数据源到数据集变量响应",
+				"properties": {
+					"variable_iri": {
+						"type": "string"
+					},
+					"datasource_iri": {
+						"type": "string"
+					},
+					"added_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"variable_iri",
+					"datasource_iri",
+					"added_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddDatasourceToVariableRequest": {
+				"description": "添加数据源到数据集变量请求",
+				"properties": {
+					"datasourceUri": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"datasourceUri"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RemoveVariableDatasourceResponse": {
+				"description": "移除数据集变量数据源关联响应",
+				"properties": {
+					"variable_iri": {
+						"type": "string"
+					},
+					"datasource_iri": {
+						"type": "string"
+					},
+					"removed_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"variable_iri",
+					"datasource_iri",
+					"removed_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DatasetVariableQualityResponse": {
+				"description": "数据集变量质量信息响应",
+				"properties": {
+					"variable_id": {
+						"type": "string"
+					},
+					"variable_label": {
+						"type": "string"
+					},
+					"confidenceScore": {
+						"type": "number",
+						"format": "double"
+					},
+					"isUnitCompatible": {
+						"type": "string"
+					},
+					"alignmentReason": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"variable_id",
+					"variable_label"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"VariableMetricsResponse": {
+				"description": "数据集变量的指标列表响应",
+				"properties": {
+					"variable_id": {
+						"type": "string"
+					},
+					"variable_label": {
+						"type": "string"
+					},
+					"metrics": {
+						"items": {
+							"properties": {
+								"hasMetricType": {
+									"type": "string"
+								},
+								"hasUnit": {
+									"type": "string"
+								},
+								"hasCalculationMethod": {
+									"type": "string",
+									"enum": [
+										"direct_measurement",
+										"calculation_model"
+									]
+								},
+								"label": {
+									"type": "string"
+								},
+								"iri": {
+									"type": "string"
+								}
+							},
+							"required": [
+								"hasCalculationMethod",
+								"label",
+								"iri"
+							],
+							"type": "object"
+						},
+						"type": "array"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					}
+				},
+				"required": [
+					"variable_id",
+					"variable_label",
+					"metrics",
+					"total"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CategoriesResponse": {
+				"description": "分类列表响应",
+				"properties": {
+					"page": {
+						"type": "number",
+						"format": "double"
+					},
+					"size": {
+						"type": "number",
+						"format": "double"
+					},
+					"total": {
+						"type": "number",
+						"format": "double"
+					},
+					"totalPages": {
+						"type": "number",
+						"format": "double"
+					},
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/CategoryDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"Pick_Metric.iri-or-label_": {
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"description": "From T, pick a set of properties whose keys are in the union K"
+			},
+			"CategoryDetailDTO": {
+				"description": "分类详情DTO - 包含关联的指标",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"metrics": {
+						"items": {
+							"$ref": "#/components/schemas/Pick_Metric.iri-or-label_"
+						},
+						"type": "array"
+					},
+					"frameworks": {
+						"items": {
+							"$ref": "#/components/schemas/Pick_ReportingFramework.iri-or-label_"
+						},
+						"type": "array"
+					},
+					"createdAt": {
+						"type": "string"
+					},
+					"updatedAt": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CategoryDetailResponse": {
+				"description": "分类详情响应",
+				"properties": {
+					"result": {
+						"$ref": "#/components/schemas/CategoryDetailDTO"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateCategoryResponse": {
+				"description": "创建分类响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"created_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"created_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateCategoryRequest": {
+				"description": "创建分类请求",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"metrics": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"label"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateCategoryResponse": {
+				"description": "更新分类响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"updated_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"label",
+					"updated_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UpdateCategoryRequest": {
+				"description": "更新分类请求",
+				"properties": {
+					"label": {
+						"type": "string"
+					},
+					"metrics": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"type": "object",
+				"additionalProperties": false
+			},
+			"DeleteCategoryResponse": {
+				"description": "删除分类响应",
+				"properties": {
+					"iri": {
+						"type": "string"
+					},
+					"deleted": {
+						"type": "boolean"
+					},
+					"deleted_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"iri",
+					"deleted",
+					"deleted_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CategoryMetricsResponse": {
+				"description": "分类指标列表响应",
+				"properties": {
+					"result": {
+						"items": {
+							"$ref": "#/components/schemas/MetricDTO"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"result"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddMetricsToCategoryResponse": {
+				"description": "添加指标到分类响应",
+				"properties": {
+					"category_iri": {
+						"type": "string"
+					},
+					"added_metrics": {
+						"items": {
+							"$ref": "#/components/schemas/MetricDTO"
+						},
+						"type": "array"
+					},
+					"added_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"category_iri",
+					"added_metrics",
+					"added_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"AddMetricsToCategoryRequest": {
+				"description": "添加指标到分类请求",
+				"properties": {
+					"metrics": {
+						"items": {
+							"type": "string"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"metrics"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"RemoveMetricFromCategoryResponse": {
+				"description": "从分类删除指标响应",
+				"properties": {
+					"category_iri": {
+						"type": "string"
+					},
+					"removed_metric_iri": {
+						"type": "string"
+					},
+					"removed_at": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"category_iri",
+					"removed_metric_iri",
+					"removed_at"
+				],
+				"type": "object",
+				"additionalProperties": false
+			}
+		},
+		"securitySchemes": {}
+	},
+	"info": {
+		"title": "ESG Knowledge Graph API",
+		"version": "1.0.0",
+		"description": "ESG Knowledge Graph platform backend API with auto-generated OpenAPI documentation",
+		"license": {
+			"name": "MIT"
+		},
+		"contact": {
+			"name": "ESG Knowledge Graph API Support"
+		}
+	},
+	"paths": {
+		"/api/computation/method": {
+			"get": {
+				"operationId": "GetComputationMethodWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "CQ5: Get metric calculation method information\nGET /api/computation/method?metric_label={metric_label}",
+				"tags": [
+					"Computation (Deprecated)"
+				],
+				"deprecated": true,
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric label",
+						"in": "query",
+						"name": "metric_label",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/computation/implementation": {
+			"get": {
+				"operationId": "GetImplementationInfoWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Get implementation file information\nGET /api/computation/implementation?implementation_label={implementation_label}",
+				"tags": [
+					"Computation (Deprecated)"
+				],
+				"deprecated": true,
+				"security": [],
+				"parameters": [
+					{
+						"description": "Implementation label",
+						"in": "query",
+						"name": "implementation_label",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/computation/implementations": {
+			"get": {
+				"operationId": "GetImplementationsByTypeWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Get all implementation information by calculation type\nGET /api/computation/implementations?calculation_type={calculation_type}",
+				"tags": [
+					"Computation (Deprecated)"
+				],
+				"deprecated": true,
+				"security": [],
+				"parameters": [
+					{
+						"description": "Calculation type",
+						"in": "query",
+						"name": "calculation_type",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/computation/supported-types": {
+			"get": {
+				"operationId": "GetSupportedCalculationTypesWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {}
+							}
+						}
+					}
+				},
+				"description": "Get all supported calculation types\nGET /api/computation/supported-types",
+				"tags": [
+					"Computation (Deprecated)"
+				],
+				"deprecated": true,
+				"security": [],
+				"parameters": []
+			}
+		},
+		"/api/kg/models": {
+			"get": {
+				"operationId": "GetModelsWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ModelsResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get model list (supports pagination and search)",
+				"tags": [
+					"Models"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Page number (starting from 1, default 1)",
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Items per page (default 10, max 100)",
+						"in": "query",
+						"name": "size",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Search keyword (fuzzy match on label)",
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by calculation type (optional)",
+						"in": "query",
+						"name": "calculationType",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Sort field (default label)",
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"label",
+								"createdAt"
+							]
+						}
+					},
+					{
+						"description": "Sort order (default asc)",
+						"in": "query",
+						"name": "order",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"asc",
+								"desc"
+							]
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "CreateModelWithTsoa",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreateModelResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create a new model",
+				"tags": [
+					"Models"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "Request data for creating a model",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateModelRequest",
+								"description": "Request data for creating a model"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/models/{id}": {
+			"get": {
+				"operationId": "GetModelByIdWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ModelDetailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get model details",
+				"tags": [
+					"Models"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Model ID (URI format or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdateModelWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UpdateModelResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Update a model",
+				"tags": [
+					"Models"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Model ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Request data for updating the model",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateModelRequest",
+								"description": "Request data for updating the model"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteModelWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DeleteModelResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Delete a model",
+				"tags": [
+					"Models"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Model ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Force delete (ignore dependency checks, default false)",
+						"in": "query",
+						"name": "force",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/models/{id}/metrics/inputs": {
+			"get": {
+				"operationId": "GetModelInputMetricsWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ModelMetricsInputsResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get input metrics for a model\n\nReturns all metrics that are used as inputs for this model (via esg:requiresInputFrom).",
+				"tags": [
+					"Models"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Model identifier (IRI, label, or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdateModelInputMetricsWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UpdateModelMetricsInputsResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Update input metrics for a model\n\nReplaces all existing input metrics with the provided list.\nThis updates the esg:requiresInputFrom relationships.",
+				"tags": [
+					"Models"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Model identifier (IRI, label, or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Request body containing the list of input metric identifiers",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateModelMetricsInputsRequest",
+								"description": "Request body containing the list of input metric identifiers"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/models/{id}/metrics/output": {
+			"get": {
+				"operationId": "GetModelOutputMetricWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ModelMetricsOutputResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get output metric for a model\n\nReturns the metric that is calculated by this model (via esg:isCalculatedBy).\nA model can only have one output metric.",
+				"tags": [
+					"Models"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Model identifier (IRI, label, or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/models/{id}/metrics/inputs/{metricId}": {
+			"post": {
+				"operationId": "AddModelInputMetricWithTsoa",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AddModelInputMetricResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Add a single input metric to model\n\nAdds one metric to the model's input metrics list without affecting other inputs.\nThis creates a new esg:requiresInputFrom relationship.",
+				"tags": [
+					"Models"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Model identifier (IRI, label, or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Metric identifier to add as input",
+						"in": "path",
+						"name": "metricId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"delete": {
+				"operationId": "RemoveModelInputMetricWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/RemoveModelInputMetricResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Remove a single input metric from model\n\nRemoves one metric from the model's input metrics list without affecting other inputs.\nThis deletes the esg:requiresInputFrom relationship.",
+				"tags": [
+					"Models"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Model identifier (IRI, label, or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Metric identifier to remove from inputs",
+						"in": "path",
+						"name": "metricId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/models/{id}/implementations": {
+			"get": {
+				"operationId": "GetModelImplementationsWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ModelImplementationsResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get model implementations\n\nReturns all implementations associated with this model via esg:executesWith.",
+				"tags": [
+					"Models"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Model identifier (IRI, label, or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "AddModelImplementationWithTsoa",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AddModelImplementationResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Add implementation to model\n\nAssociates an implementation with the model via esg:executesWith relationship.",
+				"tags": [
+					"Models"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Model identifier (IRI, label, or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Request body containing implementation identifier",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AddModelImplementationRequest",
+								"description": "Request body containing implementation identifier"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/metrics": {
+			"get": {
+				"operationId": "GetMetricsWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MetricsResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get metric list (supports multiple filter conditions)",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Page number (starting from 1, default 1)",
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Items per page (default 10, max 100)",
+						"in": "query",
+						"name": "size",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Search keyword (fuzzy match on label)",
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by industry (optional)",
+						"in": "query",
+						"name": "industry",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by category (optional)",
+						"in": "query",
+						"name": "category",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by reporting framework (optional)",
+						"in": "query",
+						"name": "framework",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by calculation method: direct_measurement or calculation_model (optional)",
+						"in": "query",
+						"name": "calculationMethod",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"direct_measurement",
+								"calculation_model"
+							]
+						}
+					},
+					{
+						"description": "Sort field (default label)",
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"label",
+								"createdAt"
+							]
+						}
+					},
+					{
+						"description": "Sort order (default asc)",
+						"in": "query",
+						"name": "order",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"asc",
+								"desc"
+							]
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "CreateMetricWithTsoa",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreateMetricResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create a new metric",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateMetricRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/metrics/{id}": {
+			"get": {
+				"operationId": "GetMetricByIdWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MetricDetailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get metric details (including all attributes)",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID (can be URI, namespace format, label or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						},
+						"example": "GHG_Emissions_Scope1"
+					}
+				]
+			},
+			"put": {
+				"operationId": "UpdateMetricWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UpdateMetricResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Full update of metric (replace all attributes)",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateMetricRequest"
+							}
+						}
+					}
+				}
+			},
+			"patch": {
+				"operationId": "PatchMetricWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"anyOf": [
+										{
+											"$ref": "#/components/schemas/UpdateMetricResponse"
+										},
+										{
+											"$ref": "#/components/schemas/UpdateMetricModelResponse"
+										}
+									]
+								}
+							}
+						}
+					}
+				},
+				"description": "Partial update of metric (only update provided fields)",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/PatchMetricRequest"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteMetricWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DeleteMetricResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Delete a metric",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Whether to cascade delete related data (default false)",
+						"in": "query",
+						"name": "cascade",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					},
+					{
+						"description": "Force delete (ignore dependency checks, default false)",
+						"in": "query",
+						"name": "force",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/metrics/{id}/lineage": {
+			"get": {
+				"operationId": "GetMetricLineageWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MetricLineageResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get metric data lineage\n\nBased on the metric's calculation method (direct measurement or calculation model), returns corresponding data sources:\n- Direct measurement: returns dataset variables and data sources\n- Calculation model: returns model, input metrics and implementation information",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID (can be URI, namespace format, label or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						},
+						"example": "GHG_Emissions_Scope1"
+					}
+				]
+			}
+		},
+		"/api/kg/metrics/{id}/datasets": {
+			"get": {
+				"operationId": "GetMetricDatasetsWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MetricDatasetsResponse"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Metrics"
+				],
+				"deprecated": true,
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID (can be URI, namespace format, label or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						},
+						"example": "GHG_Emissions_Scope1"
+					}
+				]
+			}
+		},
+		"/api/kg/metrics/{id}/best-datasource": {
+			"get": {
+				"operationId": "GetBestDataSourceWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BestDataSourceResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get the best data source for a metric\n\nSelects the best data source based on IFRS disclosure hierarchy:\n1. Corporate Disclosure (highest priority)\n2. Sustainability Reports\n3. Other sources",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID (can be URI, namespace format, label or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						},
+						"example": "GHG_Emissions_Scope1"
+					}
+				]
+			}
+		},
+		"/api/kg/metrics/{id}/datasources": {
+			"get": {
+				"operationId": "GetMetricDataSourcesWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MetricDataSourcesResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get all data sources for a metric (not just the best one)\n\nReturns a list of all data sources associated with the metric.\nOnly applicable to direct measurement metrics.\nFor calculation model metrics, returns an empty list.",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID (can be URI, namespace format, label or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						},
+						"example": "GHG_Emissions_Scope1"
+					},
+					{
+						"description": "Whether to include associated dataset variable information (default false)",
+						"in": "query",
+						"name": "includeVariables",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "AddMetricDatasourceWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AddMetricDatasourceResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Add data source association to metric",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AddMetricDatasourceRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/metrics/{id}/models": {
+			"get": {
+				"operationId": "GetMetricModelsDetailWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MetricModelsDetailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get models related to a metric\n\nThis endpoint supports two query modes via the `usage` parameter:\n- usage=output (default): Returns models that CALCULATE this metric (via esg:isCalculatedBy)\n- usage=input: Returns models that USE this metric as input (via esg:requiresInputFrom)\n\nFor direct_measurement metrics with usage=output, returns an empty list.",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric identifier (IRI, label, or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Query mode: 'output' (default) or 'input'",
+						"in": "query",
+						"name": "usage",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"output",
+								"input"
+							]
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/metrics/{id}/inputs": {
+			"get": {
+				"operationId": "GetMetricInputsWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MetricInputsResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get the list of input metrics required for metric calculation\n\nReturns all input metrics required for calculating this metric.\nOnly applicable to calculation_model type metrics.\nFor direct_measurement type metrics, returns an empty input list.",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID (can be URI, namespace format, label or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						},
+						"example": "GHG_Emissions_Total"
+					}
+				]
+			},
+			"post": {
+				"operationId": "AddMetricInputWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AddMetricInputResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Add input metric to calculation model metric",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AddMetricInputRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/metrics/{id}/datasources/{datasourceId}": {
+			"delete": {
+				"operationId": "RemoveMetricDatasourceWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/RemoveMetricDatasourceResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Remove data source association from metric",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Data source ID",
+						"in": "path",
+						"name": "datasourceId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/metrics/{id}/inputs/{inputMetricId}": {
+			"delete": {
+				"operationId": "RemoveMetricInputWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/RemoveMetricInputResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Remove input metric association from calculation model metric",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Input metric ID",
+						"in": "path",
+						"name": "inputMetricId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/metrics/batch": {
+			"post": {
+				"operationId": "BatchCreateMetricsWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BatchCreateMetricsResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Batch create metrics",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BatchCreateMetricsRequest"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "BatchDeleteMetricsWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/BatchDeleteMetricsResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Batch delete metrics",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/BatchDeleteMetricsRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/metrics/{id}/calculation-method": {
+			"get": {
+				"operationId": "GetMetricCalculationMethodWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MetricCalculationMethodResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get metric calculation method details (CQ5)\n\nBased on the metric's calculation method (direct measurement or calculation model), returns corresponding information:\n- Direct measurement: returns data source information\n- Calculation model: returns model, formula and implementation information",
+				"tags": [
+					"Metrics"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID (can be URI, namespace format, label or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						},
+						"example": "GHG_Emissions_Scope1"
+					}
+				]
+			}
+		},
+		"/api/kg/metrics/attributes": {
+			"get": {
+				"operationId": "GetMetricAttributesWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MetricDetailResponse"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Metrics"
+				],
+				"deprecated": true,
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric label",
+						"in": "query",
+						"name": "metric_label",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/metrics/datapoints/attributes": {
+			"get": {
+				"operationId": "GetDataPointAttributesWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MetricDetailResponse"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Metrics"
+				],
+				"deprecated": true,
+				"security": [],
+				"parameters": [
+					{
+						"description": "Metric ID",
+						"in": "query",
+						"name": "metric",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/industries": {
+			"get": {
+				"operationId": "GetIndustriesWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IndustriesResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get industry list (supports pagination and search)",
+				"tags": [
+					"Industries"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Page number (starting from 1, default 1)",
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Items per page (default 10, max 100)",
+						"in": "query",
+						"name": "size",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Search keyword (fuzzy match on label)",
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Sort field (default label)",
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"label",
+								"createdAt"
+							]
+						}
+					},
+					{
+						"description": "Sort order (default asc)",
+						"in": "query",
+						"name": "order",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"asc",
+								"desc"
+							]
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "CreateIndustryWithTsoa",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreateIndustryResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create a new industry",
+				"tags": [
+					"Industries"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "Request data for creating an industry",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateIndustryRequest",
+								"description": "Request data for creating an industry"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/industries/{id}": {
+			"get": {
+				"operationId": "GetIndustryByIdWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/IndustryDetailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get industry details",
+				"tags": [
+					"Industries"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Industry ID (can be URI, namespace format or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"patch": {
+				"operationId": "UpdateIndustryWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UpdateIndustryResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Partial update of industry",
+				"tags": [
+					"Industries"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Industry ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Request data for updating the industry",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateIndustryRequest",
+								"description": "Request data for updating the industry"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteIndustryWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DeleteIndustryResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Delete an industry",
+				"tags": [
+					"Industries"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Industry ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Whether to force delete (ignore reportsUsing association checks)",
+						"in": "query",
+						"name": "force",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/implementations": {
+			"get": {
+				"operationId": "GetImplementationsWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ImplementationsResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get implementation list (supports pagination and search)",
+				"tags": [
+					"Implementations"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Page number (starting from 1, default 1)",
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Items per page (default 10, max 100)",
+						"in": "query",
+						"name": "size",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Search keyword (fuzzy match on label)",
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by programming language (optional)",
+						"in": "query",
+						"name": "language",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by file path (optional)",
+						"in": "query",
+						"name": "filePath",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by calculation type (via associated models) (optional)",
+						"in": "query",
+						"name": "calculationType",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Sort field (default label)",
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"label",
+								"createdAt"
+							]
+						}
+					},
+					{
+						"description": "Sort order (default asc)",
+						"in": "query",
+						"name": "order",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"asc",
+								"desc"
+							]
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "CreateImplementationWithTsoa",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreateImplementationResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create a new implementation",
+				"tags": [
+					"Implementations"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "Request data for creating an implementation",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateImplementationRequest",
+								"description": "Request data for creating an implementation"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/implementations/{id}": {
+			"get": {
+				"operationId": "GetImplementationByIdWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ImplementationDetailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get implementation details",
+				"tags": [
+					"Implementations"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Implementation ID (can be URI, namespace format or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						},
+						"example": "Implementation_Python_PercentageRatio"
+					}
+				]
+			},
+			"patch": {
+				"operationId": "UpdateImplementationWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UpdateImplementationResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Partial update of implementation",
+				"tags": [
+					"Implementations"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Implementation ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Request data for updating the implementation",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateImplementationRequest",
+								"description": "Request data for updating the implementation"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteImplementationWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DeleteImplementationResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Delete an implementation",
+				"tags": [
+					"Implementations"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Implementation ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Whether to force delete (ignore model reference association checks)",
+						"in": "query",
+						"name": "force",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/frameworks": {
+			"get": {
+				"operationId": "GetFrameworksWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/FrameworksResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get reporting framework list (supports pagination and search)",
+				"tags": [
+					"Frameworks"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Page number (starting from 1, default 1)",
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Items per page (default 10, max 100)",
+						"in": "query",
+						"name": "size",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Search keyword (fuzzy match on label)",
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by industry (optional)",
+						"in": "query",
+						"name": "industry",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Sort field (default label)",
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"label",
+								"createdAt"
+							]
+						}
+					},
+					{
+						"description": "Sort order (default asc)",
+						"in": "query",
+						"name": "order",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"asc",
+								"desc"
+							]
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "CreateFrameworkWithTsoa",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreateFrameworkResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create a new reporting framework",
+				"tags": [
+					"Frameworks"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "Request data for creating a framework",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateFrameworkRequest",
+								"description": "Request data for creating a framework"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/frameworks/{id}": {
+			"get": {
+				"operationId": "GetFrameworkByIdWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/FrameworkDetailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get reporting framework details",
+				"tags": [
+					"Frameworks"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Framework ID (can be URI, namespace format or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"patch": {
+				"operationId": "UpdateFrameworkWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UpdateFrameworkResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Partial update of reporting framework",
+				"tags": [
+					"Frameworks"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Framework ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Request data for updating the framework",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateFrameworkRequest",
+								"description": "Request data for updating the framework"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteFrameworkWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DeleteFrameworkResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Delete a reporting framework",
+				"tags": [
+					"Frameworks"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Framework ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Whether to force delete (ignore industry reference association checks)",
+						"in": "query",
+						"name": "force",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/frameworks/{id}/categories": {
+			"get": {
+				"operationId": "GetFrameworkCategoriesWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/FrameworkCategoriesResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get categories list for a framework",
+				"tags": [
+					"Frameworks"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Framework ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "AddCategoriesToFrameworkWithTsoa",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AddCategoriesToFrameworkResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Add categories to a framework",
+				"tags": [
+					"Frameworks"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Framework ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Category URIs to add",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AddCategoriesToFrameworkRequest",
+								"description": "Category URIs to add"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/frameworks/{id}/categories/{cid}": {
+			"delete": {
+				"operationId": "RemoveCategoryFromFrameworkWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/RemoveCategoryFromFrameworkResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Remove a category from a framework",
+				"tags": [
+					"Frameworks"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Framework ID",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Category ID",
+						"in": "path",
+						"name": "cid",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/datasources": {
+			"get": {
+				"operationId": "GetDatasourcesWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DatasourcesResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get data source list (supports pagination, search and sorting)",
+				"tags": [
+					"Datasources"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Page number (starting from 1, default 1)",
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Items per page (default 20, max 100)",
+						"in": "query",
+						"name": "size",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Search keyword (fuzzy match on label or fileName)",
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Sort field (default label)",
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"label",
+								"fileName",
+								"recordCount",
+								"createdAt"
+							]
+						}
+					},
+					{
+						"description": "Sort order (default asc)",
+						"in": "query",
+						"name": "order",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"asc",
+								"desc"
+							]
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "CreateDatasourceWithTsoa",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreateDatasourceResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create a data source",
+				"tags": [
+					"Datasources"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "Data source information",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateDatasourceRequest",
+								"description": "Data source information"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/datasources/{id}": {
+			"get": {
+				"operationId": "GetDatasourceByIdWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DatasourceDetailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get data source details",
+				"tags": [
+					"Datasources"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Data source ID (URI format or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"patch": {
+				"operationId": "UpdateDatasourceWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UpdateDatasourceResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Update a data source (partial update)",
+				"tags": [
+					"Datasources"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Data source ID (URI format or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Fields to update",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateDatasourceRequest",
+								"description": "Fields to update"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteDatasourceWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DeleteDatasourceResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Delete a data source",
+				"tags": [
+					"Datasources"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Data source ID (URI format or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Whether to force delete (ignore dependency checks, default false)",
+						"in": "query",
+						"name": "force",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						},
+						"example": true
+					}
+				]
+			}
+		},
+		"/api/kg/datasources/{id}/variables": {
+			"get": {
+				"operationId": "GetDatasourceVariablesWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DatasourceVariablesResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get all dataset variables using this data source",
+				"tags": [
+					"Datasources"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Data source ID (short ID or full URI)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/datasources/{id}/metrics": {
+			"get": {
+				"operationId": "GetDatasourceMetricsWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DatasourceMetricsResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get all metrics indirectly using this data source (through dataset variables)",
+				"tags": [
+					"Datasources"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Data source ID (short ID or full URI)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/dataset-variables": {
+			"get": {
+				"operationId": "GetDatasetVariablesWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DatasetVariablesResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get dataset variable list (supports pagination, search and filtering)",
+				"tags": [
+					"Dataset Variables"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Page number (starting from 1, default 1)",
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Items per page (default 20, max 100)",
+						"in": "query",
+						"name": "size",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Search keyword (fuzzy match on label)",
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by data source (optional, URI or ID)",
+						"in": "query",
+						"name": "datasource",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by metric (optional, URI or ID)",
+						"in": "query",
+						"name": "metric",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Minimum confidence score (optional, 0-100)",
+						"in": "query",
+						"name": "minConfidenceScore",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Filter by unit compatibility (optional)",
+						"in": "query",
+						"name": "isUnitCompatible",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Sort field (default label)",
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"label",
+								"confidenceScore",
+								"createdAt"
+							]
+						}
+					},
+					{
+						"description": "Sort order (default asc)",
+						"in": "query",
+						"name": "order",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"asc",
+								"desc"
+							]
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "CreateDatasetVariableWithTsoa",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreateDatasetVariableResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create a new dataset variable",
+				"tags": [
+					"Dataset Variables"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"description": "Request data for creating a dataset variable",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateDatasetVariableRequest",
+								"description": "Request data for creating a dataset variable"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/dataset-variables/{id}": {
+			"get": {
+				"operationId": "GetDatasetVariableByIdWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DatasetVariableDetailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get dataset variable details",
+				"tags": [
+					"Dataset Variables"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Dataset variable ID (URI format or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"patch": {
+				"operationId": "UpdateDatasetVariableWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UpdateDatasetVariableResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Update dataset variable (partial update)",
+				"tags": [
+					"Dataset Variables"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Dataset variable ID (URI format or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Request data for updating the dataset variable",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateDatasetVariableRequest",
+								"description": "Request data for updating the dataset variable"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteDatasetVariableWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DeleteDatasetVariableResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Delete a dataset variable",
+				"tags": [
+					"Dataset Variables"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Dataset variable ID (URI format or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Force delete (ignore dependency checks, default false)",
+						"in": "query",
+						"name": "force",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/dataset-variables/{id}/datasources": {
+			"get": {
+				"operationId": "GetVariableDatasourcesWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/VariableDatasourcesResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get all data sources for a dataset variable",
+				"tags": [
+					"Dataset Variables"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Dataset variable ID (URI format or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "AddDatasourceToVariableWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AddDatasourceToVariableResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Add data source association to dataset variable",
+				"tags": [
+					"Dataset Variables"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Dataset variable ID (URI format or short ID)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"description": "Request data for adding data source",
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AddDatasourceToVariableRequest",
+								"description": "Request data for adding data source"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/dataset-variables/{id}/datasources/{dsId}": {
+			"delete": {
+				"operationId": "RemoveVariableDatasourceWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/RemoveVariableDatasourceResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Remove data source association from dataset variable",
+				"tags": [
+					"Dataset Variables"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Dataset variable ID (short ID or full URI)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Data source ID (short ID or full URI)",
+						"in": "path",
+						"name": "dsId",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/dataset-variables/{id}/quality": {
+			"get": {
+				"operationId": "GetVariableQualityWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DatasetVariableQualityResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get quality information for a dataset variable",
+				"tags": [
+					"Dataset Variables"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Dataset variable ID (short ID or full URI)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/dataset-variables/{id}/metrics": {
+			"get": {
+				"operationId": "GetVariableMetricsWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/VariableMetricsResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get all metrics using this dataset variable",
+				"tags": [
+					"Dataset Variables"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Dataset variable ID (short ID or full URI)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/categories": {
+			"get": {
+				"operationId": "GetCategoriesWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CategoriesResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get category list (supports pagination and search)",
+				"tags": [
+					"Categories"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Page number (starting from 1, default 1)",
+						"in": "query",
+						"name": "page",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Items per page (default 20, max 100)",
+						"in": "query",
+						"name": "size",
+						"required": false,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					},
+					{
+						"description": "Search keyword (fuzzy match on label)",
+						"in": "query",
+						"name": "search",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by industry (optional)",
+						"in": "query",
+						"name": "industry",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Filter by framework (optional)",
+						"in": "query",
+						"name": "framework",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Sort field (default label)",
+						"in": "query",
+						"name": "sort",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"label",
+								"createdAt"
+							]
+						}
+					},
+					{
+						"description": "Sort order (default asc)",
+						"in": "query",
+						"name": "order",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"asc",
+								"desc"
+							]
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "CreateCategoryWithTsoa",
+				"responses": {
+					"201": {
+						"description": "Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CreateCategoryResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Create a new category",
+				"tags": [
+					"Categories"
+				],
+				"security": [],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateCategoryRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/categories/{id}": {
+			"get": {
+				"operationId": "GetCategoryByIdWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CategoryDetailResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get category details",
+				"tags": [
+					"Categories"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Category ID (URI format)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"patch": {
+				"operationId": "UpdateCategoryWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UpdateCategoryResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Update category information",
+				"tags": [
+					"Categories"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Category ID (URI format)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateCategoryRequest"
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "DeleteCategoryWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/DeleteCategoryResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Delete a category",
+				"tags": [
+					"Categories"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Category ID (URI format)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Force delete (delete even if referenced by frameworks, default false)",
+						"in": "query",
+						"name": "force",
+						"required": false,
+						"schema": {
+							"type": "boolean"
+						}
+					}
+				]
+			}
+		},
+		"/api/kg/categories/{id}/metrics": {
+			"get": {
+				"operationId": "GetCategoryMetricsWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CategoryMetricsResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Get metrics list for a category",
+				"tags": [
+					"Categories"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Category ID (URI format)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			},
+			"post": {
+				"operationId": "AddMetricsToCategoryWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AddMetricsToCategoryResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Add metrics to a category",
+				"tags": [
+					"Categories"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Category ID (URI format)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AddMetricsToCategoryRequest"
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/kg/categories/{id}/metrics/{mid}": {
+			"delete": {
+				"operationId": "RemoveMetricFromCategoryWithTsoa",
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/RemoveMetricFromCategoryResponse"
+								}
+							}
+						}
+					}
+				},
+				"description": "Remove a metric from a category",
+				"tags": [
+					"Categories"
+				],
+				"security": [],
+				"parameters": [
+					{
+						"description": "Category ID (URI format)",
+						"in": "path",
+						"name": "id",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"description": "Metric ID (URI format)",
+						"in": "path",
+						"name": "mid",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					}
+				]
+			}
+		}
+	},
+	"servers": [
+		{
+			"url": "https://[object Object]/"
+		},
+		{
+			"url": "https://[object Object]/"
+		}
+	],
+	"tags": [
+		{
+			"name": "Industries",
+			"description": "Industry management operations"
+		},
+		{
+			"name": "Knowledge Graph",
+			"description": "ESG knowledge graph query operations"
+		},
+		{
+			"name": "Health & System",
+			"description": "Health check and system status endpoints"
+		}
+	]
+}

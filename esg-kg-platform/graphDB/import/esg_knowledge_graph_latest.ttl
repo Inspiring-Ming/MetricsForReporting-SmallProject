@@ -1,0 +1,672 @@
+@prefix esg: <http://example.org/esg#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# =============================================================================
+# INDUSTRIES
+# =============================================================================
+
+esg:commercialbanks a esg:Industry ;
+    rdfs:label "Commercial Banks" ;
+    esg:reportsUsing esg:SASBCommercialBanks .
+
+esg:semiconductors a esg:Industry ;
+    rdfs:label "Semiconductors" ;
+    esg:reportsUsing esg:SASBSemiconductors .
+
+# =============================================================================
+# REPORTING FRAMEWORKS
+# =============================================================================
+
+esg:SASBCommercialBanks a esg:ReportingFramework ;
+    rdfs:label "SASB Commercial Banks" ;
+    esg:includes esg:BusinessEthics,
+        esg:DataSecurity,
+        esg:FinancedEmissions,
+        esg:FinancialInclusionCapacityBuilding,
+        <http://example.org/esg#IncorporationofEnvironmental,Social,andGovernanceFactorsinCreditAnalysis>,
+        esg:SystemicRiskManagement ;
+    esg:sourceDocument "commercial-banks-standard_en-gb.pdf" .
+
+esg:SASBSemiconductors a esg:ReportingFramework ;
+    rdfs:label "SASB Semiconductors" ;
+    esg:includes esg:EnergyManagementinManufacturing,
+        esg:GreenhouseGasEmissions,
+        esg:MaterialSourcing,
+        esg:ProductLifecycleManagement,
+        esg:RecruitingManagingaGlobalSkilledWorkforce,
+        esg:WasteandHazardousMaterialsManagement,
+        esg:WaterManagement,
+        esg:WorkforceHealthandSafety ;
+    esg:sourceDocument "semiconductors-standard_en-gb.pdf" .
+
+# =============================================================================
+# CATEGORIES
+# =============================================================================
+
+esg:BusinessEthics a esg:Category ;
+    rdfs:label "Business Ethics" ;
+    esg:consistsOf esg:LegalProceedingsMonetaryLosses,
+        esg:WhistleblowerPoliciesDescription .
+
+esg:DataSecurity a esg:Category ;
+    rdfs:label "Data Security" ;
+    esg:consistsOf esg:AccountHoldersAffected,
+        esg:DataSecurityRiskApproach,
+        esg:NumberDataBreaches,
+        esg:PercentagePersonalDataBreaches .
+
+esg:EnergyManagementinManufacturing a esg:Category ;
+    rdfs:label "Energy Management in Manufacturing" ;
+    esg:consistsOf esg:TotalEnergyConsumed,
+        esg:PercentageGridElectricity,
+        esg:PercentageRenewableEnergy .
+
+esg:FinancedEmissions a esg:Category ;
+    rdfs:label "Financed Emissions" ;
+    esg:consistsOf esg:FinancedEmissionsCoveragePercentage,
+        esg:FinancedEmissionsMethodology,
+        esg:Scope1FinancedEmissions,
+        esg:Scope2FinancedEmissions,
+        esg:Scope3FinancedEmissions .
+
+esg:FinancialInclusionCapacityBuilding a esg:Category ;
+    rdfs:label "Financial Inclusion & Capacity Building" ;
+    esg:consistsOf esg:FinancialLiteracyParticipants,
+        esg:NoCostCheckingAccounts,
+        esg:SmallBusinessLoanAmount,
+        esg:SmallBusinessLoanCount .
+
+esg:GreenhouseGasEmissions a esg:Category ;
+    rdfs:label "Greenhouse Gas Emissions" ;
+    esg:consistsOf esg:GrossGlobalScope1Emissions,
+        esg:PerfluorinatedCompoundsEmissions,
+        esg:Scope1EmissionsStrategy,
+        esg:GHGEmissionIntensity .
+
+esg:MaterialSourcing a esg:Category ;
+    rdfs:label "Material Sourcing" ;
+    esg:consistsOf esg:CriticalMaterialsRiskManagement .
+
+esg:ProductLifecycleManagement a esg:Category ;
+    rdfs:label "Product Lifecycle Management" ;
+    esg:consistsOf esg:DeclarableSubstancesRevenuePercentage,
+        esg:DesktopProcessorEnergyEfficiency,
+        esg:LaptopProcessorEnergyEfficiency,
+        esg:ServerProcessorEnergyEfficiency .
+
+esg:RecruitingManagingaGlobalSkilledWorkforce a esg:Category ;
+    rdfs:label "Recruiting & Managing a Global & Skilled Workforce" ;
+    esg:consistsOf esg:WorkVisaEmployeePercentage .
+
+esg:SystemicRiskManagement a esg:Category ;
+    rdfs:label "Systemic Risk Management" ;
+    esg:consistsOf esg:GSIBScoreByCategory,
+        esg:GrossExposureByIndustry,
+        esg:StressTestIntegrationApproach .
+
+esg:WasteandHazardousMaterialsManagement a esg:Category ;
+    rdfs:label "Waste and Hazardous Materials Management" ;
+    esg:consistsOf esg:HazardousWasteAmount,
+        esg:PercentageHazardousWasteRecycled .
+
+esg:WaterManagement a esg:Category ;
+    rdfs:label "Water Management" ;
+    esg:consistsOf esg:TotalWaterConsumed,
+        esg:TotalWaterWithdrawn,
+        esg:PercentageWaterConsumedHighStress,
+        esg:PercentageWaterWithdrawnHighStress .
+
+esg:WorkforceHealthandSafety a esg:Category ;
+    rdfs:label "Workforce Health and Safety" ;
+    esg:consistsOf esg:HealthSafetyLegalLosses,
+        esg:WorkforceHealthHazardEfforts .
+
+<http://example.org/esg#IncorporationofEnvironmental,Social,andGovernanceFactorsinCreditAnalysis> a esg:Category ;
+    rdfs:label "Incorporation of Environmental, Social, and Governance Factors in Credit Analysis" ;
+    esg:consistsOf esg:ESGCreditAnalysisApproach,
+        esg:PastDueLoanAmount,
+        esg:PastDueLoanCount .
+
+# =============================================================================
+# DIRECT MEASUREMENT METRICS (obtainedFrom DatasetVariable)
+# =============================================================================
+
+esg:AccountHoldersAffected a esg:Metric ;
+    rdfs:label "Account Holders Affected" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Number of account holders affected" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasUnit "Number" ;
+    esg:obtainedFrom esg:POLICYACCOUNTHOLDERSAFFECTED .
+
+esg:AntiCompetitiveLegalLosses a esg:Metric ;
+    rdfs:label "Anti-Competitive Legal Losses" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Total amount of monetary losses as a result of legal proceedings associated with anti-competitive behaviour regulations" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasUnit "Presentation currency" ;
+    esg:obtainedFrom esg:BRIBERYANDCORRUPTIONPAIINSUFFICIENTACTIONS .
+
+esg:CriticalMaterialsRiskManagement a esg:Metric ;
+    rdfs:label "Critical Materials Risk Management" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Description of the management of risks associated with the use of critical materials" ;
+    esg:hasMetricType "Discussion" ;
+    esg:hasUnit "n/a" ;
+    esg:obtainedFrom esg:ENVSUPPLYCHAINMGT .
+
+esg:DataSecurityRiskApproach a esg:Metric ;
+    rdfs:label "Data Security Risk Approach" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Description of approach to identifying and addressing data security risks" ;
+    esg:hasMetricType "Discussion" ;
+    esg:hasUnit "n/a" ;
+    esg:obtainedFrom esg:POLICYDATAPRIVACY .
+
+esg:GrossGlobalScope1Emissions a esg:Metric ;
+    rdfs:label "GrossGlobalScope1Emissions" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Gross global Scope 1 greenhouse gas (GHG) emissions" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasUnit "Metric tonnes (t) CO₂-e" ;
+    esg:obtainedFrom esg:CO2DIRECTSCOPE1 .
+
+esg:PerfluorinatedCompoundsEmissions a esg:Metric ;
+    rdfs:label "PerfluorinatedCompoundsEmissions" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Amount of total emissions from perfluorinated compounds" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasUnit "Metric tonnes (t) CO₂-e" ;
+    esg:obtainedFrom esg:ANALYTICESTIMATEDCO2TOTAL .
+
+esg:Scope1EmissionsStrategy a esg:Metric ;
+    rdfs:label "Scope1EmissionsStrategy" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Discussion of long-term and short-term strategy or plan to manage Scope 1 emissions" ;
+    esg:hasMetricType "Discussion" ;
+    esg:hasUnit "n/a" ;
+    esg:obtainedFrom esg:TARGETS_EMISSIONS .
+
+esg:TotalEnergyConsumed a esg:Metric ;
+    rdfs:label "Total Energy Consumed" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Total energy consumed" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasUnit "Gigajoules (GJ)" ;
+    esg:obtainedFrom esg:ENERGYUSETOTAL .
+
+esg:TotalWaterConsumed a esg:Metric ;
+    rdfs:label "Total Water Consumed" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Total water consumed" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasUnit "Cubic meters (m³)" ;
+    esg:obtainedFrom esg:WATERCONSUMPTIONTOTAL .
+
+esg:TotalWaterWithdrawn a esg:Metric ;
+    rdfs:label "Total Water Withdrawn" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Total water withdrawn" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasUnit "Cubic meters (m³)" ;
+    esg:obtainedFrom esg:WATERWITHDRAWALTOTAL .
+
+esg:HazardousWasteAmount a esg:Metric ;
+    rdfs:label "Hazardous Waste Amount" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Amount of hazardous waste generated" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasUnit "Metric tonnes (t)" ;
+    esg:obtainedFrom esg:HAZARDOUSWASTE .
+
+# =============================================================================
+# CALCULATED METRICS (isCalculatedBy Model)
+# =============================================================================
+
+esg:GHGEmissionIntensity a esg:Metric ;
+    rdfs:label "GHGEmissionIntensity" ;
+    esg:hasType "Manual" ;
+    esg:hasCalculationMethod "calculation_model" ;
+    esg:hasDescription "GHG Intensity (tons CO2e per million USD) calculated from Scope 1 and Scope 2 emissions divided by revenue" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasUnit "tons CO2e per million USD" ;
+    esg:isCalculatedBy esg:GHGEmissionIntensityModel .
+
+esg:PercentageGridElectricity a esg:Metric ;
+    rdfs:label "Percentage Grid Electricity" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "calculation_model" ;
+    esg:hasDescription "Percentage of total energy consumed that is grid electricity" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:isCalculatedBy esg:GridElectricityRateModel .
+
+esg:PercentageRenewableEnergy a esg:Metric ;
+    rdfs:label "Percentage Renewable Energy" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "calculation_model" ;
+    esg:hasDescription "Percentage of total energy consumed that is renewable energy" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:isCalculatedBy esg:RenewableEnergyRateModel .
+
+esg:PercentageHazardousWasteRecycled a esg:Metric ;
+    rdfs:label "Percentage Hazardous Waste Recycled" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "calculation_model" ;
+    esg:hasDescription "Percentage of hazardous waste that was recycled" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:isCalculatedBy esg:HazardousWasteRecyclingRateModel .
+
+esg:PercentageWaterConsumedHighStress a esg:Metric ;
+    rdfs:label "Percentage Water Consumed High Stress" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "calculation_model" ;
+    esg:hasDescription "Percentage of water consumed in regions with high baseline water stress" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:isCalculatedBy esg:HighStressWaterConsumptionRateModel .
+
+esg:PercentageWaterWithdrawnHighStress a esg:Metric ;
+    rdfs:label "Percentage Water Withdrawn High Stress" ;
+    esg:hasType "SASBRequirement" ;
+    esg:hasCalculationMethod "calculation_model" ;
+    esg:hasDescription "Percentage of water withdrawn in regions with high baseline water stress" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasUnit "Percentage (%)" ;
+    esg:isCalculatedBy esg:HighStressWaterWithdrawalRateModel .
+
+# =============================================================================
+# MODELS
+# =============================================================================
+
+esg:GHGEmissionIntensityModel a esg:Model ;
+    rdfs:label "GHGEmissionIntensityModel" ;
+    esg:hasDescription "GHG Intensity calculation model: (Scope1 + Scope2 emissions) / Revenue" ;
+    esg:hasFormula "(scope1_emissions + scope2_emissions) / revenue" ;
+    esg:hasMathematicalExpression "GHG_Intensity = (Scope1_Emissions + Scope2_Emissions) / Revenue_in_Million_USD" ;
+    esg:hasCalculationType "intensity_ratio" ;
+    esg:requiresInputFrom esg:Scope1Emission,
+        esg:Scope2Emission,
+        esg:Revenue ;
+    esg:executesWith esg:GHGEmissionIntensityImplementation .
+
+esg:GridElectricityRateModel a esg:Model ;
+    rdfs:label "Grid Electricity Rate Model" ;
+    esg:hasDescription "Percentage of energy consumed from grid electricity" ;
+    esg:hasFormula "(grid_electricity / total_energy) * 100" ;
+    esg:hasMathematicalExpression "Grid_Electricity_Percentage = (Grid_Electricity_Consumption / Total_Energy_Consumption) × 100%" ;
+    esg:hasCalculationType "percentage_ratio" ;
+    esg:requiresInputFrom esg:GridElectricity,
+        esg:TotalEnergy ;
+    esg:executesWith esg:GridElectricityRateImplementation .
+
+esg:RenewableEnergyRateModel a esg:Model ;
+    rdfs:label "Renewable Energy Rate Model" ;
+    esg:hasDescription "Percentage of energy consumed that was renewable energy" ;
+    esg:hasFormula "(renewable_energy / total_energy) × 100" ;
+    esg:hasMathematicalExpression "Renewable_Energy_Percentage = (Renewable_Energy_Consumption / Total_Energy_Consumption) × 100%" ;
+    esg:hasCalculationType "percentage_ratio" ;
+    esg:requiresInputFrom esg:RenewableEnergy,
+        esg:TotalEnergy ;
+    esg:executesWith esg:RenewableEnergyRateImplementation .
+
+esg:HazardousWasteRecyclingRateModel a esg:Model ;
+    rdfs:label "Hazardous Waste Recycling Rate Model" ;
+    esg:hasDescription "Percentage of hazardous waste recycled" ;
+    esg:hasFormula "(recycled_hazardous_waste / total_hazardous_waste) * 100" ;
+    esg:hasMathematicalExpression "Recycling_Percentage = (Recycled_Hazardous_Waste / Total_Hazardous_Waste) × 100%" ;
+    esg:hasCalculationType "percentage_ratio" ;
+    esg:requiresInputFrom esg:RecycledHazardousWaste,
+        esg:TotalHazardousWaste ;
+    esg:executesWith esg:HazardousWasteRecyclingRateImplementation .
+
+esg:HighStressWaterConsumptionRateModel a esg:Model ;
+    rdfs:label "High Stress Water Consumption Rate Model" ;
+    esg:hasDescription "Percentage of water consumed in high stress regions" ;
+    esg:hasFormula "(high_stress_water_consumed / total_water_consumed) * 100" ;
+    esg:hasMathematicalExpression "High_Stress_Consumption_Percentage = (High_Stress_Water_Consumed / Total_Water_Consumed) × 100%" ;
+    esg:hasCalculationType "percentage_ratio" ;
+    esg:requiresInputFrom esg:HighStressWaterConsumed,
+        esg:TotalWaterConsumed ;
+    esg:executesWith esg:HighStressWaterConsumptionRateImplementation .
+
+esg:HighStressWaterWithdrawalRateModel a esg:Model ;
+    rdfs:label "High Stress Water Withdrawal Rate Model" ;
+    esg:hasDescription "Percentage of water withdrawn in high stress regions" ;
+    esg:hasFormula "(high_stress_water_withdrawn / total_water_withdrawn) * 100" ;
+    esg:hasMathematicalExpression "High_Stress_Withdrawal_Percentage = (High_Stress_Water_Withdrawn / Total_Water_Withdrawn) × 100%" ;
+    esg:hasCalculationType "percentage_ratio" ;
+    esg:requiresInputFrom esg:HighStressWaterWithdrawn,
+        esg:TotalWaterWithdrawn ;
+    esg:executesWith esg:HighStressWaterWithdrawalRateImplementation .
+
+# =============================================================================
+# INPUT METRICS (for calculation models)
+# =============================================================================
+
+esg:Scope1Emission a esg:Metric ;
+    rdfs:label "Scope 1 Emission" ;
+    esg:hasType "Input Metric" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Direct greenhouse gas emissions from sources owned or controlled by the company" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "tons CO2e" ;
+    esg:obtainedFrom esg:CO2DIRECTSCOPE1 .
+
+esg:Scope2Emission a esg:Metric ;
+    rdfs:label "Scope 2 Emission" ;
+    esg:hasType "Input Metric" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Indirect greenhouse gas emissions from purchased electricity, steam, heating and cooling" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "tons CO2e" ;
+    esg:obtainedFrom esg:CO2INDIRECTSCOPE2 .
+
+esg:Revenue a esg:Metric ;
+    rdfs:label "Revenue" ;
+    esg:hasType "Input Metric" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Total company revenue for the reporting period in millions of USD" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "million USD" ;
+    esg:obtainedFrom esg:revt .
+
+esg:GridElectricity a esg:Metric ;
+    rdfs:label "Grid Electricity" ;
+    esg:hasType "Input Metric" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Energy consumed from grid electricity" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "Gigajoules (GJ)" ;
+    esg:obtainedFrom esg:ELECTRICITYPURCHASED .
+
+esg:RenewableEnergy a esg:Metric ;
+    rdfs:label "Renewable Energy" ;
+    esg:hasType "Input Metric" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Energy consumed from renewable sources" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "Gigajoules (GJ)" ;
+    esg:obtainedFrom esg:RENEWENERGYPURCHASED .
+
+esg:TotalEnergy a esg:Metric ;
+    rdfs:label "Total Energy" ;
+    esg:hasType "Input Metric" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Total energy consumed by the organization" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "Gigajoules (GJ)" ;
+    esg:obtainedFrom esg:ENERGYUSETOTAL .
+
+esg:RecycledHazardousWaste a esg:Metric ;
+    rdfs:label "Recycled Hazardous Waste" ;
+    esg:hasType "Input Metric" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Amount of hazardous waste that was recycled" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "Metric tonnes (t)" ;
+    esg:obtainedFrom esg:RECYCLEDHAZARDOUSWASTE .
+
+esg:TotalHazardousWaste a esg:Metric ;
+    rdfs:label "Total Hazardous Waste" ;
+    esg:hasType "Input Metric" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Total amount of hazardous waste generated" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "Metric tonnes (t)" ;
+    esg:obtainedFrom esg:HAZARDOUSWASTE .
+
+esg:HighStressWaterConsumed a esg:Metric ;
+    rdfs:label "High Stress Water Consumed" ;
+    esg:hasType "Input Metric" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Water consumed in regions with high baseline water stress" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "Cubic meters (m³)" ;
+    esg:obtainedFrom esg:WATERCONSUMPTIONTOTAL .
+
+esg:TotalWaterConsumed a esg:Metric ;
+    rdfs:label "Total Water Consumed" ;
+    esg:hasType "Input Metric" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Total water consumed by the organization" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "Cubic meters (m³)" ;
+    esg:obtainedFrom esg:WATERCONSUMPTIONTOTAL .
+
+esg:HighStressWaterWithdrawn a esg:Metric ;
+    rdfs:label "High Stress Water Withdrawn" ;
+    esg:hasType "Input Metric" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Water withdrawn in regions with high baseline water stress" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "Cubic meters (m³)" ;
+    esg:obtainedFrom esg:WATERWITHDRAWALTOTAL .
+
+esg:TotalWaterWithdrawn a esg:Metric ;
+    rdfs:label "Total Water Withdrawn" ;
+    esg:hasType "Input Metric" ;
+    esg:hasCalculationMethod "direct_measurement" ;
+    esg:hasDescription "Total water withdrawn by the organization" ;
+    esg:hasMetricType "Quantitative" ;
+    esg:hasDataType "float" ;
+    esg:hasUnit "Cubic meters (m³)" ;
+    esg:obtainedFrom esg:WATERWITHDRAWALTOTAL .
+    
+# =============================================================================
+# IMPLEMENTATIONS
+# =============================================================================
+
+esg:GHGEmissionIntensityImplementation a esg:Implementation ;
+    rdfs:label "GHG Emission Intensity Implementation" ;
+    esg:hasLanguage "Python" ;
+    esg:hasFilePath "models/ghg_emission_intensity_model.py" ;
+    esg:hasFunction "calculate_ghg_emission_intensity" ;
+    esg:hasDescription "Python implementation for calculating GHG emission intensity" ;
+    esg:hasInputParameters "scope1_emissions: float, scope2_emissions: float, revenue: float" ;
+    esg:hasReturnType "float" ;
+    esg:hasValidation "Revenue must be greater than 0 to avoid division by zero" .
+
+esg:GridElectricityRateImplementation a esg:Implementation ;
+    rdfs:label "Grid Electricity Rate Implementation" ;
+    esg:hasLanguage "Python" ;
+    esg:hasFilePath "models/energy_rate_models.py" ;
+    esg:hasFunction "calculate_grid_electricity_rate" ;
+    esg:hasDescription "Python implementation for calculating grid electricity percentage" ;
+    esg:hasInputParameters "grid_electricity: float, total_energy: float" ;
+    esg:hasReturnType "float" ;
+    esg:hasValidation "Total energy must be greater than 0 to avoid division by zero" .
+
+esg:RenewableEnergyRateImplementation a esg:Implementation ;
+    rdfs:label "Renewable Energy Rate Implementation" ;
+    esg:hasLanguage "Python" ;
+    esg:hasFilePath "models/energy_rate_models.py" ;
+    esg:hasFunction "calculate_renewable_energy_rate" ;
+    esg:hasDescription "Python implementation for calculating renewable energy percentage" ;
+    esg:hasInputParameters "renewable_energy: float, total_energy: float" ;
+    esg:hasReturnType "float" ;
+    esg:hasValidation "Total energy must be greater than 0 to avoid division by zero" .
+
+esg:HazardousWasteRecyclingRateImplementation a esg:Implementation ;
+    rdfs:label "Hazardous Waste Recycling Rate Implementation" ;
+    esg:hasLanguage "Python" ;
+    esg:hasFilePath "models/waste_rate_models.py" ;
+    esg:hasFunction "calculate_hazardous_waste_recycling_rate" ;
+    esg:hasDescription "Python implementation for calculating hazardous waste recycling percentage" ;
+    esg:hasInputParameters "recycled_hazardous_waste: float, total_hazardous_waste: float" ;
+    esg:hasReturnType "float" ;
+    esg:hasValidation "Total hazardous waste must be greater than 0 to avoid division by zero" .
+
+esg:HighStressWaterConsumptionRateImplementation a esg:Implementation ;
+    rdfs:label "High Stress Water Consumption Rate Implementation" ;
+    esg:hasLanguage "Python" ;
+    esg:hasFilePath "models/water_rate_models.py" ;
+    esg:hasFunction "calculate_high_stress_water_consumption_rate" ;
+    esg:hasDescription "Python implementation for calculating high stress water consumption percentage" ;
+    esg:hasInputParameters "high_stress_water_consumed: float, total_water_consumed: float" ;
+    esg:hasReturnType "float" ;
+    esg:hasValidation "Total water consumed must be greater than 0 to avoid division by zero" .
+
+esg:HighStressWaterWithdrawalRateImplementation a esg:Implementation ;
+    rdfs:label "High Stress Water Withdrawal Rate Implementation" ;
+    esg:hasLanguage "Python" ;
+    esg:hasFilePath "models/water_rate_models.py" ;
+    esg:hasFunction "calculate_high_stress_water_withdrawal_rate" ;
+    esg:hasDescription "Python implementation for calculating high stress water withdrawal percentage" ;
+    esg:hasInputParameters "high_stress_water_withdrawn: float, total_water_withdrawn: float" ;
+    esg:hasReturnType "float" ;
+    esg:hasValidation "Total water withdrawn must be greater than 0 to avoid division by zero" .
+
+# =============================================================================
+# DATASET VARIABLES
+# =============================================================================
+
+esg:CO2DIRECTSCOPE1 a esg:DatasetVariable ;
+    rdfs:label "CO2DIRECTSCOPE1" ;
+    esg:alignmentReason "Direct mapping for Scope 1 GHG emissions" ;
+    esg:hasConfidenceScore 100 ;
+    esg:isUnitCompatible "Yes - both measure CO2e in metric tonnes" ;
+    esg:sourceFrom esg:SemiconductorsEurofidaiEnvironmentDataset,
+        esg:CommercialBanksEurofidaiEnvironmentDataset .
+
+esg:CO2INDIRECTSCOPE2 a esg:DatasetVariable ;
+    rdfs:label "CO2INDIRECTSCOPE2" ;
+    esg:alignmentReason "Direct mapping for Scope 2 GHG emissions" ;
+    esg:hasConfidenceScore 100 ;
+    esg:isUnitCompatible "Yes - both measure CO2e in metric tonnes" ;
+    esg:sourceFrom esg:SemiconductorsEurofidaiEnvironmentDataset,
+        esg:CommercialBanksEurofidaiEnvironmentDataset .
+
+esg:revt a esg:DatasetVariable ;
+    rdfs:label "revt" ;
+    esg:alignmentReason "Total revenue variable for financial calculations and intensity metrics" ;
+    esg:hasConfidenceScore 100 ;
+    esg:isUnitCompatible "Yes - both measure revenue in USD" ;
+    esg:sourceFrom esg:SemiconductorWRDSFinancialDataset .
+
+esg:ENERGYUSETOTAL a esg:DatasetVariable ;
+    rdfs:label "ENERGYUSETOTAL" ;
+    esg:alignmentReason "Direct mapping for total energy consumption" ;
+    esg:hasConfidenceScore 100 ;
+    esg:isUnitCompatible "Yes - both measure energy in standard units" ;
+    esg:sourceFrom esg:SemiconductorsEurofidaiEnvironmentDataset .
+
+esg:ELECTRICITYPURCHASED a esg:DatasetVariable ;
+    rdfs:label "ELECTRICITYPURCHASED" ;
+    esg:alignmentReason "Direct mapping for grid electricity consumption" ;
+    esg:hasConfidenceScore 95 ;
+    esg:isUnitCompatible "Yes - both measure electricity in standard units" ;
+    esg:sourceFrom esg:SemiconductorsEurofidaiEnvironmentDataset .
+
+esg:RENEWENERGYPURCHASED a esg:DatasetVariable ;
+    rdfs:label "RENEWENERGYPURCHASED" ;
+    esg:alignmentReason "Direct mapping for renewable energy consumption" ;
+    esg:hasConfidenceScore 95 ;
+    esg:isUnitCompatible "Yes - both measure renewable energy in standard units" ;
+    esg:sourceFrom esg:SemiconductorsEurofidaiEnvironmentDataset .
+
+esg:HAZARDOUSWASTE a esg:DatasetVariable ;
+    rdfs:label "HAZARDOUSWASTE" ;
+    esg:alignmentReason "Direct mapping for hazardous waste amount" ;
+    esg:hasConfidenceScore 100 ;
+    esg:isUnitCompatible "Yes - both measure waste in metric tonnes" ;
+    esg:sourceFrom esg:SemiconductorsEurofidaiEnvironmentDataset .
+
+esg:ANALYTICESTIMATEDCO2TOTAL a esg:DatasetVariable ;
+    rdfs:label "ANALYTICESTIMATEDCO2TOTAL" ;
+    esg:alignmentReason "PFC emissions included in total CO2e but not separately tracked" ;
+    esg:hasConfidenceScore 60 ;
+    esg:isUnitCompatible "Yes - both measure CO2e in metric tonnes" ;
+    esg:sourceFrom esg:SemiconductorsEurofidaiEnvironmentDataset .
+
+esg:TARGETS_EMISSIONS a esg:DatasetVariable ;
+    rdfs:label "TARGETS_EMISSIONS" ;
+    esg:alignmentReason "Discussion/policy variable for emissions strategy" ;
+    esg:hasConfidenceScore 80 ;
+    esg:isUnitCompatible "Yes - both are discussion/text fields" ;
+    esg:sourceFrom esg:SemiconductorsEurofidaiEnvironmentDataset .
+
+esg:POLICYACCOUNTHOLDERSAFFECTED a esg:DatasetVariable ;
+    rdfs:label "POLICY_ACCOUNT_HOLDERS_AFFECTED" ;
+    esg:alignmentReason "Direct mapping for account holders affected" ;
+    esg:hasConfidenceScore 100 ;
+    esg:isUnitCompatible "Yes - both are numeric" ;
+    esg:sourceFrom esg:SemiconductorWRDSFinancialDataset .
+
+esg:BRIBERYANDCORRUPTIONPAIINSUFFICIENTACTIONS a esg:DatasetVariable ;
+    rdfs:label "BRIBERY_AND_CORRUPTION_PAI_INSUFFICIENT_ACTIONS" ;
+    esg:alignmentReason "EUROFIDAI tracks corruption issues which may lead to legal proceedings" ;
+    esg:hasConfidenceScore 30 ;
+    esg:isUnitCompatible "No - monetary vs Yes/No" ;
+    esg:sourceFrom esg:CommercialBanksEurofidaiEnvironmentDataset .
+
+esg:WATERCONSUMPTIONTOTAL a esg:DatasetVariable ;
+    rdfs:label "WATER_CONSUMPTION_TOTAL" ;
+    esg:alignmentReason "Direct mapping for total water consumption" ;
+    esg:hasConfidenceScore 100 ;
+    esg:isUnitCompatible "Yes - both measure water in standard units" ;
+    esg:sourceFrom esg:SemiconductorsEurofidaiEnvironmentDataset .
+
+esg:WATERWITHDRAWALTOTAL a esg:DatasetVariable ;
+    rdfs:label "WATERWITHDRAWALTOTAL" ;
+    esg:alignmentReason "Exact match for total water withdrawal with unit conversion" ;
+    esg:hasConfidenceScore 100 ;
+    esg:isUnitCompatible "Yes - both measure water volume (1000x scaling)" ;
+    esg:sourceFrom esg:SemiconductorsEurofidaiEnvironmentDataset .
+
+esg:RECYCLEDHAZARDOUSWASTE a esg:DatasetVariable ;
+    rdfs:label "RECYCLED_HAZARDOUS_WASTE" ;
+    esg:alignmentReason "Direct mapping for recycled hazardous waste" ;
+    esg:hasConfidenceScore 100 ;
+    esg:isUnitCompatible "Yes - both measure waste in metric tonnes" ;
+    esg:sourceFrom esg:SemiconductorsEurofidaiEnvironmentDataset .
+
+# =============================================================================
+# DATA SOURCES
+# =============================================================================
+
+esg:SemiconductorsEurofidaiEnvironmentDataset a esg:DataSource ;
+    rdfs:label "Semiconductors Eurofidai Environment Dataset" ;
+    esg:hasFileName "Semiconductors_Eurofidai_EnvironmentData.csv" ;
+    esg:hasDescription "Environmental data for semiconductor companies from Eurofidai database" ;
+    esg:hasRecordCount 105528 ;
+    esg:hasCoverage "Global semiconductor companies" .
+
+esg:CommercialBanksEurofidaiEnvironmentDataset a esg:DataSource ;
+    rdfs:label "Commercial Banks Eurofidai Environment Dataset" ;
+    esg:hasFileName "Commercial_Banks_Eurofidai_EnvironmentData.csv" ;
+    esg:hasDescription "Environmental data for commercial banks from Eurofidai database" ;
+    esg:hasRecordCount 317305 ;
+    esg:hasCoverage "Global commercial banks" .
+
+esg:SemiconductorWRDSFinancialDataset a esg:DataSource ;
+    rdfs:label "Semiconductor WRDS Financial Dataset" ;
+    esg:hasFileName "Semiconductor_WRDS_FinancialData(NorthAmerica).csv" ;
+    esg:hasDescription "Financial data for North American semiconductor companies from WRDS database" ;
+    esg:hasCoverage "North American semiconductor companies" .
+

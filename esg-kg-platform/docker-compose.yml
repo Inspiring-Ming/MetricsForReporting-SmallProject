@@ -1,0 +1,255 @@
+services:
+  # GraphDB Database Service (Development)
+  graphdb:
+    image: ontotext/graphdb:11.1.1
+    container_name: esg-graphdb
+    ports:
+      - "7200:7200"
+    environment:
+      GDB_HEAP_SIZE: "2g"
+      JAVA_TOOL_OPTIONS: "-Dgraphdb.license.file=/opt/graphdb/home/conf/graphdb.license"
+    volumes:
+      # ✅ Persist data to project path (graphDB/data)
+      - ./graphDB/data:/opt/graphdb/home
+      # ✅ Map import directory (accessible by GraphDB)
+      - ./graphDB/import:/opt/graphdb/home/graphdb-import:ro
+      - ./graphDB/conf:/opt/graphdb/home/conf:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7200/rest/repositories"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - esg-network
+
+  # GraphDB Test Database Service (Testing Environment)
+  graphdb-test:
+    image: ontotext/graphdb:11.1.1
+    container_name: esg-graphdb-test
+    ports:
+      - "7201:7200"  # Different port to avoid conflicts
+    environment:
+      GDB_HEAP_SIZE: "1g"  # Less memory for test environment
+      JAVA_TOOL_OPTIONS: "-Dgraphdb.license.file=/opt/graphdb/home/conf/graphdb.license"
+    volumes:
+      # ✅ Separate test data directory
+      - ./graphDB/test-data:/opt/graphdb/home
+      # ✅ Share import directory (for test data if needed)
+      - ./graphDB/import:/opt/graphdb/home/graphdb-import:ro
+      - ./graphDB/conf:/opt/graphdb/home/conf:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7200/rest/repositories"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - esg-network
+    profiles:
+      - test  # Only start when explicitly requested
+
+  # GraphDB Data Initialization Service (Development)
+  init-loader:
+    image: curlimages/curl:8.10.1
+    container_name: esg-init-loader
+    depends_on:
+      graphdb:
+        condition: service_healthy
+    volumes:
+      - ./graphDB/repo-config.ttl:/work/repo-config.ttl:ro
+      - ./graphDB/import:/work/import:ro
+    command:
+      - sh
+      - -c
+      - |
+        set -euo pipefail
+        BASE='http://graphdb:7200'
+        REPO_ID='esg-repo'
+
+        log() { echo "[init] $$1"; }
+
+        log 'Waiting for GraphDB to start...'
+        i=1
+        while [ $$i -le 120 ]; do
+          # GraphDB 使用 /rest/repositories 端点
+          if curl -fsS "$$BASE/rest/repositories" >/dev/null 2>&1; then
+            log 'GraphDB started'; break
+          fi
+          log "Waiting... ($$i/120)"
+          i=$$(( $$i + 1 ))
+          sleep 1
+        done
+
+        log "Checking if repository $$REPO_ID exists..."
+        # GraphDB 返回 JSON 格式，检查 id 字段
+        if curl -fsS "$$BASE/rest/repositories" | grep -q "\"id\":\"$$REPO_ID\""; then
+          log "Repository $$REPO_ID already exists, skipping creation"
+        else
+          log "Creating repository $$REPO_ID ..."
+          # 使用 GraphDB 特有的 API: POST /rest/repositories
+          http=$$(curl -sS -w '%{http_code}' -o /tmp/resp.txt -X POST "$$BASE/rest/repositories" -F 'config=@/work/repo-config.ttl' || true)
+          if [ "$$http" != '201' ] && [ "$$http" != '200' ]; then
+            log "Repository creation failed (HTTP $$http): $$(cat /tmp/resp.txt || true)"
+            exit 1
+          fi
+          log 'Repository creation completed'
+        fi
+
+        log 'Verifying repository availability...'
+        i=1
+        while [ $$i -le 30 ]; do
+          # 使用 /size 端点来检查仓库是否可用 (RDF4J 标准)
+          code=$$(curl -s -o /dev/null -w '%{http_code}' "$$BASE/repositories/$$REPO_ID/size" || echo 000)
+          if [ "$$code" = '200' ]; then log 'Repository verification passed'; break; fi
+          log "Waiting for repository to be ready... ($$i/30) [HTTP: $$code]"
+          i=$$(( $$i + 1 ))
+          sleep 2
+        done
+
+        COUNT=$$(curl -fsS "$$BASE/repositories/$$REPO_ID/size" 2>/dev/null || echo '0')
+        log "Current repository contains $$COUNT data entries"
+        if [ "$$COUNT" != '0' ]; then
+          log 'Repository already has data, skipping import'; exit 0
+        fi
+
+        log 'Starting import of esg_knowledge_graph_latest.ttl ...'
+        if [ -f /work/import/esg_knowledge_graph_latest.ttl ]; then
+          # 使用 RDF4J 标准 API: POST /repositories/{repositoryID}/statements
+          http=$$(curl -sS -w '%{http_code}' -o /tmp/import_resp.txt -X POST "$$BASE/repositories/$$REPO_ID/statements" -H 'Content-Type: text/turtle' --data-binary '@/work/import/esg_knowledge_graph_latest.ttl' || true)
+          if [ "$$http" = '204' ] || [ "$$http" = '200' ]; then
+            log 'Data import successful'
+          else
+            log "Data import failed (HTTP $$http): $$(cat /tmp/import_resp.txt || true)"
+            exit 1
+          fi
+        else
+          log 'Error: /work/import/esg_knowledge_graph_latest.ttl not found (please place the file in host ./graphDB/import/ directory)'
+          exit 1
+        fi
+
+        sleep 5
+        FINAL_COUNT=$$(curl -fsS "$$BASE/repositories/$$REPO_ID/size" 2>/dev/null || echo '0')
+        log "Import completed, repository now contains $$FINAL_COUNT data entries"
+    restart: "no"
+    networks:
+      - esg-network
+
+  # GraphDB Test Initialization Service (Testing Environment)
+  init-loader-test:
+    image: curlimages/curl:8.10.1
+    container_name: esg-init-loader-test
+    depends_on:
+      graphdb-test:
+        condition: service_healthy
+    volumes:
+      - ./graphDB/repo-config-test.ttl:/work/repo-config.ttl:ro
+      - ./graphDB/import:/work/import:ro
+    command:
+      - sh
+      - -c
+      - |
+        set -euo pipefail
+        BASE='http://graphdb-test:7200'
+        REPO_ID='esg-repo-test'
+
+        log() { echo "[test-init] $$1"; }
+
+        log 'Waiting for GraphDB Test to start...'
+        i=1
+        while [ $$i -le 120 ]; do
+          if curl -fsS "$$BASE/rest/repositories" >/dev/null 2>&1; then
+            log 'GraphDB Test started'; break
+          fi
+          log "Waiting... ($$i/120)"
+          i=$$(( $$i + 1 ))
+          sleep 1
+        done
+
+        log "Checking if test repository $$REPO_ID exists..."
+        if curl -fsS "$$BASE/rest/repositories" | grep -q "\"id\":\"$$REPO_ID\""; then
+          log "Test repository $$REPO_ID already exists"
+        else
+          log "Creating test repository $$REPO_ID ..."
+          http=$$(curl -sS -w '%{http_code}' -o /tmp/resp.txt -X POST "$$BASE/rest/repositories" -F 'config=@/work/repo-config.ttl' || true)
+          if [ "$$http" != '201' ] && [ "$$http" != '200' ]; then
+            log "Test repository creation failed (HTTP $$http): $$(cat /tmp/resp.txt || true)"
+            exit 1
+          fi
+          log 'Test repository creation completed'
+        fi
+
+        log 'Test repository is ready - no data import (empty for testing)'
+        FINAL_COUNT=$$(curl -fsS "$$BASE/repositories/$$REPO_ID/size" 2>/dev/null || echo '0')
+        log "Test repository contains $$FINAL_COUNT data entries"
+    restart: "no"
+    networks:
+      - esg-network
+    profiles:
+      - test
+
+  # Backend API Service
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: esg-backend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      GRAPHDB_URL: http://graphdb:7200
+      GRAPHDB_REPO: esg-repo
+      INITIAL_TTL_PATH: /app/graphDB/import/esg_knowledge_graph_latest.ttl
+    volumes:
+      # Mount import directory for reset functionality
+      - ./graphDB/import:/app/graphDB/import:ro
+    depends_on:
+      graphdb:
+        condition: service_healthy
+      init-loader:
+        condition: service_completed_successfully
+    networks:
+      - esg-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Web Application
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        BACKEND_URL: http://backend:3000
+    container_name: esg-frontend
+    ports:
+      - "5172:5172"
+    environment:
+      NODE_ENV: production
+      BACKEND_URL: http://backend:3000
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - esg-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5172"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  esg-network:
+    driver: bridge
+
+volumes:
+  graphdb-data:
+    driver: local
+  pnpm-store:
+    driver: local

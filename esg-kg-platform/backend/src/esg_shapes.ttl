@@ -1,0 +1,161 @@
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix esg:  <http://example.org/esg#> .
+
+###############
+# 基础：所有资源最好有 label
+###############
+esg:HasLabelShape a sh:NodeShape ;
+  sh:targetClass rdfs:Resource ;
+  sh:property [
+    sh:path rdfs:label ;
+    sh:minCount 1 ;
+    sh:datatype xsd:string ;
+    sh:message "资源应当提供 rdfs:label（字符串）。"
+  ] .
+
+########################
+# Industry / Framework / Category 结构关系
+########################
+esg:IndustryShape a sh:NodeShape ;
+  sh:targetClass esg:Industry ;
+  sh:property [
+    sh:path esg:reportsUsing ;
+    sh:minCount 1 ;
+    sh:class esg:ReportingFramework ;
+    sh:message "Industry 必须至少 reportsUsing 一个 ReportingFramework。"
+  ] .
+
+esg:FrameworkShape a sh:NodeShape ;
+  sh:targetClass esg:ReportingFramework ;
+  sh:property [
+    sh:path esg:includes ;
+    sh:minCount 1 ;
+    sh:class esg:Category ;
+    sh:message "ReportingFramework 必须 includes 至少一个 Category。"
+  ] .
+
+esg:CategoryShape a sh:NodeShape ;
+  sh:targetClass esg:Category ;
+  sh:property [
+    sh:path esg:consistsOf ;
+    sh:minCount 1 ;
+    sh:class esg:Metric ;
+    sh:message "Category 必须 consistsOf 至少一个 Metric。"
+  ] .
+
+############
+# Metric（核心）
+############
+esg:MetricShape a sh:NodeShape ;
+  sh:targetClass esg:Metric ;
+
+  # 1) 指标数据形态：枚举
+  sh:property [
+    sh:path esg:hasMetricType ;
+    sh:in ( "Quantitative" "Discussion" ) ;
+    sh:minCount 1 ;
+    sh:message "hasMetricType 只能是 Quantitative 或 Discussion。"
+  ] ;
+
+  # 2) 指标角色/来源：枚举
+  sh:property [
+    sh:path esg:hasType ;
+    sh:in ( "SASBRequirement" "Input Metric" "Manual" ) ;
+    sh:minCount 1 ;
+    sh:message "hasType 只能是 SASBRequirement / Input Metric / Manual。"
+  ] ;
+
+  # 3) 计算方式：枚举
+  sh:property [
+    sh:path esg:hasCalculationMethod ;
+    sh:in ( "direct_measurement" "calculation_model" ) ;
+    sh:minCount 1 ;
+    sh:message "hasCalculationMethod 必须是 direct_measurement 或 calculation_model。"
+  ] ;
+
+  # 4) 单位：字符串（如需对接 QUDT/UCUM，可改为 class 限制）
+  sh:property [
+    sh:path esg:hasUnit ;
+    sh:datatype xsd:string ;
+    sh:minCount 1 ;
+    sh:maxLength 128 ;
+    sh:message "hasUnit 必须是字符串。"
+  ] ;
+
+  # 5) 条件：direct_measurement → 必须 obtainedFrom DatasetVariable
+  sh:sparql [
+    sh:message "direct_measurement 的 Metric 必须至少 obtainedFrom 一个 DatasetVariable。";
+    sh:select """
+      SELECT ?this WHERE {
+        ?this esg:hasCalculationMethod "direct_measurement" .
+        FILTER NOT EXISTS { ?this esg:obtainedFrom ?dv . }
+      }
+    """
+  ] ;
+
+  # 6) 条件：calculation_model → 必须 isCalculatedBy 一个 Model
+  sh:sparql [
+    sh:message "calculation_model 的 Metric 必须 isCalculatedBy 一个 Model。";
+    sh:select """
+      SELECT ?this WHERE {
+        ?this esg:hasCalculationMethod "calculation_model" .
+        FILTER NOT EXISTS { ?this esg:isCalculatedBy ?m . }
+      }
+    """
+  ] .
+
+###################
+# Model & Implementation
+###################
+esg:ModelShape a sh:NodeShape ;
+  sh:targetClass esg:Model ;
+  sh:property [
+    sh:path esg:executesWith ;
+    sh:minCount 1 ;
+    sh:class esg:Implementation ;
+    sh:message "Model 必须 executesWith 一个 Implementation。"
+  ] ;
+  sh:property [
+    sh:path esg:requiresInputFrom ;
+    sh:minCount 1 ;
+    sh:class esg:Metric ;
+    sh:message "Model 至少 requiresInputFrom 一个 Metric（输入指标）。"
+  ] .
+
+esg:ImplementationShape a sh:NodeShape ;
+  sh:targetClass esg:Implementation ;
+  sh:property [ sh:path esg:hasLanguage ;  sh:datatype xsd:string ; sh:maxCount 1 ] ;
+  sh:property [ sh:path esg:hasFilePath ;  sh:datatype xsd:string ; sh:maxCount 1 ] ;
+  sh:property [ sh:path esg:hasFunction ;  sh:datatype xsd:string ; sh:maxCount 1 ] ;
+  sh:property [ sh:path esg:hasReturnType ; sh:datatype xsd:string ; sh:maxCount 1 ] .
+
+###################
+# DatasetVariable & DataSource
+###################
+esg:DatasetVariableShape a sh:NodeShape ;
+  sh:targetClass esg:DatasetVariable ;
+  sh:property [
+    sh:path esg:sourceFrom ;
+    sh:minCount 1 ;
+    sh:class esg:DataSource ;
+    sh:message "DatasetVariable 必须至少 sourceFrom 一个 DataSource。"
+  ] ;
+  sh:property [
+    sh:path esg:hasConfidenceScore ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 0 ;
+    sh:maxInclusive 100 ;
+    sh:message "hasConfidenceScore 必须是 0–100 的整数。"
+  ] .
+
+esg:DataSourceShape a sh:NodeShape ;
+  sh:targetClass esg:DataSource ;
+  sh:property [
+    sh:path esg:hasRecordCount ;
+    sh:datatype xsd:integer ;
+    sh:minInclusive 0 ;
+    sh:message "hasRecordCount（如提供）必须是 ≥0 的整数。"
+  ] .

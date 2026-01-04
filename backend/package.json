@@ -1,6 +1,11 @@
 {
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
   "scripts": {
-    "start": "ts-node -T code/index.ts",
+    "dev": "ts-node -T code/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc",
     "test": "jest",
     "ts-node": "ts-node",
     "lint": "eslint",
@@ -15,6 +20,7 @@
     "@aws-sdk/lib-dynamodb": "^3.839.0",
     "@comunica/query-sparql": "^4.3.0",
     "@comunica/query-sparql-rdfjs": "^4.3.0",
+    "axios": "^1.12.2",
     "cors": "^2.8.5",
     "csv-parser": "^3.2.0",
     "dotenv": "^17.2.2",
@@ -23,8 +29,10 @@
     "middleware-http-errors": "^0.1.2",
     "morgan": "^1.10.0",
     "n3": "^1.26.0",
+    "puppeteer": "^24.31.0",
     "python-shell": "^5.0.0",
-    "serverless-http": "^3.2.0"
+    "serverless-http": "^3.2.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",
